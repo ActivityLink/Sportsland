@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>我的儀表板 - 課程管理系統</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f5f7fa; color: #333; }
+        
+        .dashboard-container { display: flex; min-height: 100vh; }
+        
+        /* 側邊欄 */
+        .sidebar { width: 250px; background: #2c3e50; color: white; padding: 25px 0; position: fixed; height: 100vh; }
+        .user-profile { text-align: center; padding: 20px; border-bottom: 1px solid #34495e; }
+        .user-avatar { width: 80px; height: 80px; border-radius: 50%; background: #3498db; display: flex; align-items: center; justify-content: center; font-size: 32px; margin: 0 auto 15px; }
+        .user-name { font-size: 1.2em; font-weight: 600; }
+        .user-email { font-size: 0.9em; color: #bdc3c7; margin-top: 5px; }
+        
+        .nav-menu { padding: 20px 0; }
+        .nav-item { padding: 15px 25px; display: flex; align-items: center; cursor: pointer; transition: background 0.3s; }
+        .nav-item:hover { background: #34495e; }
+        .nav-item.active { background: #3498db; }
+        .nav-icon { margin-right: 12px; font-size: 20px; }
+        
+        /* 主內容區 */
+        .main-content { flex: 1; margin-left: 250px; padding: 30px; }
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
+        h1 { color: #2c3e50; }
+        
+        /* 數據卡片 */
+        .stats-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 40px; }
+        .stat-card { background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
+        .stat-value { font-size: 2.5em; font-weight: 700; margin-bottom: 10px; }
+        .stat-label { color: #7f8c8d; font-size: 0.95em; }
+        
+        /* 課程卡片 */
+        .courses-section { margin-bottom: 40px; }
+        .courses-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; margin-top: 20px; }
+        .course-card { background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
+        .course-header { padding: 20px; border-bottom: 1px solid #eee; }
+        .course-title { font-size: 1.2em; font-weight: 600; margin-bottom: 8px; }
+        .course-meta { display: flex; justify-content: space-between; color: #666; font-size: 0.9em; }
+        .course-body { padding: 20px; }
+        .attendance-status { display: inline-block; padding: 5px 12px; border-radius: 20px; font-size: 0.85em; font-weight: 500; }
+        .status-upcoming { background: #e3f2fd; color: #1976d2; }
+        .status-ongoing { background: #e8f5e9; color: #388e3c; }
+        .status-completed { background: #f5f5f5; color: #757575; }
+        
+        .price-tag { background: #fff3cd; padding: 8px 15px; border-radius: 6px; font-weight: 600; color: #856404; display: inline-block; margin-top: 15px; }
+        
+        /* 出勤日曆 */
+        .calendar-section { background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); margin-bottom: 40px; }
+        .calendar-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 10px; }
+        .calendar-day { text-align: center; padding: 15px 5px; border-radius: 8px; cursor: pointer; }
+        .calendar-day:hover { background: #f0f7ff; }
+        .day-number { font-size: 1.2em; font-weight: 600; margin-bottom: 5px; }
+        .day-event { font-size: 0.8em; color: #666; }
+        .has-course { background: #e8f5e9; }
+        .absent-day { background: #ffebee; }
+        
+        /* 按鈕 */
+        .btn { padding: 10px 20px; border-radius: 6px; border: none; cursor: pointer; font-weight: 500; transition: opacity 0.3s; }
+        .btn-primary { background: #3498db; color: white; }
+        .btn-secondary { background: #f8f9fa; color: #495057; border: 1px solid #dee2e6; }
+        
+        /* 響應式 */
+        @media (max-width: 768px) {
+            .sidebar { width: 100%; height: auto; position: relative; }
+            .main-content { margin-left: 0; }
+            .dashboard-container { flex-direction: column; }
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard-container">
+        <!-- 側邊欄 -->
+        <div class="sidebar">
+            <div class="user-profile">
+                <div class="user-avatar">👤</div>
+                <div class="user-name" id="user-name">王小明</div>
+                <div class="user-email" id="user-email">user@example.com</div>
+            </div>
+            
+            <div class="nav-menu">
+                <div class="nav-item active">
+                    <span class="nav-icon">📊</span>
+                    <span>我的儀表板</span>
+                </div>
+                <div class="nav-item" onclick="showSection('my-courses')">
+                    <span class="nav-icon">📚</span>
+                    <span>我的課程</span>
+                </div>
+                <div class="nav-item" onclick="showSection('upcoming')">
+                    <span class="nav-icon">📅</span>
+                    <span>即將到來</span>
+                </div>
+                <div class="nav-item" onclick="showSection('attendance')">
+                    <span class="nav-icon">✅</span>
+                    <span>出勤記錄</span>
+                </div>
+                <div class="nav-item" onclick="showSection('payments')">
+                    <span class="nav-icon">💳</span>
+                    <span>付款記錄</span>
+                </div>
+                <div class="nav-item" onclick="showSection('settings')">
+                    <span class="nav-icon">⚙️</span>
+                    <span>帳戶設定</span>
+                </div>
+                <div class="nav-item" style="margin-top: 40px; color: #e74c3c;" onclick="logout()">
+                    <span class="nav-icon">🚪</span>
+                    <span>登出系統</span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 主內容區 -->
+        <div class="main-content">
+            <div class="header">
+                <h1>我的儀表板</h1>
+                <button class="btn btn-primary" onclick="browseCourses()">瀏覽課程</button>
+            </div>
+            
+            <!-- 數據統計 -->
+            <div class="stats-cards">
+                <div class="stat-card">
+                    <div class="stat-value" id="total-courses">5</div>
+                    <div class="stat-label">總報名課程數</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="ongoing-courses">2</div>
+                    <div class="stat-label">進行中課程</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="total-payment">12,800</div>
+                    <div class="stat-label">總消費金額</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="attendance-rate">92%</div>
+                    <div class="stat-label">出勤率</div>
+                </div>
+            </div>
+            
+            <!-- 進行中課程 -->
+            <div class="courses-section">
+                <h2>進行中的課程</h2>
+                <div class="courses-grid" id="ongoing-courses-list">
+                    <!-- 課程卡片會由 JavaScript 產生 -->
+                </div>
+            </div>
+            
+            <!-- 出勤日曆 -->
+            <div class="calendar-section">
+                <div class="calendar-header">
+                    <h3>本月課程日曆</h3>
+                    <div>
+                        <button class="btn btn-secondary" onclick="prevMonth()">← 上個月</button>
+                        <span id="current-month" style="margin: 0 15px; font-weight: 600;">2024年7月</span>
+                        <button class="btn btn-secondary" onclick="nextMonth()">下個月 →</button>
+                    </div>
+                </div>
+                <div class="calendar-grid" id="calendar">
+                    <!-- 日曆會由 JavaScript 產生 -->
+                </div>
+            </div>
+            
+            <!-- 近期報名 -->
+            <div class="courses-section">
+                <h2>近期報名的課程</h2>
+                <div class="courses-grid" id="recent-courses-list">
+                    <!-- 近期課程卡片 -->
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // 使用者資料（實際會從 Line Login 取得）
+        const userData = {
+            name: "王小明",
+            email: "user@example.com",
+            lineId: "U1234567890",
+            joinDate: "2024-01-15"
+        };
+        
+        // 課程資料（實際會從 Google Sheets 取得）
+        const userCourses = [
+            {
+                id: "C001",
+                title: "兒童游泳密集班",
+                type: "swimming",
+                model: "series",
+                batch: "第1梯次",
+                dates: "2024-07-10 至 2024-07-14",
+                days: 5,
+                status: "ongoing",
+                attendance: 4,
+                totalDays: 5,
+                price: 2880,
+                originalPrice: 3600,
+                absentDays: 1
+            },
+            {
+                id: "C002",
+                title: "週三美術課後班",
+                type: "art",
+                model: "semester",
+                semester: "113上學期",
+                dates: "2024-09-04 至 2025-01-15",
+                status: "upcoming",
+                price: 4500
+            },
+            {
+                id: "C003",
+                title: "羽球基礎訓練",
+                type: "badminton",
+                model: "series",
+                batch: "週四晚間班",
+                dates: "2024-06-01 至 2024-07-31",
+                status: "completed",
+                attendance: 8,
+                totalDays: 8,
+                price: 3200
+            }
+        ];
+        
+        // 日曆資料
+        const calendarEvents = [
+            { date: "2024-07-10", title: "游泳課 Day 1", type: "course", status: "attended" },
+            { date: "2024-07-11", title: "游泳課 Day 2", type: "course", status: "attended" },
+            { date: "2024-07-12", title: "游泳課 Day 3", type: "course", status: "absent" },
+            { date: "2024-07-13", title: "游泳課 Day 4", type: "course", status: "attended" },
+            { date: "2024-07-14", title: "游泳課 Day 5", type: "course", status: "attended" },
+            { date: "2024-07-20", title: "美術課", type: "course", status: "upcoming" },
+            { date: "2024-07-27", title: "美術課", type: "course", status: "upcoming" }
+        ];
+        
+        // 初始化
+        function initDashboard() {
+            // 設定使用者資料
+            document.getElementById('user-name').textContent = userData.name;
+            document.getElementById('user-email').textContent = userData.email;
+            
+            // 計算統計數據
+            updateStats();
+            
+            // 渲染進行中課程
+            renderOngoingCourses();
+            
+            // 渲染近期課程
+            renderRecentCourses();
+            
+            // 初始化日曆
+            initCalendar();
+        }
+        
+        // 更新統計數據
+        function updateStats() {
+            const total = userCourses.length;
+            const ongoing = userCourses.filter(c => c.status === 'ongoing').length;
+            const totalPayment = userCourses.reduce((sum, course) => sum + course.price, 0);
+            
+            document.getElementById('total-courses').textContent = total;
+            document.getElementById('ongoing-courses').textContent = ongoing;
+            document.getElementById('total-payment').textContent = totalPayment.toLocaleString();
+            
+            // 計算出勤率
+            const coursesWithAttendance = userCourses.filter(c => c.attendance && c.totalDays);
+            if (coursesWithAttendance.length > 0) {
+                const totalAttendance = coursesWithAttendance.reduce((sum, c) => sum + c.attendance, 0);
+                const totalPossible = coursesWithAttendance.reduce((sum, c) => sum + c.totalDays, 0);
+                const rate = Math.round((totalAttendance / totalPossible) * 100);
+                document.getElementById('attendance-rate').textContent = rate + '%';
+            }
+        }
+        
+        // 渲染進行中課程
+        function renderOngoingCourses() {
+            const container = document.getElementById('ongoing-courses-list');
+            const ongoingCourses = userCourses.filter(c => c.status === 'ongoing' || c.status === 'upcoming');
+            
+            container.innerHTML = ongoingCourses.map(course => `
+                <div class="course-card">
+                    <div class="course-header">
+                        <div class="course-title">${course.title}</div>
+                        <div class="course-meta">
+                            <span>${getModelName(course.model)}</span>
+                            <span class="attendance-status ${getStatusClass(course.status)}">
+                                ${getStatusText(course.status)}
+                            </span>
+                        </div>
+                    </div>
+                    <div class="course-body">
+                        <p><strong>${course.batch || course.semester || ''}</strong></p>
+                        <p>日期：${course.dates}</p>
+                        ${course.attendance ? `<p>出勤：${course.attendance}/${course.totalDays} 天</p>` : ''}
+                        ${course.absentDays ? `<p>請假：${course.absentDays} 天</p>` : ''}
+                        <div class="price-tag">
+                            實付金額：${course.price.toLocaleString()} 元
+                            ${course.originalPrice && course.price < course.originalPrice ? 
+                                `<small style="color: #999; display: block;">原價 ${course.originalPrice.toLocaleString()} 元</small>` : ''}
+                        </div>
+                        <button class="btn btn-primary" style="margin-top: 15px; width: 100%;" 
+                                onclick="viewCourseDetail('${course.id}')">
+                            查看詳情
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+            
+            if (ongoingCourses.length === 0) {
+                container.innerHTML = '<p style="grid-column: 1/-1; text-align: center; color: #999;">目前沒有進行中的課程</p>';
+            }
+        }
+        
+        // 渲染近期課程
+        function renderRecentCourses() {
+            const container = document.getElementById('recent-courses-list');
+            const recentCourses = userCourses.slice(0, 3); // 取前三筆
+            
+            container.innerHTML = recentCourses.map(course => `
+                <div class="course-card">
+                    <div class="course-header">
+                        <div class="course-title">${course.title}</div>
+                        <div class="course-meta">
+                            <span>${getModelName(course.model)}</span>
+                            <span class="attendance-status ${getStatusClass(course.status)}">
+                                ${getStatusText(course.status)}
+                            </span>
+                        </div>
+                    </div>
+                    <div class="course-body">
+                        <p>${course.batch || course.semester || ''}</p>
+                        <p>${course.dates}</p>
+                        <div class="price-tag">${course.price.toLocaleString()} 元</div>
+                    </div>
+                </div>
+            `).join('');
+        }
+        
+        // 日曆功能
+        let currentDate = new Date();
+        
+        function initCalendar() {
+            renderCalendar(currentDate);
+        }
+        
+        function renderCalendar(date) {
+            const container = document.getElementById('calendar');
+            const monthYear = document.getElementById('current-month');
+            
+            // 設定月份標題
+            const year = date.getFullYear();
+            const month = date.getMonth();
+            monthYear.textContent = `${year}年${month + 1}月`;
+            
+            // 清空日曆
+            container.innerHTML = '';
+            
+            // 星期標題
+            const weekdays = ['日', '一', '二', '三', '四', '五', '六'];
+            weekdays.forEach(day => {
+                const dayEl = document.createElement('div');
+                dayEl.textContent = day;
+                dayEl.style.fontWeight = '600';
+                container.appendChild(dayEl);
+            });
+            
+            // 計算月份第一天和最後一天
+            const firstDay = new Date(year, month, 1);
+            const lastDay = new Date(year, month + 1, 0);
+            
+            // 填補前面的空白
+            for (let i = 0; i < firstDay.getDay(); i++) {
+                const emptyEl = document.createElement('div');
+                container.appendChild(emptyEl);
+            }
+            
+            // 產生日期格子
+            for (let day = 1; day <= lastDay.getDate(); day++) {
+                const dayEl = document.createElement('div');
+                dayEl.className = 'calendar-day';
+                
+                const currentDateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+                const event = calendarEvents.find(e => e.date === currentDateStr);
+                
+                if (event) {
+                    dayEl.classList.add('has-course');
+                    if (event.status === 'absent') {
+                        dayEl.classList.add('absent-day');
+                    }
+                }
+                
+                dayEl.innerHTML = `
+                    <div class="day-number">${day}</div>
+                    ${event ? `<div class="day-event">${event.title}</div>` : ''}
+                `;
+                
+                container.appendChild(dayEl);
+            }
+        }
+        
+        function prevMonth() {
+            currentDate.setMonth(currentDate.getMonth() - 1);
+            renderCalendar(currentDate);
+        }
+        
+        function nextMonth() {
+            currentDate.setMonth(currentDate.getMonth() + 1);
+            renderCalendar(currentDate);
+        }
+        
+        // 輔助函數
+        function getModelName(model) {
+            const models = {
+                'single': '單次課',
+                'series': '梯次課',
+                'camp': '營隊課',
+                'semester': '常態課'
+            };
+            return models[model] || model;
+        }
+        
+        function getStatusClass(status) {
+            const classes = {
+                'upcoming': 'status-upcoming',
+                'ongoing': 'status-ongoing',
+                'completed': 'status-completed'
+            };
+            return classes[status] || '';
+        }
+        
+        function getStatusText(status) {
+            const texts = {
+                'upcoming': '即將開始',
+                'ongoing': '進行中',
+                'completed': '已完成'
+            };
+            return texts[status] || status;
+        }
+        
+        // 導航功能
+        function showSection(section) {
+            alert(`切換到 ${section} 區塊`);
+            // 實際應該顯示對應的內容區塊
+        }
+        
+        function viewCourseDetail(courseId) {
+            alert(`查看課程 ${courseId} 的詳細資料`);
+            // 實際應該跳轉到課程詳情頁
+        }
+        
+        function browseCourses() {
+            window.location.href = '../course-catalog.html';
+        }
+        
+        function logout() {
+            if (confirm('確定要登出嗎？')) {
+                // 清除登入狀態
+                alert('已登出');
+                window.location.href = '../index.html';
+            }
+        }
+        
+        // 初始化儀表板
+        initDashboard();
+    </script>
+</body>
+</html>
