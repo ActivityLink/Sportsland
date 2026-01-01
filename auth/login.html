@@ -172,6 +172,16 @@
         // LIFF ID - 你的 LIFF ID
         const LIFF_ID = '2008786875-F7ifLsbN';
         
+        // 基礎路徑設定 - 修正路徑問題
+        function getBasePath() {
+            // 如果是 GitHub Pages
+            if (window.location.hostname.includes('github.io')) {
+                return '/Sportsland/';
+            }
+            // 本地開發或其他環境
+            return '/';
+        }
+        
         let liff = null;
         
         // 檢查是否在 Line App 內
@@ -319,9 +329,9 @@
                 // 顯示成功訊息
                 console.log('登入成功，跳轉到儀表板...');
                 
-                // 跳轉到儀表板
+                // 修正：使用正確的路徑跳轉到儀表板
                 setTimeout(() => {
-                    window.location.href = 'dashboard/index.html';
+                    window.location.href = getBasePath() + 'dashboard/index.html';
                 }, 500);
                 
             } catch (error) {
@@ -331,7 +341,7 @@
             }
         }
         
-        // 體驗模式（開發用）
+        // 體驗模式（開發用）- 修正路徑
         function demoLogin() {
             console.log('進入體驗模式');
             
@@ -348,14 +358,18 @@
             localStorage.setItem('is_logged_in', 'true');
             
             alert('已進入體驗模式！將跳轉到儀表板');
-            window.location.href = 'dashboard/index.html';
+            
+            // 修正：使用正確的路徑跳轉到儀表板
+            window.location.href = getBasePath() + 'dashboard/index.html';
         }
         
         // 檢查是否已登入
         function checkLoginStatus() {
             if (localStorage.getItem('is_logged_in') === 'true') {
                 console.log('檢測到已登入，跳轉到儀表板');
-                window.location.href = 'dashboard/index.html';
+                
+                // 修正：使用正確的路徑跳轉
+                window.location.href = getBasePath() + 'dashboard/index.html';
             }
         }
         
