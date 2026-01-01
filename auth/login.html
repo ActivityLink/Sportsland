@@ -119,6 +119,15 @@
             margin-top: 20px;
             display: none;
         }
+        
+        .warning-message {
+            background: #fff3cd;
+            color: #856404;
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 20px;
+            display: none;
+        }
     </style>
 </head>
 <body>
@@ -141,11 +150,14 @@
             </div>
         </div>
         
+        <!-- 警告訊息 -->
+        <div class="warning-message" id="warning-message"></div>
+        
         <!-- 錯誤訊息 -->
         <div class="error-message" id="error-message"></div>
         
         <!-- 體驗模式按鈕（開發用） -->
-        <button class="demo-login" onclick="demoLogin()">
+        <button class="demo-login" onclick="demoLogin()" id="demo-login-btn">
             體驗模式（免登入）
         </button>
         
@@ -162,10 +174,50 @@
         
         let liff = null;
         
+        // 檢查是否在 Line App 內
+        function isInLineApp() {
+            return /Line/i.test(navigator.userAgent);
+        }
+        
+        // 顯示警告訊息
+        function showWarning(message) {
+            document.getElementById('warning-message').textContent = message;
+            document.getElementById('warning-message').style.display = 'block';
+        }
+        
+        // 顯示錯誤訊息
+        function showError(message) {
+            document.getElementById('error-message').textContent = message;
+            document.getElementById('error-message').style.display = 'block';
+        }
+        
+        // 隱藏所有訊息
+        function hideMessages() {
+            document.getElementById('warning-message').style.display = 'none';
+            document.getElementById('error-message').style.display = 'none';
+        }
+        
         // 初始化 LIFF
         async function initializeLiff() {
             try {
+                // 檢查是否在 Line App 內
+                if (!isInLineApp()) {
+                    showWarning('請在 Line App 中開啟此連結以使用 Line 登入功能');
+                    document.getElementById('line-login-btn').style.display = 'none';
+                    document.getElementById('demo-login-btn').style.display = 'block';
+                    return;
+                }
+                
+                // 檢查 LIFF SDK 是否載入
+                if (typeof liff === 'undefined' || liff === null) {
+                    console.error('LIFF SDK 未載入或載入失敗');
+                    showError('Line 服務載入失敗，請重新整理頁面');
+                    document.getElementById('demo-login-btn').style.display = 'block';
+                    return;
+                }
+                
                 // 初始化 LIFF
+                console.log('開始初始化 LIFF...');
                 liff = await liff.init({ 
                     liffId: LIFF_ID 
                 });
@@ -174,18 +226,35 @@
                 
                 // 如果已經在 Line 內且已登入，自動取得使用者資訊
                 if (liff.isInClient() && liff.isLoggedIn()) {
+                    console.log('已在 Line 內且已登入，自動取得使用者資訊');
                     await getUserProfile();
+                } else {
+                    console.log('等待使用者手動登入');
                 }
                 
             } catch (error) {
                 console.error('LIFF 初始化失敗:', error);
-                showError('無法初始化 Line 服務，請稍後再試');
+                showError('無法初始化 Line 服務，請稍後再試或使用體驗模式');
+                document.getElementById('demo-login-btn').style.display = 'block';
+                
+                // 如果是網路錯誤，提示重新整理
+                if (error.message.includes('Network') || error.message.includes('fetch')) {
+                    showError('網路連線不穩定，請重新整理頁面後再試');
+                }
             }
         }
         
         // Line 登入
         async function liffLogin() {
             try {
+                hideMessages();
+                
+                // 檢查 liff 是否初始化
+                if (!liff) {
+                    showError('Line 服務尚未準備好，請稍後再試');
+                    return;
+                }
+                
                 // 顯示載入中
                 document.getElementById('line-login-btn').style.display = 'none';
                 document.getElementById('loading').style.display = 'block';
@@ -194,6 +263,7 @@
                 if (!liff.isLoggedIn()) {
                     // 登入
                     document.getElementById('progress-bar').style.width = '50%';
+                    console.log('開始 Line 登入...');
                     await liff.login();
                     document.getElementById('progress-bar').style.width = '70%';
                 }
@@ -209,14 +279,25 @@
                 // 恢復按鈕顯示
                 document.getElementById('line-login-btn').style.display = 'flex';
                 document.getElementById('loading').style.display = 'none';
+                document.getElementById('demo-login-btn').style.display = 'block';
+                
+                // 特定錯誤處理
+                if (error.message.includes('not in LINE')) {
+                    showError('請在 Line App 中開啟此頁面');
+                } else if (error.message.includes('network')) {
+                    showError('網路連線不穩定，請檢查網路後重試');
+                }
             }
         }
         
         // 取得使用者資訊
         async function getUserProfile() {
             try {
+                console.log('取得使用者資訊...');
                 const profile = await liff.getProfile();
                 const idToken = liff.getIDToken();
+                
+                console.log('使用者資訊取得成功:', profile.displayName);
                 
                 // 儲存使用者資料
                 const userData = {
@@ -235,6 +316,9 @@
                 
                 document.getElementById('progress-bar').style.width = '100%';
                 
+                // 顯示成功訊息
+                console.log('登入成功，跳轉到儀表板...');
+                
                 // 跳轉到儀表板
                 setTimeout(() => {
                     window.location.href = 'dashboard/index.html';
@@ -242,12 +326,15 @@
                 
             } catch (error) {
                 console.error('取得使用者資訊失敗:', error);
+                showError('無法取得使用者資訊：' + error.message);
                 throw error;
             }
         }
         
         // 體驗模式（開發用）
         function demoLogin() {
+            console.log('進入體驗模式');
+            
             const demoUser = {
                 userId: 'demo_001',
                 displayName: '體驗會員',
@@ -260,30 +347,56 @@
             localStorage.setItem('user_data', JSON.stringify(demoUser));
             localStorage.setItem('is_logged_in', 'true');
             
-            alert('已進入體驗模式！');
+            alert('已進入體驗模式！將跳轉到儀表板');
             window.location.href = 'dashboard/index.html';
-        }
-        
-        // 顯示錯誤訊息
-        function showError(message) {
-            document.getElementById('error-message').textContent = message;
-            document.getElementById('error-message').style.display = 'block';
         }
         
         // 檢查是否已登入
         function checkLoginStatus() {
             if (localStorage.getItem('is_logged_in') === 'true') {
+                console.log('檢測到已登入，跳轉到儀表板');
                 window.location.href = 'dashboard/index.html';
             }
         }
         
         // 頁面載入時初始化
         window.addEventListener('DOMContentLoaded', async () => {
+            console.log('頁面載入完成');
+            
             // 先檢查是否已登入
             checkLoginStatus();
             
-            // 初始化 LIFF
-            await initializeLiff();
+            // 顯示體驗模式按鈕
+            document.getElementById('demo-login-btn').style.display = 'block';
+            
+            // 如果不是在 Line App 內，直接顯示提示
+            if (!isInLineApp()) {
+                showWarning('請在 Line App 中開啟此連結以使用 Line 登入功能');
+                document.getElementById('line-login-btn').style.display = 'none';
+                return;
+            }
+            
+            // 等待 LIFF SDK 載入
+            console.log('等待 LIFF SDK 載入...');
+            
+            // 檢查 LIFF SDK 是否已載入
+            let checkCount = 0;
+            const maxChecks = 10; // 檢查 10 次，每次 0.5 秒
+            
+            const checkLiffLoaded = setInterval(() => {
+                checkCount++;
+                
+                if (typeof liff !== 'undefined') {
+                    console.log('LIFF SDK 已載入，開始初始化');
+                    clearInterval(checkLiffLoaded);
+                    initializeLiff();
+                } else if (checkCount >= maxChecks) {
+                    console.warn('LIFF SDK 載入超時');
+                    clearInterval(checkLiffLoaded);
+                    showError('Line 服務載入超時，請使用體驗模式');
+                    document.getElementById('line-login-btn').style.display = 'none';
+                }
+            }, 500); // 每 0.5 秒檢查一次
         });
     </script>
 </body>
