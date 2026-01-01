@@ -1,0 +1,592 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>竹北運動島 - 活動中心</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #00B900 0%, #00C300 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+        
+        /* 頂部導航欄 */
+        .navbar {
+            background: white;
+            padding: 15px 30px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 24px;
+            font-weight: bold;
+            color: #00B900;
+        }
+        
+        .logo-icon {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, #00B900 0%, #00C300 100%);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+        }
+        
+        .nav-links {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+        }
+        
+        .nav-links a {
+            text-decoration: none;
+            color: #666;
+            font-weight: 500;
+            padding: 8px 15px;
+            border-radius: 5px;
+            transition: all 0.3s;
+        }
+        
+        .nav-links a:hover {
+            color: #00B900;
+            background: #f0f9f0;
+        }
+        
+        .login-btn {
+            background: #06C755;
+            color: white !important;
+            padding: 10px 20px !important;
+        }
+        
+        .login-btn:hover {
+            background: #05A944 !important;
+        }
+        
+        /* 英雄區域 */
+        .hero {
+            text-align: center;
+            padding: 80px 20px;
+            color: white;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        .hero h1 {
+            font-size: 3rem;
+            margin-bottom: 20px;
+            text-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+        
+        .hero p {
+            font-size: 1.2rem;
+            margin-bottom: 40px;
+            opacity: 0.9;
+        }
+        
+        .cta-buttons {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        
+        .btn {
+            padding: 15px 30px;
+            font-size: 16px;
+            font-weight: 600;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-decoration: none;
+            display: inline-block;
+        }
+        
+        .btn-primary {
+            background: white;
+            color: #00B900;
+        }
+        
+        .btn-primary:hover {
+            background: #f8f8f8;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        
+        .btn-secondary {
+            background: rgba(255,255,255,0.2);
+            color: white;
+            border: 2px solid white;
+        }
+        
+        .btn-secondary:hover {
+            background: rgba(255,255,255,0.3);
+            transform: translateY(-2px);
+        }
+        
+        /* 功能區塊 */
+        .features {
+            background: white;
+            padding: 80px 20px;
+            border-radius: 30px 30px 0 0;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .section-title {
+            text-align: center;
+            margin-bottom: 50px;
+        }
+        
+        .section-title h2 {
+            font-size: 2.5rem;
+            color: #333;
+            margin-bottom: 10px;
+        }
+        
+        .section-title p {
+            color: #666;
+            font-size: 1.1rem;
+        }
+        
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            margin-top: 40px;
+        }
+        
+        .feature-card {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 30px;
+            text-align: center;
+            transition: transform 0.3s;
+        }
+        
+        .feature-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        }
+        
+        .feature-icon {
+            width: 70px;
+            height: 70px;
+            background: linear-gradient(135deg, #00B900 0%, #00C300 100%);
+            border-radius: 15px;
+            margin: 0 auto 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 28px;
+        }
+        
+        .feature-card h3 {
+            margin-bottom: 15px;
+            color: #333;
+        }
+        
+        .feature-card p {
+            color: #666;
+            line-height: 1.6;
+        }
+        
+        /* 課程目錄區塊 */
+        .course-preview {
+            padding: 80px 20px;
+            background: #f8f9fa;
+        }
+        
+        .course-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 25px;
+        }
+        
+        .course-card {
+            background: white;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+        }
+        
+        .course-image {
+            height: 180px;
+            background: linear-gradient(135deg, #00B900 0%, #00C300 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 24px;
+            font-weight: bold;
+        }
+        
+        .course-content {
+            padding: 25px;
+        }
+        
+        .course-content h3 {
+            margin-bottom: 10px;
+            color: #333;
+        }
+        
+        .course-content p {
+            color: #666;
+            margin-bottom: 20px;
+            line-height: 1.5;
+        }
+        
+        .course-meta {
+            display: flex;
+            justify-content: space-between;
+            color: #888;
+            font-size: 14px;
+        }
+        
+        .view-more {
+            text-align: center;
+            margin-top: 40px;
+        }
+        
+        /* 頁尾 */
+        footer {
+            background: #333;
+            color: white;
+            padding: 50px 20px;
+            text-align: center;
+        }
+        
+        .footer-links {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+        
+        .footer-links a {
+            color: #aaa;
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+        
+        .footer-links a:hover {
+            color: white;
+        }
+        
+        .copyright {
+            color: #777;
+            font-size: 14px;
+            margin-top: 20px;
+        }
+        
+        /* 使用者狀態 */
+        .user-status {
+            display: none;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .user-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: #f0f0f0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+        
+        .user-name {
+            font-weight: 500;
+        }
+        
+        .logout-btn {
+            background: #f8f9fa;
+            color: #666;
+            border: 1px solid #dee2e6;
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-size: 14px;
+            cursor: pointer;
+        }
+        
+        /* 響應式設計 */
+        @media (max-width: 768px) {
+            .navbar {
+                flex-direction: column;
+                gap: 15px;
+                padding: 15px;
+            }
+            
+            .nav-links {
+                width: 100%;
+                justify-content: center;
+                flex-wrap: wrap;
+            }
+            
+            .hero h1 {
+                font-size: 2.2rem;
+            }
+            
+            .cta-buttons {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .btn {
+                width: 100%;
+                max-width: 300px;
+            }
+            
+            .feature-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 導航欄 -->
+    <nav class="navbar">
+        <div class="logo">
+            <div class="logo-icon">運</div>
+            <span>竹北運動島</span>
+        </div>
+        <div class="nav-links">
+            <a href="#features">特色服務</a>
+            <a href="#courses">課程推薦</a>
+            <a href="#about">關於我們</a>
+            
+            <!-- 登入狀態顯示 -->
+            <div class="user-status" id="user-status">
+                <div class="user-avatar" id="user-avatar">
+                    <span id="avatar-text">U</span>
+                </div>
+                <span class="user-name" id="user-name">使用者</span>
+                <button class="logout-btn" onclick="logout()">登出</button>
+            </div>
+            
+            <!-- 登入按鈕（未登入時顯示） -->
+            <a href="auth/login.html" class="login-btn" id="login-link">會員登入</a>
+        </div>
+    </nav>
+    
+    <!-- 主要內容 -->
+    <main>
+        <!-- 英雄區域 -->
+        <section class="hero">
+            <h1>開啟你的運動生活</h1>
+            <p>竹北最完整的運動課程平台，提供多元課程選擇、專業教練指導，打造專屬你的健康生活方案。</p>
+            <div class="cta-buttons">
+                <a href="#courses" class="btn btn-primary">探索課程</a>
+                <a href="auth/login.html" class="btn btn-secondary">立即加入</a>
+            </div>
+        </section>
+        
+        <!-- 特色服務 -->
+        <section class="features" id="features">
+            <div class="container">
+                <div class="section-title">
+                    <h2>為什麼選擇運動島？</h2>
+                    <p>我們提供最適合你的運動體驗</p>
+                </div>
+                <div class="feature-grid">
+                    <div class="feature-card">
+                        <div class="feature-icon">🏋️</div>
+                        <h3>多元課程</h3>
+                        <p>從瑜珈、重訓到有氧舞蹈，超過 50 種課程選擇，滿足各種運動需求。</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">👨‍🏫</div>
+                        <h3>專業教練</h3>
+                        <p>國家認證專業教練團隊，提供個人化指導，確保運動安全與效果。</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">📱</div>
+                        <h3>智慧預約</h3>
+                        <p>線上即時預約系統，手機輕鬆管理課程，節省等待時間。</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">🏆</div>
+                        <h3>成就系統</h3>
+                        <p>記錄運動軌跡，解鎖成就徽章，讓運動更有成就感。</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- 課程預覽 -->
+        <section class="course-preview" id="courses">
+            <div class="container">
+                <div class="section-title">
+                    <h2>熱門課程推薦</h2>
+                    <p>探索最受歡迎的運動課程</p>
+                </div>
+                <div class="course-grid">
+                    <div class="course-card">
+                        <div class="course-image">晨間瑜珈</div>
+                        <div class="course-content">
+                            <h3>清晨活力瑜珈</h3>
+                            <p>適合所有程度的晨間瑜珈課程，幫助你開啟充滿活力的一天。</p>
+                            <div class="course-meta">
+                                <span>⏰ 每週一、三、五 7:00-8:00</span>
+                                <span>👤 李教練</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="course-card">
+                        <div class="course-image">高效燃脂</div>
+                        <div class="course-content">
+                            <h3>HIIT 高效間歇訓練</h3>
+                            <p>短時間高強度訓練，最大化燃脂效果，適合時間有限的上班族。</p>
+                            <div class="course-meta">
+                                <span>⏰ 每週二、四 19:00-20:00</span>
+                                <span>👤 王教練</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="course-card">
+                        <div class="course-image">核心訓練</div>
+                        <div class="course-content">
+                            <h3>核心肌群強化</h3>
+                            <p>專注核心肌群訓練，改善姿勢，減少腰背疼痛。</p>
+                            <div class="course-meta">
+                                <span>⏰ 每週三、六 10:00-11:00</span>
+                                <span>👤 張教練</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="view-more">
+                    <a href="course-catalog.html" class="btn btn-primary">查看更多課程</a>
+                </div>
+            </div>
+        </section>
+    </main>
+    
+    <!-- 頁尾 -->
+    <footer id="about">
+        <div class="container">
+            <div class="footer-links">
+                <a href="#features">服務特色</a>
+                <a href="#courses">課程介紹</a>
+                <a href="course-catalog.html">課程目錄</a>
+                <a href="auth/login.html">會員登入</a>
+                <a href="#">隱私權政策</a>
+                <a href="#">聯絡我們</a>
+            </div>
+            <p>竹北運動島活動中心 &copy; 2024 版權所有</p>
+            <p class="copyright">地址：新竹縣竹北市光明六路東一段 | 電話：03-668-7890</p>
+        </div>
+    </footer>
+    
+    <script>
+        // 檢查登入狀態
+        function checkLoginStatus() {
+            const isLoggedIn = localStorage.getItem('is_logged_in');
+            const userData = localStorage.getItem('user_data');
+            
+            if (isLoggedIn === 'true' && userData) {
+                try {
+                    const user = JSON.parse(userData);
+                    
+                    // 顯示使用者狀態
+                    document.getElementById('user-status').style.display = 'flex';
+                    document.getElementById('login-link').style.display = 'none';
+                    
+                    // 顯示使用者名稱
+                    document.getElementById('user-name').textContent = 
+                        user.displayName || '會員';
+                    
+                    // 設定頭像
+                    const avatarText = document.getElementById('avatar-text');
+                    if (user.displayName) {
+                        avatarText.textContent = user.displayName.charAt(0);
+                    }
+                    
+                    if (user.pictureUrl) {
+                        document.getElementById('user-avatar').style.backgroundImage = 
+                            `url(${user.pictureUrl})`;
+                        avatarText.style.display = 'none';
+                    }
+                    
+                } catch (error) {
+                    console.error('讀取使用者資料失敗:', error);
+                    showLoginButton();
+                }
+            } else {
+                showLoginButton();
+            }
+        }
+        
+        // 顯示登入按鈕
+        function showLoginButton() {
+            document.getElementById('user-status').style.display = 'none';
+            document.getElementById('login-link').style.display = 'block';
+        }
+        
+        // 登出功能
+        function logout() {
+            if (confirm('確定要登出嗎？')) {
+                localStorage.removeItem('user_data');
+                localStorage.removeItem('is_logged_in');
+                alert('已成功登出！');
+                location.reload();
+            }
+        }
+        
+        // 頁面載入時檢查登入狀態
+        window.addEventListener('DOMContentLoaded', checkLoginStatus);
+        
+        // 平滑滾動
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function(e) {
+                const href = this.getAttribute('href');
+                if (href === '#' || href.startsWith('#') && document.querySelector(href)) {
+                    e.preventDefault();
+                    const target = document.querySelector(href);
+                    if (target) {
+                        target.scrollIntoView({
+                            behavior: 'smooth',
+                            block: 'start'
+                        });
+                    }
+                }
+            });
+        });
+        
+        // 顯示歡迎訊息（如果有登入）
+        function showWelcomeMessage() {
+            const userData = localStorage.getItem('user_data');
+            if (userData) {
+                try {
+                    const user = JSON.parse(userData);
+                    console.log(`歡迎回來，${user.displayName || '會員'}！`);
+                } catch (error) {
+                    console.error('解析使用者資料失敗:', error);
+                }
+            }
+        }
+        
+        // 頁面完全載入後執行
+        window.addEventListener('load', showWelcomeMessage);
+    </script>
+</body>
+</html>
