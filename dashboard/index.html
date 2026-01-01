@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>竹北運動島 - 會員儀表板</title>
+    <title>竹北運動島 - Line OA 管理後台</title>
     <!-- Line 官方設計資源 -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -14,6 +14,9 @@
             --line-dark-gray: #333333;
             --line-light-gray: #666666;
             --line-white: #FFFFFF;
+            --line-sidebar: #1D222D;
+            --line-sidebar-hover: #2A3142;
+            --line-border: #E9E9E9;
         }
         
         * {
@@ -27,67 +30,200 @@
             background-color: var(--line-gray);
             color: var(--line-dark-gray);
             line-height: 1.6;
+            display: flex;
+            min-height: 100vh;
+            overflow-x: hidden;
         }
         
-        /* Line 風格頂部導航 */
-        .line-header {
-            background-color: var(--line-white);
-            padding: 15px 20px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-            position: sticky;
+        /* 側邊欄 - Line OA 風格 */
+        .sidebar {
+            width: 240px;
+            background-color: var(--line-sidebar);
+            color: var(--line-white);
+            position: fixed;
             top: 0;
-            z-index: 1000;
+            left: 0;
+            bottom: 0;
+            z-index: 100;
+            overflow-y: auto;
+            transition: all 0.3s ease;
+            box-shadow: 2px 0 10px rgba(0,0,0,0.1);
         }
         
-        .header-container {
-            max-width: 1200px;
-            margin: 0 auto;
+        .sidebar-header {
+            padding: 20px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
             display: flex;
-            justify-content: space-between;
             align-items: center;
+            gap: 12px;
         }
         
-        .line-logo {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        
-        .line-logo-icon {
-            width: 40px;
-            height: 40px;
+        .sidebar-logo {
+            width: 36px;
+            height: 36px;
             background: linear-gradient(135deg, var(--line-green) 0%, var(--line-dark-green) 100%);
-            border-radius: 10px;
+            border-radius: 8px;
             display: flex;
             align-items: center;
             justify-content: center;
             color: var(--line-white);
             font-weight: bold;
-            font-size: 18px;
+            font-size: 16px;
         }
         
-        .line-logo-text {
+        .sidebar-title {
+            font-size: 16px;
+            font-weight: bold;
+        }
+        
+        .sidebar-subtitle {
+            font-size: 12px;
+            opacity: 0.7;
+        }
+        
+        /* 側邊欄選單 */
+        .sidebar-menu {
+            padding: 20px 0;
+        }
+        
+        .menu-section {
+            margin-bottom: 25px;
+        }
+        
+        .section-title {
+            font-size: 12px;
+            text-transform: uppercase;
+            color: rgba(255,255,255,0.5);
+            padding: 0 20px 10px;
+            letter-spacing: 1px;
+        }
+        
+        .menu-list {
+            list-style: none;
+        }
+        
+        .menu-item {
+            padding: 0;
+        }
+        
+        .menu-link {
+            display: flex;
+            align-items: center;
+            padding: 12px 20px;
+            color: rgba(255,255,255,0.8);
+            text-decoration: none;
+            transition: all 0.3s;
+            border-left: 3px solid transparent;
+        }
+        
+        .menu-link:hover {
+            background-color: var(--line-sidebar-hover);
+            color: var(--line-white);
+        }
+        
+        .menu-link.active {
+            background-color: var(--line-sidebar-hover);
+            color: var(--line-white);
+            border-left: 3px solid var(--line-green);
+        }
+        
+        .menu-icon {
+            width: 20px;
+            text-align: center;
+            margin-right: 12px;
+            font-size: 14px;
+        }
+        
+        .menu-text {
+            font-size: 14px;
+            flex: 1;
+        }
+        
+        .menu-badge {
+            background-color: var(--line-green);
+            color: var(--line-white);
+            font-size: 11px;
+            padding: 2px 6px;
+            border-radius: 10px;
+            min-width: 20px;
+            text-align: center;
+        }
+        
+        /* 主要內容區 */
+        .main-content {
+            flex: 1;
+            margin-left: 240px;
+            transition: margin-left 0.3s;
+        }
+        
+        /* 頂部導航欄 */
+        .topbar {
+            background-color: var(--line-white);
+            padding: 0 20px;
+            height: 64px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid var(--line-border);
+            position: sticky;
+            top: 0;
+            z-index: 90;
+        }
+        
+        .page-title {
             font-size: 18px;
             font-weight: bold;
-            color: var(--line-dark-gray);
+            display: flex;
+            align-items: center;
+            gap: 10px;
         }
         
-        .line-logo-subtext {
-            font-size: 12px;
-            color: var(--line-light-gray);
-            margin-top: 2px;
+        .page-title i {
+            color: var(--line-green);
         }
         
-        /* 會員資訊區塊 */
-        .user-info {
+        .topbar-actions {
             display: flex;
             align-items: center;
             gap: 15px;
         }
         
+        .topbar-action {
+            position: relative;
+            cursor: pointer;
+            color: var(--line-light-gray);
+            transition: color 0.3s;
+        }
+        
+        .topbar-action:hover {
+            color: var(--line-green);
+        }
+        
+        .notification-badge {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background-color: var(--line-green);
+            color: var(--line-white);
+            font-size: 10px;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .user-profile {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+        }
+        
         .user-avatar {
-            width: 45px;
-            height: 45px;
+            width: 36px;
+            height: 36px;
             border-radius: 50%;
             background: linear-gradient(135deg, var(--line-green) 0%, var(--line-dark-green) 100%);
             display: flex;
@@ -95,127 +231,83 @@
             justify-content: center;
             color: var(--line-white);
             font-weight: bold;
-            font-size: 18px;
-        }
-        
-        .user-details {
-            display: flex;
-            flex-direction: column;
         }
         
         .user-name {
-            font-weight: bold;
-            font-size: 16px;
+            font-size: 14px;
+            font-weight: 500;
         }
         
-        .user-level {
-            font-size: 12px;
-            color: var(--line-green);
-            background: rgba(6, 199, 85, 0.1);
-            padding: 2px 8px;
-            border-radius: 10px;
-            margin-top: 3px;
-            display: inline-block;
-            width: fit-content;
+        /* 內容區 */
+        .content-area {
+            padding: 20px;
+            min-height: calc(100vh - 64px);
         }
         
-        /* Line 登入按鈕 - 官方樣式 */
-        .line-login-button {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-            background-color: var(--line-white);
-            color: var(--line-dark-gray);
-            border: none;
-            border-radius: 12px;
-            padding: 12px 25px;
-            font-size: 16px;
-            font-weight: bold;
-            cursor: pointer;
-            text-decoration: none;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-            transition: all 0.3s ease;
-        }
-        
-        .line-login-button:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 6px 18px rgba(0,0,0,0.15);
-        }
-        
-        .line-login-button .line-icon {
-            color: var(--line-green);
-            font-size: 20px;
-        }
-        
-        .line-login-button.primary {
-            background-color: var(--line-white);
-            color: var(--line-dark-gray);
-        }
-        
-        .line-login-button.secondary {
-            background-color: rgba(255,255,255,0.15);
-            color: var(--line-white);
-            border: 2px solid var(--line-white);
-        }
-        
-        /* 儀表板主內容 */
-        .dashboard-container {
-            max-width: 1200px;
-            margin: 30px auto;
-            padding: 0 20px;
-        }
-        
-        .welcome-section {
+        /* 歡迎區塊 */
+        .welcome-card {
             background: linear-gradient(135deg, var(--line-green) 0%, var(--line-dark-green) 100%);
             color: var(--line-white);
-            padding: 40px;
-            border-radius: 20px;
+            padding: 30px;
+            border-radius: 12px;
             margin-bottom: 30px;
             box-shadow: 0 5px 20px rgba(6, 199, 85, 0.2);
         }
         
         .welcome-title {
-            font-size: 2rem;
+            font-size: 1.8rem;
             margin-bottom: 10px;
         }
         
         .welcome-subtitle {
             opacity: 0.9;
-            font-size: 1.1rem;
+            font-size: 1rem;
         }
         
-        /* 統計卡片 */
+        /* 數據卡片 */
         .stats-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 25px;
-            margin-bottom: 40px;
+            gap: 20px;
+            margin-bottom: 30px;
         }
         
         .stat-card {
             background: var(--line-white);
-            border-radius: 15px;
-            padding: 25px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 3px 15px rgba(0,0,0,0.05);
+            border: 1px solid var(--line-border);
             transition: transform 0.3s;
         }
         
         .stat-card:hover {
             transform: translateY(-5px);
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+        }
+        
+        .stat-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 15px;
+        }
+        
+        .stat-title {
+            font-size: 14px;
+            color: var(--line-light-gray);
+            font-weight: 500;
         }
         
         .stat-icon {
-            width: 50px;
-            height: 50px;
-            background: linear-gradient(135deg, var(--line-green) 0%, var(--line-dark-green) 100%);
-            border-radius: 12px;
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
             display: flex;
             align-items: center;
             justify-content: center;
             color: var(--line-white);
-            font-size: 20px;
-            margin-bottom: 20px;
+            font-size: 18px;
         }
         
         .stat-value {
@@ -225,325 +317,210 @@
             color: var(--line-dark-gray);
         }
         
-        .stat-label {
-            color: var(--line-light-gray);
-            font-size: 0.95rem;
-        }
-        
         .stat-trend {
-            display: inline-block;
-            margin-top: 10px;
-            padding: 3px 10px;
-            border-radius: 15px;
-            font-size: 0.85rem;
-            font-weight: bold;
+            font-size: 13px;
+            font-weight: 500;
         }
         
         .trend-up {
-            background: rgba(6, 199, 85, 0.1);
             color: var(--line-green);
         }
         
         .trend-down {
-            background: rgba(255, 59, 48, 0.1);
             color: #FF3B30;
         }
         
-        /* 近期課程 */
-        .section-title {
-            font-size: 1.5rem;
-            margin-bottom: 25px;
-            color: var(--line-dark-gray);
+        /* 功能區塊 */
+        .section-header {
             display: flex;
+            justify-content: space-between;
             align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid var(--line-border);
+        }
+        
+        .section-title-main {
+            font-size: 18px;
+            font-weight: bold;
+            color: var(--line-dark-gray);
+        }
+        
+        .section-actions {
+            display: flex;
             gap: 10px;
         }
         
-        .section-title i {
-            color: var(--line-green);
-        }
-        
-        .courses-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 25px;
-            margin-bottom: 40px;
-        }
-        
-        .course-card {
-            background: var(--line-white);
-            border-radius: 15px;
-            overflow: hidden;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
-            transition: transform 0.3s;
-        }
-        
-        .course-card:hover {
-            transform: translateY(-5px);
-        }
-        
-        .course-header {
-            background: linear-gradient(135deg, var(--line-green) 0%, var(--line-dark-green) 100%);
-            color: var(--line-white);
-            padding: 20px;
-        }
-        
-        .course-title {
-            font-size: 1.2rem;
-            font-weight: bold;
-            margin-bottom: 5px;
-        }
-        
-        .course-instructor {
-            opacity: 0.9;
-            font-size: 0.9rem;
-        }
-        
-        .course-content {
-            padding: 25px;
-        }
-        
-        .course-time {
-            display: flex;
+        .btn {
+            padding: 8px 16px;
+            border-radius: 6px;
+            border: none;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: inline-flex;
             align-items: center;
-            gap: 8px;
-            margin-bottom: 15px;
-            color: var(--line-light-gray);
+            gap: 6px;
         }
         
-        .course-time i {
-            color: var(--line-green);
+        .btn-primary {
+            background-color: var(--line-green);
+            color: var(--line-white);
         }
         
-        .course-status {
+        .btn-primary:hover {
+            background-color: var(--line-dark-green);
+        }
+        
+        .btn-secondary {
+            background-color: var(--line-white);
+            color: var(--line-dark-gray);
+            border: 1px solid var(--line-border);
+        }
+        
+        .btn-secondary:hover {
+            background-color: var(--line-gray);
+        }
+        
+        /* 表格樣式 */
+        .table-container {
+            background: var(--line-white);
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 3px 15px rgba(0,0,0,0.05);
+            border: 1px solid var(--line-border);
+            margin-bottom: 30px;
+        }
+        
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        .table thead {
+            background-color: var(--line-gray);
+            border-bottom: 1px solid var(--line-border);
+        }
+        
+        .table th {
+            padding: 15px 20px;
+            text-align: left;
+            font-weight: 600;
+            color: var(--line-dark-gray);
+            font-size: 14px;
+        }
+        
+        .table td {
+            padding: 15px 20px;
+            border-bottom: 1px solid var(--line-border);
+            font-size: 14px;
+        }
+        
+        .table tbody tr:hover {
+            background-color: rgba(6, 199, 85, 0.05);
+        }
+        
+        .status-badge {
             display: inline-block;
-            padding: 5px 15px;
-            border-radius: 15px;
-            font-size: 0.85rem;
-            font-weight: bold;
-            margin-bottom: 15px;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 500;
         }
         
-        .status-confirmed {
-            background: rgba(6, 199, 85, 0.1);
+        .status-active {
+            background-color: rgba(6, 199, 85, 0.1);
             color: var(--line-green);
         }
         
         .status-pending {
-            background: rgba(255, 149, 0, 0.1);
+            background-color: rgba(255, 149, 0, 0.1);
             color: #FF9500;
         }
         
-        .status-cancelled {
-            background: rgba(255, 59, 48, 0.1);
+        .status-inactive {
+            background-color: rgba(255, 59, 48, 0.1);
             color: #FF3B30;
         }
         
-        .course-action {
-            display: inline-block;
-            background: var(--line-green);
-            color: var(--line-white);
-            padding: 8px 20px;
-            border-radius: 8px;
-            text-decoration: none;
-            font-size: 0.9rem;
-            font-weight: bold;
-            transition: background 0.3s;
-        }
-        
-        .course-action:hover {
-            background: var(--line-dark-green);
-        }
-        
-        /* 快速操作按鈕 */
-        .quick-actions {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-            gap: 20px;
-            margin-bottom: 40px;
-        }
-        
-        .action-button {
+        /* 圖表區塊 */
+        .chart-container {
             background: var(--line-white);
-            border-radius: 15px;
-            padding: 25px 20px;
-            text-align: center;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
-            transition: all 0.3s;
-            cursor: pointer;
-            text-decoration: none;
-            color: var(--line-dark-gray);
-            display: block;
-        }
-        
-        .action-button:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
-        }
-        
-        .action-icon {
-            width: 50px;
-            height: 50px;
-            background: linear-gradient(135deg, var(--line-green) 0%, var(--line-dark-green) 100%);
             border-radius: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: var(--line-white);
-            font-size: 20px;
-            margin: 0 auto 15px;
+            padding: 20px;
+            box-shadow: 0 3px 15px rgba(0,0,0,0.05);
+            border: 1px solid var(--line-border);
+            margin-bottom: 30px;
         }
         
-        .action-label {
-            font-weight: bold;
-            font-size: 1rem;
-        }
-        
-        /* 運動記錄 */
-        .records-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 25px;
-            margin-bottom: 40px;
-        }
-        
-        .record-card {
-            background: var(--line-white);
-            border-radius: 15px;
-            padding: 25px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
-        }
-        
-        .record-header {
+        .chart-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
             margin-bottom: 20px;
         }
         
-        .record-title {
-            font-weight: bold;
-            font-size: 1.1rem;
-        }
-        
-        .record-value {
-            font-size: 1.8rem;
-            font-weight: bold;
-            color: var(--line-green);
-        }
-        
-        .record-unit {
-            font-size: 0.9rem;
-            color: var(--line-light-gray);
-            margin-left: 5px;
-        }
-        
-        .progress-bar {
-            height: 8px;
+        .chart-placeholder {
+            height: 300px;
             background: var(--line-gray);
-            border-radius: 4px;
-            margin-top: 15px;
-            overflow: hidden;
-        }
-        
-        .progress-fill {
-            height: 100%;
-            background: linear-gradient(90deg, var(--line-green) 0%, var(--line-dark-green) 100%);
-            border-radius: 4px;
-        }
-        
-        /* 底部 */
-        .line-footer {
-            background: var(--line-dark-gray);
-            color: var(--line-white);
-            padding: 50px 20px;
-            text-align: center;
-            margin-top: 50px;
-        }
-        
-        .footer-container {
-            max-width: 1200px;
-            margin: 0 auto;
-        }
-        
-        .footer-logo {
+            border-radius: 8px;
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 10px;
-            margin-bottom: 25px;
-        }
-        
-        .footer-links {
-            display: flex;
-            justify-content: center;
-            gap: 25px;
-            margin-bottom: 30px;
-            flex-wrap: wrap;
-        }
-        
-        .footer-links a {
-            color: rgba(255,255,255,0.7);
-            text-decoration: none;
-            transition: color 0.3s;
-        }
-        
-        .footer-links a:hover {
-            color: var(--line-white);
-        }
-        
-        .footer-copyright {
-            color: rgba(255,255,255,0.5);
-            font-size: 0.9rem;
-            margin-top: 20px;
+            color: var(--line-light-gray);
+            font-size: 14px;
         }
         
         /* 響應式設計 */
+        @media (max-width: 1024px) {
+            .sidebar {
+                transform: translateX(-100%);
+                width: 280px;
+            }
+            
+            .sidebar.active {
+                transform: translateX(0);
+            }
+            
+            .main-content {
+                margin-left: 0;
+            }
+            
+            .sidebar-toggle {
+                display: block !important;
+            }
+        }
+        
         @media (max-width: 768px) {
-            .header-container {
-                flex-direction: column;
-                gap: 15px;
-            }
-            
-            .user-info {
-                flex-direction: column;
-                text-align: center;
-            }
-            
-            .welcome-title {
-                font-size: 1.5rem;
-            }
-            
-            .welcome-subtitle {
-                font-size: 1rem;
-            }
-            
             .stats-grid {
                 grid-template-columns: 1fr;
             }
             
-            .courses-grid {
-                grid-template-columns: 1fr;
+            .section-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 15px;
             }
             
-            .quick-actions {
-                grid-template-columns: repeat(2, 1fr);
+            .table-container {
+                overflow-x: auto;
             }
             
-            .records-grid {
-                grid-template-columns: 1fr;
+            .table {
+                min-width: 800px;
             }
         }
         
-        @media (max-width: 480px) {
-            .quick-actions {
-                grid-template-columns: 1fr;
-            }
-            
-            .footer-links {
-                flex-direction: column;
-                gap: 15px;
-            }
+        /* 漢堡選單按鈕 */
+        .sidebar-toggle {
+            display: none;
+            background: none;
+            border: none;
+            font-size: 20px;
+            color: var(--line-dark-gray);
+            cursor: pointer;
+            padding: 10px;
         }
         
         /* 動畫效果 */
@@ -555,383 +532,737 @@
         .fade-in {
             animation: fadeIn 0.6s ease-out;
         }
+        
+        /* 空狀態 */
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: var(--line-light-gray);
+        }
+        
+        .empty-icon {
+            font-size: 48px;
+            margin-bottom: 20px;
+            color: var(--line-gray);
+        }
+        
+        /* 分頁 */
+        .pagination {
+            display: flex;
+            justify-content: center;
+            gap: 5px;
+            margin-top: 30px;
+        }
+        
+        .pagination-btn {
+            width: 36px;
+            height: 36px;
+            border-radius: 6px;
+            border: 1px solid var(--line-border);
+            background: var(--line-white);
+            color: var(--line-dark-gray);
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .pagination-btn:hover {
+            background: var(--line-gray);
+        }
+        
+        .pagination-btn.active {
+            background: var(--line-green);
+            color: var(--line-white);
+            border-color: var(--line-green);
+        }
     </style>
 </head>
 <body>
-    <!-- Line 風格頂部導航 -->
-    <header class="line-header">
-        <div class="header-container">
-            <div class="line-logo">
-                <div class="line-logo-icon">運</div>
-                <div>
-                    <div class="line-logo-text">竹北運動島</div>
-                    <div class="line-logo-subtext">會員專屬儀表板</div>
+    <!-- 側邊欄 -->
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <div class="sidebar-logo">運</div>
+            <div>
+                <div class="sidebar-title">竹北運動島</div>
+                <div class="sidebar-subtitle">Line OA 管理後台</div>
+            </div>
+        </div>
+        
+        <div class="sidebar-menu">
+            <!-- 主要功能區 -->
+            <div class="menu-section">
+                <div class="section-title">主要功能</div>
+                <ul class="menu-list">
+                    <li class="menu-item">
+                        <a href="#" class="menu-link active" data-content="dashboard">
+                            <i class="fas fa-home menu-icon"></i>
+                            <span class="menu-text">儀表板總覽</span>
+                        </a>
+                    </li>
+                    <li class="menu-item">
+                        <a href="#" class="menu-link" data-content="members">
+                            <i class="fas fa-users menu-icon"></i>
+                            <span class="menu-text">會員管理</span>
+                            <span class="menu-badge">24</span>
+                        </a>
+                    </li>
+                    <li class="menu-item">
+                        <a href="#" class="menu-link" data-content="courses">
+                            <i class="fas fa-calendar-alt menu-icon"></i>
+                            <span class="menu-text">課程管理</span>
+                            <span class="menu-badge">8</span>
+                        </a>
+                    </li>
+                    <li class="menu-item">
+                        <a href="#" class="menu-link" data-content="messages">
+                            <i class="fas fa-comment-dots menu-icon"></i>
+                            <span class="menu-text">訊息推播</span>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+            
+            <!-- 營運管理 -->
+            <div class="menu-section">
+                <div class="section-title">營運管理</div>
+                <ul class="menu-list">
+                    <li class="menu-item">
+                        <a href="#" class="menu-link" data-content="bookings">
+                            <i class="fas fa-book menu-icon"></i>
+                            <span class="menu-text">預約管理</span>
+                            <span class="menu-badge">12</span>
+                        </a>
+                    </li>
+                    <li class="menu-item">
+                        <a href="#" class="menu-link" data-content="analytics">
+                            <i class="fas fa-chart-bar menu-icon"></i>
+                            <span class="menu-text">數據分析</span>
+                        </a>
+                    </li>
+                    <li class="menu-item">
+                        <a href="#" class="menu-link" data-content="reports">
+                            <i class="fas fa-file-alt menu-icon"></i>
+                            <span class="menu-text">報表產生</span>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+            
+            <!-- 系統設定 -->
+            <div class="menu-section">
+                <div class="section-title">系統設定</div>
+                <ul class="menu-list">
+                    <li class="menu-item">
+                        <a href="#" class="menu-link" data-content="settings">
+                            <i class="fas fa-cog menu-icon"></i>
+                            <span class="menu-text">帳號設定</span>
+                        </a>
+                    </li>
+                    <li class="menu-item">
+                        <a href="#" class="menu-link" data-content="templates">
+                            <i class="fas fa-palette menu-icon"></i>
+                            <span class="menu-text">訊息範本</span>
+                        </a>
+                    </li>
+                    <li class="menu-item">
+                        <a href="#" class="menu-link" data-content="qrcode">
+                            <i class="fas fa-qrcode menu-icon"></i>
+                            <span class="menu-text">QR Code管理</span>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+            
+            <!-- 底部連結 -->
+            <div class="menu-section" style="margin-top: 40px;">
+                <ul class="menu-list">
+                    <li class="menu-item">
+                        <a href="../index.html" class="menu-link">
+                            <i class="fas fa-external-link-alt menu-icon"></i>
+                            <span class="menu-text">返回官網</span>
+                        </a>
+                    </li>
+                    <li class="menu-item">
+                        <a href="../auth/login.html" class="menu-link">
+                            <i class="fas fa-sign-out-alt menu-icon"></i>
+                            <span class="menu-text">登出系統</span>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </aside>
+    
+    <!-- 主要內容區 -->
+    <div class="main-content" id="mainContent">
+        <!-- 頂部導航欄 -->
+        <header class="topbar">
+            <button class="sidebar-toggle" id="sidebarToggle">
+                <i class="fas fa-bars"></i>
+            </button>
+            
+            <div class="page-title">
+                <i class="fas fa-home"></i>
+                <span id="pageTitle">儀表板總覽</span>
+            </div>
+            
+            <div class="topbar-actions">
+                <div class="topbar-action" id="notificationBtn">
+                    <i class="fas fa-bell"></i>
+                    <span class="notification-badge">3</span>
+                </div>
+                
+                <div class="topbar-action">
+                    <i class="fas fa-question-circle"></i>
+                </div>
+                
+                <div class="user-profile" id="userProfile">
+                    <div class="user-avatar">管</div>
+                    <div class="user-name">管理員</div>
+                    <i class="fas fa-chevron-down" style="font-size: 12px;"></i>
+                </div>
+            </div>
+        </header>
+        
+        <!-- 內容區 -->
+        <div class="content-area">
+            <!-- 預設內容：儀表板 -->
+            <div id="contentDashboard" class="content-section active">
+                <!-- 歡迎區塊 -->
+                <div class="welcome-card fade-in">
+                    <h2 class="welcome-title">歡迎使用竹北運動島管理後台</h2>
+                    <p class="welcome-subtitle">今天是 2024年4月15日，您有 3 則新通知和 12 個待處理預約</p>
+                </div>
+                
+                <!-- 數據統計 -->
+                <div class="stats-grid">
+                    <div class="stat-card fade-in">
+                        <div class="stat-header">
+                            <div class="stat-title">今日活躍會員</div>
+                            <div class="stat-icon" style="background: linear-gradient(135deg, #06C755 0%, #05A944 100%);">
+                                <i class="fas fa-users"></i>
+                            </div>
+                        </div>
+                        <div class="stat-value">156</div>
+                        <div class="stat-trend trend-up">+12% 較昨日</div>
+                    </div>
+                    
+                    <div class="stat-card fade-in">
+                        <div class="stat-header">
+                            <div class="stat-title">今日課程預約</div>
+                            <div class="stat-icon" style="background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);">
+                                <i class="fas fa-calendar-check"></i>
+                            </div>
+                        </div>
+                        <div class="stat-value">42</div>
+                        <div class="stat-trend trend-up">+8% 較昨日</div>
+                    </div>
+                    
+                    <div class="stat-card fade-in">
+                        <div class="stat-header">
+                            <div class="stat-title">訊息回覆率</div>
+                            <div class="stat-icon" style="background: linear-gradient(135deg, #9b59b6 0%, #8e44ad 100%);">
+                                <i class="fas fa-comment-dots"></i>
+                            </div>
+                        </div>
+                        <div class="stat-value">89%</div>
+                        <div class="stat-trend trend-down">-3% 較上週</div>
+                    </div>
+                    
+                    <div class="stat-card fade-in">
+                        <div class="stat-header">
+                            <div class="stat-title">本月營收</div>
+                            <div class="stat-icon" style="background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);">
+                                <i class="fas fa-yen-sign"></i>
+                            </div>
+                        </div>
+                        <div class="stat-value">¥ 284,500</div>
+                        <div class="stat-trend trend-up">+15% 較上月</div>
+                    </div>
+                </div>
+                
+                <!-- 近期預約 -->
+                <div class="section-header fade-in">
+                    <h3 class="section-title-main">近期預約</h3>
+                    <div class="section-actions">
+                        <button class="btn btn-secondary">
+                            <i class="fas fa-download"></i> 匯出
+                        </button>
+                        <button class="btn btn-primary">
+                            <i class="fas fa-plus"></i> 新增預約
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="table-container fade-in">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>會員名稱</th>
+                                <th>課程項目</th>
+                                <th>預約時間</th>
+                                <th>教練</th>
+                                <th>狀態</th>
+                                <th>操作</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>王大明</td>
+                                <td>晨間活力瑜珈</td>
+                                <td>今天 07:00-08:00</td>
+                                <td>李教練</td>
+                                <td><span class="status-badge status-active">已確認</span></td>
+                                <td>
+                                    <button class="btn btn-secondary" style="padding: 5px 10px; font-size: 12px;">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>陳小美</td>
+                                <td>HIIT 高效間歇訓練</td>
+                                <td>今天 19:00-20:00</td>
+                                <td>王教練</td>
+                                <td><span class="status-badge status-active">已確認</span></td>
+                                <td>
+                                    <button class="btn btn-secondary" style="padding: 5px 10px; font-size: 12px;">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>林志豪</td>
+                                <td>核心肌群強化</td>
+                                <td>明天 10:00-11:00</td>
+                                <td>張教練</td>
+                                <td><span class="status-badge status-pending">待確認</span></td>
+                                <td>
+                                    <button class="btn btn-secondary" style="padding: 5px 10px; font-size: 12px;">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>黃雅婷</td>
+                                <td>有氧舞蹈</td>
+                                <td>4月18日 18:00-19:00</td>
+                                <td>陳教練</td>
+                                <td><span class="status-badge status-active">已確認</span></td>
+                                <td>
+                                    <button class="btn btn-secondary" style="padding: 5px 10px; font-size: 12px;">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>張文凱</td>
+                                <td>重量訓練指導</td>
+                                <td>4月19日 16:00-17:00</td>
+                                <td>劉教練</td>
+                                <td><span class="status-badge status-inactive">已取消</span></td>
+                                <td>
+                                    <button class="btn btn-secondary" style="padding: 5px 10px; font-size: 12px;">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                
+                <!-- 會員成長圖表 -->
+                <div class="chart-container fade-in">
+                    <div class="chart-header">
+                        <h3 class="section-title-main">會員成長趨勢</h3>
+                        <select style="padding: 8px 12px; border-radius: 6px; border: 1px solid var(--line-border);">
+                            <option>過去7天</option>
+                            <option selected>過去30天</option>
+                            <option>過去90天</option>
+                        </select>
+                    </div>
+                    <div class="chart-placeholder">
+                        <div style="text-align: center;">
+                            <i class="fas fa-chart-line" style="font-size: 48px; margin-bottom: 15px; display: block;"></i>
+                            <p>會員成長圖表<br><small>可整合 Chart.js 或 ECharts</small></p>
+                        </div>
+                    </div>
                 </div>
             </div>
             
-            <div class="user-info">
-                <div class="user-avatar">王</div>
-                <div class="user-details">
-                    <div class="user-name">王大明 會員</div>
-                    <div class="user-level">黃金會員</div>
-                </div>
-                <!-- 修正登入按鈕連結：使用相對路徑返回上級目錄 -->
-                <a href="../index.html" class="line-login-button">
-                    <i class="fas fa-home"></i>
-                    返回首頁
-                </a>
-            </div>
-        </div>
-    </header>
-    
-    <!-- 儀表板主內容 -->
-    <div class="dashboard-container">
-        <!-- 歡迎區塊 -->
-        <section class="welcome-section fade-in">
-            <h1 class="welcome-title">歡迎回來，王大明會員！</h1>
-            <p class="welcome-subtitle">
-                今天是 2024年4月15日，您有 2 個即將開始的課程，本週已運動 3 次
-            </p>
-        </section>
-        
-        <!-- 統計卡片 -->
-        <section class="stats-section">
-            <h2 class="section-title fade-in">
-                <i class="fas fa-chart-bar"></i>
-                本月運動統計
-            </h2>
-            <div class="stats-grid">
-                <div class="stat-card fade-in">
-                    <div class="stat-icon">
-                        <i class="fas fa-dumbbell"></i>
-                    </div>
-                    <div class="stat-value">12</div>
-                    <div class="stat-label">運動次數</div>
-                    <div class="stat-trend trend-up">+2 次 (vs 上月)</div>
-                </div>
-                
-                <div class="stat-card fade-in">
-                    <div class="stat-icon">
-                        <i class="fas fa-fire-alt"></i>
-                    </div>
-                    <div class="stat-value">3,850</div>
-                    <div class="stat-label">消耗卡路里 (大卡)</div>
-                    <div class="stat-trend trend-up">+450 大卡</div>
-                </div>
-                
-                <div class="stat-card fade-in">
-                    <div class="stat-icon">
-                        <i class="fas fa-clock"></i>
-                    </div>
-                    <div class="stat-value">18.5</div>
-                    <div class="stat-label">總運動時數</div>
-                    <div class="stat-trend trend-up">+2.5 小時</div>
-                </div>
-                
-                <div class="stat-card fade-in">
-                    <div class="stat-icon">
-                        <i class="fas fa-trophy"></i>
-                    </div>
-                    <div class="stat-value">850</div>
-                    <div class="stat-label">會員點數</div>
-                    <div class="stat-trend trend-down">本月到期 150 點</div>
-                </div>
-            </div>
-        </section>
-        
-        <!-- 近期課程 -->
-        <section class="courses-section">
-            <h2 class="section-title fade-in">
-                <i class="fas fa-calendar-alt"></i>
-                近期預約課程
-            </h2>
-            <div class="courses-grid">
-                <div class="course-card fade-in">
-                    <div class="course-header">
-                        <div class="course-title">晨間活力瑜珈</div>
-                        <div class="course-instructor">李教練</div>
-                    </div>
-                    <div class="course-content">
-                        <div class="course-time">
-                            <i class="far fa-clock"></i>
-                            今天 07:00 - 08:00
-                        </div>
-                        <div class="course-status status-confirmed">已確認</div>
-                        <p>適合所有程度的晨間瑜珈課程，幫助你開啟充滿活力的一天</p>
-                        <a href="#" class="course-action">查看詳情</a>
+            <!-- 會員管理內容 -->
+            <div id="contentMembers" class="content-section" style="display: none;">
+                <div class="section-header fade-in">
+                    <h3 class="section-title-main">會員管理</h3>
+                    <div class="section-actions">
+                        <button class="btn btn-secondary">
+                            <i class="fas fa-filter"></i> 篩選
+                        </button>
+                        <button class="btn btn-primary">
+                            <i class="fas fa-user-plus"></i> 新增會員
+                        </button>
                     </div>
                 </div>
                 
-                <div class="course-card fade-in">
-                    <div class="course-header">
-                        <div class="course-title">HIIT 高效間歇訓練</div>
-                        <div class="course-instructor">王教練</div>
-                    </div>
-                    <div class="course-content">
-                        <div class="course-time">
-                            <i class="far fa-clock"></i>
-                            明天 19:00 - 20:00
-                        </div>
-                        <div class="course-status status-confirmed">已確認</div>
-                        <p>短時間高強度訓練，最大化燃脂效果</p>
-                        <a href="#" class="course-action">查看詳情</a>
-                    </div>
+                <div class="table-container fade-in">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>會員ID</th>
+                                <th>姓名</th>
+                                <th>Line ID</th>
+                                <th>會員等級</th>
+                                <th>加入日期</th>
+                                <th>預約次數</th>
+                                <th>狀態</th>
+                                <th>操作</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>M001</td>
+                                <td>王大明</td>
+                                <td>@wangdaming</td>
+                                <td>黃金會員</td>
+                                <td>2024-01-15</td>
+                                <td>24</td>
+                                <td><span class="status-badge status-active">活躍</span></td>
+                                <td>
+                                    <button class="btn btn-secondary" style="padding: 5px 10px; font-size: 12px;">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>M002</td>
+                                <td>陳小美</td>
+                                <td>@chenxiaomei</td>
+                                <td>白金會員</td>
+                                <td>2024-02-10</td>
+                                <td>36</td>
+                                <td><span class="status-badge status-active">活躍</span></td>
+                                <td>
+                                    <button class="btn btn-secondary" style="padding: 5px 10px; font-size: 12px;">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>M003</td>
+                                <td>林志豪</td>
+                                <td>@linzhihao</td>
+                                <td>黃金會員</td>
+                                <td>2024-03-05</td>
+                                <td>12</td>
+                                <td><span class="status-badge status-active">活躍</span></td>
+                                <td>
+                                    <button class="btn btn-secondary" style="padding: 5px 10px; font-size: 12px;">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>M004</td>
+                                <td>黃雅婷</td>
+                                <td>@huangyating</td>
+                                <td>白銀會員</td>
+                                <td>2024-03-20</td>
+                                <td>8</td>
+                                <td><span class="status-badge status-active">活躍</span></td>
+                                <td>
+                                    <button class="btn btn-secondary" style="padding: 5px 10px; font-size: 12px;">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>M005</td>
+                                <td>張文凱</td>
+                                <td>@zhangwenkai</td>
+                                <td>黃金會員</td>
+                                <td>2024-04-01</td>
+                                <td>5</td>
+                                <td><span class="status-badge status-inactive">休眠</span></td>
+                                <td>
+                                    <button class="btn btn-secondary" style="padding: 5px 10px; font-size: 12px;">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
                 </div>
                 
-                <div class="course-card fade-in">
-                    <div class="course-header">
-                        <div class="course-title">核心肌群強化</div>
-                        <div class="course-instructor">張教練</div>
-                    </div>
-                    <div class="course-content">
-                        <div class="course-time">
-                            <i class="far fa-clock"></i>
-                            4月18日 10:00 - 11:00
-                        </div>
-                        <div class="course-status status-pending">待確認</div>
-                        <p>專注核心肌群訓練，改善姿勢，減少腰背疼痛</p>
-                        <a href="#" class="course-action">確認參加</a>
-                    </div>
+                <div class="pagination">
+                    <button class="pagination-btn active">1</button>
+                    <button class="pagination-btn">2</button>
+                    <button class="pagination-btn">3</button>
+                    <button class="pagination-btn">4</button>
+                    <button class="pagination-btn">5</button>
                 </div>
             </div>
-        </section>
-        
-        <!-- 快速操作 -->
-        <section class="actions-section">
-            <h2 class="section-title fade-in">
-                <i class="fas fa-bolt"></i>
-                快速操作
-            </h2>
-            <div class="quick-actions">
-                <a href="#" class="action-button fade-in">
-                    <div class="action-icon">
+            
+            <!-- 課程管理內容 -->
+            <div id="contentCourses" class="content-section" style="display: none;">
+                <div class="section-header fade-in">
+                    <h3 class="section-title-main">課程管理</h3>
+                    <div class="section-actions">
+                        <button class="btn btn-secondary">
+                            <i class="fas fa-calendar-alt"></i> 日曆檢視
+                        </button>
+                        <button class="btn btn-primary">
+                            <i class="fas fa-plus"></i> 新增課程
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="empty-state fade-in">
+                    <div class="empty-icon">
                         <i class="fas fa-calendar-plus"></i>
                     </div>
-                    <div class="action-label">預約新課程</div>
-                </a>
-                
-                <a href="#" class="action-button fade-in">
-                    <div class="action-icon">
-                        <i class="fas fa-qrcode"></i>
-                    </div>
-                    <div class="action-label">掃碼簽到</div>
-                </a>
-                
-                <!-- 修正：登出按鈕連結到首頁 -->
-                <a href="../index.html" class="action-button fade-in">
-                    <div class="action-icon">
-                        <i class="fas fa-sign-out-alt"></i>
-                    </div>
-                    <div class="action-label">登出系統</div>
-                </a>
-                
-                <a href="#" class="action-button fade-in">
-                    <div class="action-icon">
-                        <i class="fas fa-cog"></i>
-                    </div>
-                    <div class="action-label">帳號設定</div>
-                </a>
-            </div>
-        </section>
-        
-        <!-- 運動記錄 -->
-        <section class="records-section">
-            <h2 class="section-title fade-in">
-                <i class="fas fa-chart-line"></i>
-                運動記錄追蹤
-            </h2>
-            <div class="records-grid">
-                <div class="record-card fade-in">
-                    <div class="record-header">
-                        <div class="record-title">本月目標達成率</div>
-                        <div>
-                            <span class="record-value">75</span>
-                            <span class="record-unit">%</span>
-                        </div>
-                    </div>
-                    <div class="progress-bar">
-                        <div class="progress-fill" style="width: 75%"></div>
-                    </div>
-                    <p style="margin-top: 10px; color: var(--line-light-gray); font-size: 0.9rem;">
-                        本月目標：運動16次，已完成12次
-                    </p>
-                </div>
-                
-                <div class="record-card fade-in">
-                    <div class="record-header">
-                        <div class="record-title">連續運動天數</div>
-                        <div>
-                            <span class="record-value">7</span>
-                            <span class="record-unit">天</span>
-                        </div>
-                    </div>
-                    <div class="progress-bar">
-                        <div class="progress-fill" style="width: 100%"></div>
-                    </div>
-                    <p style="margin-top: 10px; color: var(--line-light-gray); font-size: 0.9rem;">
-                        保持記錄！距離最高紀錄還有5天
-                    </p>
-                </div>
-                
-                <div class="record-card fade-in">
-                    <div class="record-header">
-                        <div class="record-title">最常參加課程</div>
-                        <div>
-                            <span class="record-value">瑜珈</span>
-                        </div>
-                    </div>
-                    <div class="progress-bar">
-                        <div class="progress-fill" style="width: 60%"></div>
-                    </div>
-                    <p style="margin-top: 10px; color: var(--line-light-gray); font-size: 0.9rem;">
-                        本月已參加6次瑜珈課程
-                    </p>
+                    <h3>課程管理功能</h3>
+                    <p>這裡可以管理所有運動課程，包括新增課程、排班、教練指派等功能。</p>
+                    <button class="btn btn-primary" style="margin-top: 20px;">
+                        <i class="fas fa-plus"></i> 建立第一堂課程
+                    </button>
                 </div>
             </div>
-        </section>
+            
+            <!-- 訊息推播內容 -->
+            <div id="contentMessages" class="content-section" style="display: none;">
+                <div class="section-header fade-in">
+                    <h3 class="section-title-main">訊息推播</h3>
+                    <div class="section-actions">
+                        <button class="btn btn-secondary">
+                            <i class="fas fa-history"></i> 發送紀錄
+                        </button>
+                        <button class="btn btn-primary">
+                            <i class="fas fa-paper-plane"></i> 發送新訊息
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="chart-container fade-in">
+                    <div class="chart-header">
+                        <h3 class="section-title-main">訊息發送統計</h3>
+                    </div>
+                    <div class="chart-placeholder">
+                        <div style="text-align: center;">
+                            <i class="fas fa-comments" style="font-size: 48px; margin-bottom: 15px; display: block;"></i>
+                            <p>訊息推播分析圖表</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 其他內容區塊 (預留) -->
+            <div id="contentBookings" class="content-section" style="display: none;">
+                <!-- 預約管理內容 -->
+            </div>
+            
+            <div id="contentAnalytics" class="content-section" style="display: none;">
+                <!-- 數據分析內容 -->
+            </div>
+            
+            <div id="contentSettings" class="content-section" style="display: none;">
+                <!-- 帳號設定內容 -->
+            </div>
+        </div>
     </div>
     
-    <!-- 底部資訊 -->
-    <footer class="line-footer">
-        <div class="footer-container">
-            <div class="footer-logo">
-                <div style="width: 30px; height: 30px; background: var(--line-white); border-radius: 6px; display: flex; align-items: center; justify-content: center; color: var(--line-green); font-weight: bold;">運</div>
-                <div style="font-size: 18px; font-weight: bold;">竹北運動島</div>
-            </div>
-            
-            <div class="footer-links">
-                <!-- 修正：所有連結使用正確路徑 -->
-                <a href="../index.html">返回首頁</a>
-                <a href="../index.html#features">服務功能</a>
-                <a href="../index.html#courses">課程介紹</a>
-                <a href="../index.html#qr">加入官方帳號</a>
-                <a href="../auth/login.html">會員登入</a>
-                <a href="#">隱私權政策</a>
-                <a href="#">服務條款</a>
-                <a href="#">聯絡我們</a>
-            </div>
-            
-            <p style="max-width: 600px; margin: 0 auto; color: rgba(255,255,255,0.7); font-size: 0.95rem;">
-                竹北運動島 Line 官方帳號提供最完整的運動課程服務，透過 Line 即可輕鬆預約課程、接收通知、記錄運動成果。
-            </p>
-            
-            <p class="footer-copyright">
-                © 2024 竹北運動島活動中心 版權所有<br>
-                服務時間：週一至週日 6:00-22:00 | 聯絡電話：03-668-7890
-            </p>
-        </div>
-    </footer>
-    
     <script>
-        // 簡單的滾動動畫
-        document.addEventListener('DOMContentLoaded', function() {
-            // 觀察元素進入視圖時添加動畫
-            const observerOptions = {
-                threshold: 0.1,
-                rootMargin: '0px 0px -50px 0px'
+        // 側邊欄切換
+        const sidebarToggle = document.getElementById('sidebarToggle');
+        const sidebar = document.getElementById('sidebar');
+        const mainContent = document.getElementById('mainContent');
+        
+        sidebarToggle.addEventListener('click', () => {
+            sidebar.classList.toggle('active');
+            if (window.innerWidth <= 1024) {
+                if (sidebar.classList.contains('active')) {
+                    mainContent.style.marginLeft = '0';
+                }
+            }
+        });
+        
+        // 選單切換功能
+        const menuLinks = document.querySelectorAll('.menu-link');
+        const contentSections = document.querySelectorAll('.content-section');
+        const pageTitle = document.getElementById('pageTitle');
+        
+        menuLinks.forEach(link => {
+            link.addEventListener('click', (e) => {
+                e.preventDefault();
+                
+                // 移除所有選單的 active 狀態
+                menuLinks.forEach(item => item.classList.remove('active'));
+                
+                // 添加當前選單的 active 狀態
+                link.classList.add('active');
+                
+                // 更新頁面標題
+                const menuText = link.querySelector('.menu-text').textContent;
+                pageTitle.textContent = menuText;
+                
+                // 隱藏所有內容區塊
+                contentSections.forEach(section => {
+                    section.style.display = 'none';
+                });
+                
+                // 顯示對應的內容區塊
+                const contentId = link.getAttribute('data-content');
+                const targetContent = document.getElementById(`content${contentId.charAt(0).toUpperCase() + contentId.slice(1)}`);
+                
+                if (targetContent) {
+                    targetContent.style.display = 'block';
+                    
+                    // 添加淡入動畫
+                    const fadeElements = targetContent.querySelectorAll('.fade-in');
+                    fadeElements.forEach(el => {
+                        el.style.animation = 'none';
+                        setTimeout(() => {
+                            el.style.animation = 'fadeIn 0.6s ease-out';
+                        }, 10);
+                    });
+                }
+                
+                // 在行動裝置上點擊選單後自動關閉側邊欄
+                if (window.innerWidth <= 1024) {
+                    sidebar.classList.remove('active');
+                }
+            });
+        });
+        
+        // 通知按鈕功能
+        const notificationBtn = document.getElementById('notificationBtn');
+        notificationBtn.addEventListener('click', () => {
+            alert('您有3則新通知：\n\n1. 王大明取消明日課程\n2. 新會員註冊完成\n3. 系統維護通知');
+        });
+        
+        // 用戶選單功能
+        const userProfile = document.getElementById('userProfile');
+        userProfile.addEventListener('click', () => {
+            const menu = document.createElement('div');
+            menu.style.cssText = `
+                position: absolute;
+                top: 60px;
+                right: 20px;
+                background: white;
+                border-radius: 8px;
+                box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+                min-width: 200px;
+                z-index: 1000;
+                overflow: hidden;
+            `;
+            
+            menu.innerHTML = `
+                <div style="padding: 15px; border-bottom: 1px solid var(--line-border);">
+                    <div style="font-weight: bold; margin-bottom: 5px;">管理員</div>
+                    <div style="font-size: 12px; color: var(--line-light-gray);">admin@sportsland.com</div>
+                </div>
+                <div>
+                    <a href="#" style="display: block; padding: 12px 15px; text-decoration: none; color: var(--line-dark-gray); transition: background 0.3s;">
+                        <i class="fas fa-user" style="margin-right: 10px;"></i>個人資料
+                    </a>
+                    <a href="#" style="display: block; padding: 12px 15px; text-decoration: none; color: var(--line-dark-gray); transition: background 0.3s;">
+                        <i class="fas fa-cog" style="margin-right: 10px;"></i>帳號設定
+                    </a>
+                    <a href="../auth/login.html" style="display: block; padding: 12px 15px; text-decoration: none; color: var(--line-red); transition: background 0.3s;">
+                        <i class="fas fa-sign-out-alt" style="margin-right: 10px;"></i>登出系統
+                    </a>
+                </div>
+            `;
+            
+            document.body.appendChild(menu);
+            
+            // 點擊其他地方關閉選單
+            const closeMenu = (e) => {
+                if (!menu.contains(e.target) && !userProfile.contains(e.target)) {
+                    document.body.removeChild(menu);
+                    document.removeEventListener('click', closeMenu);
+                }
             };
             
-            const observer = new IntersectionObserver(function(entries) {
-                entries.forEach(entry => {
-                    if (entry.isIntersecting) {
-                        entry.target.classList.add('fade-in');
-                    }
-                });
-            }, observerOptions);
-            
-            // 觀察所有需要動畫的元素
-            document.querySelectorAll('.fade-in').forEach(el => {
-                observer.observe(el);
-            });
-            
-            // 更新歡迎訊息日期
-            const today = new Date();
-            const options = { year: 'numeric', month: 'long', day: 'numeric' };
-            const dateString = today.toLocaleDateString('zh-TW', options);
-            
-            const welcomeSubtitle = document.querySelector('.welcome-subtitle');
-            if (welcomeSubtitle) {
-                welcomeSubtitle.textContent = `今天是 ${dateString}，您有 2 個即將開始的課程，本週已運動 3 次`;
-            }
-            
-            // 模擬運動數據更新
-            function updateStats() {
-                // 這裡可以加入實際的數據更新邏輯
-                console.log('更新運動數據...');
-            }
-            
-            // 每30秒更新一次數據（模擬）
-            setInterval(updateStats, 30000);
-            
-            // 課程提醒功能
-            function checkUpcomingClasses() {
-                const now = new Date();
-                const hour = now.getHours();
-                
-                // 如果是早上6點到8點之間，檢查晨間課程
-                if (hour >= 6 && hour < 8) {
-                    console.log('提醒：有晨間課程即將開始');
-                    // 可以加入實際的提醒邏輯
-                }
-            }
-            
-            // 檢查是否在 Line 內開啟
-            function checkLineEnvironment() {
-                const isInLine = /Line/i.test(navigator.userAgent);
-                if (isInLine) {
-                    console.log('在 Line App 內開啟儀表板');
-                    // 可以顯示 Line 內專屬功能
-                }
-            }
-            
-            checkLineEnvironment();
-            checkUpcomingClasses();
+            setTimeout(() => {
+                document.addEventListener('click', closeMenu);
+            }, 100);
         });
         
-        // 平滑滾動
-        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-            anchor.addEventListener('click', function(e) {
-                const href = this.getAttribute('href');
-                if (href !== '#' && document.querySelector(href)) {
-                    e.preventDefault();
-                    const target = document.querySelector(href);
-                    if (target) {
-                        target.scrollIntoView({
-                            behavior: 'smooth',
-                            block: 'start'
-                        });
-                    }
-                }
-            });
-        });
-        
-        // 模擬即時數據更新
-        function simulateLiveUpdates() {
+        // 模擬數據更新
+        function updateStats() {
             const statValues = document.querySelectorAll('.stat-value');
             
-            statValues.forEach(stat => {
-                if (stat.textContent.match(/^\d+$/)) {
-                    const currentValue = parseInt(stat.textContent);
-                    const randomChange = Math.floor(Math.random() * 5) + 1;
-                    const newValue = currentValue + randomChange;
-                    
-                    // 簡單的數字動畫
-                    let current = currentValue;
-                    const interval = setInterval(() => {
-                        current += 1;
-                        stat.textContent = current;
-                        
-                        if (current >= newValue) {
-                            clearInterval(interval);
-                            stat.textContent = newValue;
-                        }
-                    }, 50);
+            statValues.forEach((stat, index) => {
+                if (index === 0) { // 今日活躍會員
+                    const current = parseInt(stat.textContent);
+                    const random = Math.floor(Math.random() * 10) + 1;
+                    stat.textContent = current + random;
                 }
             });
         }
         
-        // 每2分鐘模擬一次數據更新
-        setTimeout(simulateLiveUpdates, 120000);
+        // 每30秒更新一次統計數據
+        setInterval(updateStats, 30000);
+        
+        // 響應式調整
+        window.addEventListener('resize', () => {
+            if (window.innerWidth > 1024) {
+                sidebar.classList.remove('active');
+                mainContent.style.marginLeft = '240px';
+            } else {
+                mainContent.style.marginLeft = '0';
+            }
+        });
+        
+        // 初始化
+        document.addEventListener('DOMContentLoaded', () => {
+            // 檢查是否在 Line 環境
+            const isInLine = /Line/i.test(navigator.userAgent);
+            if (isInLine) {
+                console.log('在 Line App 內開啟管理後台');
+            }
+            
+            // 模擬載入
+            setTimeout(() => {
+                const welcomeCard = document.querySelector('.welcome-card');
+                if (welcomeCard) {
+                    welcomeCard.style.animation = 'fadeIn 0.6s ease-out';
+                }
+            }, 100);
+        });
+        
+        // 表格行點擊效果
+        document.querySelectorAll('.table tbody tr').forEach(row => {
+            row.addEventListener('click', function(e) {
+                if (!e.target.closest('button')) {
+                    this.classList.toggle('selected');
+                }
+            });
+        });
+        
+        // 模擬即時通知
+        function simulateNotification() {
+            const notifications = [
+                '新會員註冊：劉小姐',
+                '課程預約成功：重量訓練指導',
+                '會員諮詢：關於會員點數',
+                '系統提醒：備份已完成'
+            ];
+            
+            const randomNotification = notifications[Math.floor(Math.random() * notifications.length)];
+            
+            // 更新通知徽章
+            const badge = document.querySelector('.notification-badge');
+            if (badge) {
+                const currentCount = parseInt(badge.textContent);
+                badge.textContent = currentCount + 1;
+            }
+            
+            // 顯示通知提示（可以替換成更優雅的通知系統）
+            console.log('新通知：', randomNotification);
+        }
+        
+        // 每60秒模擬一次新通知
+        setInterval(simulateNotification, 60000);
     </script>
 </body>
 </html>
