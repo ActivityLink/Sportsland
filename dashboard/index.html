@@ -3,307 +3,251 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>會員儀表板 - 竹北運動島</title>
+    <title>竹北運動島 - Line 官方帳號</title>
+    <!-- Line 官方設計資源 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { 
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-            background: #f5f5f5;
-            min-height: 100vh;
-            color: #333;
+        :root {
+            --line-green: #06C755;
+            --line-dark-green: #05A944;
+            --line-gray: #F5F5F5;
+            --line-dark-gray: #333333;
+            --line-light-gray: #666666;
         }
         
-        /* 頂部導航欄 */
-        .navbar {
-            background: white;
-            padding: 15px 30px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Hiragino Sans', 'ヒラギノ角ゴシック', 'Hiragino Kaku Gothic ProN', 'メイリオ', Meiryo, sans-serif;
+            background-color: var(--line-gray);
+            color: var(--line-dark-gray);
+            line-height: 1.6;
+        }
+        
+        /* Line 風格頂部導航 */
+        .line-header {
+            background-color: white;
+            padding: 15px 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+        
+        .header-container {
+            max-width: 1200px;
+            margin: 0 auto;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            position: sticky;
-            top: 0;
-            z-index: 100;
         }
         
-        .logo {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            font-size: 20px;
-            font-weight: bold;
-            color: #00B900;
-            text-decoration: none;
-        }
-        
-        .logo-icon {
-            width: 36px;
-            height: 36px;
-            background: linear-gradient(135deg, #00B900 0%, #00C300 100%);
-            border-radius: 8px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-weight: bold;
-        }
-        
-        .user-menu {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-        }
-        
-        .user-info {
+        .line-logo {
             display: flex;
             align-items: center;
             gap: 10px;
         }
         
-        .user-avatar {
+        .line-logo-icon {
             width: 40px;
             height: 40px;
-            border-radius: 50%;
-            background: linear-gradient(135deg, #00B900 0%, #00C300 100%);
+            background: linear-gradient(135deg, var(--line-green) 0%, var(--line-dark-green) 100%);
+            border-radius: 10px;
             display: flex;
             align-items: center;
             justify-content: center;
             color: white;
             font-weight: bold;
-            overflow: hidden;
+            font-size: 18px;
         }
         
-        .user-avatar img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
+        .line-logo-text {
+            font-size: 18px;
+            font-weight: bold;
+            color: var(--line-dark-gray);
         }
         
-        .user-details {
-            text-align: right;
-        }
-        
-        .user-name {
-            font-weight: 600;
-            color: #333;
-        }
-        
-        .user-status {
+        .line-logo-subtext {
             font-size: 12px;
-            color: #666;
+            color: var(--line-light-gray);
+            margin-top: 2px;
         }
         
-        .logout-btn {
-            background: #f8f9fa;
-            color: #666;
-            border: 1px solid #dee2e6;
-            padding: 8px 15px;
-            border-radius: 5px;
-            font-size: 14px;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-        
-        .logout-btn:hover {
-            background: #e9ecef;
-        }
-        
-        /* 主要內容 */
-        .dashboard-container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 20px;
-        }
-        
-        /* 歡迎區塊 */
-        .welcome-section {
-            background: linear-gradient(135deg, #00B900 0%, #00C300 100%);
+        /* Line 登入區域 - 重點區塊 */
+        .line-hero {
+            background: linear-gradient(135deg, #06C755 0%, #05A944 100%);
             color: white;
-            padding: 40px;
-            border-radius: 15px;
-            margin-bottom: 30px;
+            padding: 60px 20px;
+            text-align: center;
+        }
+        
+        .hero-container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        .line-hero-icon {
+            width: 80px;
+            height: 80px;
+            background: white;
+            border-radius: 20px;
+            margin: 0 auto 25px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--line-green);
+            font-size: 36px;
             box-shadow: 0 5px 15px rgba(0,0,0,0.1);
         }
         
-        .welcome-title {
+        .line-hero-title {
             font-size: 2.2rem;
-            margin-bottom: 10px;
+            margin-bottom: 15px;
+            font-weight: bold;
         }
         
-        .welcome-subtitle {
+        .line-hero-subtitle {
             font-size: 1.1rem;
             opacity: 0.9;
-            margin-bottom: 25px;
+            margin-bottom: 35px;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
         }
         
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 20px;
-            margin-top: 30px;
-        }
-        
-        .stat-card {
-            background: rgba(255,255,255,0.1);
-            padding: 20px;
-            border-radius: 10px;
-            backdrop-filter: blur(10px);
-        }
-        
-        .stat-number {
-            font-size: 2rem;
-            font-weight: bold;
-            margin-bottom: 5px;
-        }
-        
-        .stat-label {
-            font-size: 0.9rem;
-            opacity: 0.8;
-        }
-        
-        /* 功能區塊 */
-        .section-title {
-            font-size: 1.5rem;
-            margin: 40px 0 20px;
-            color: #333;
-            display: flex;
-            justify-content: space-between;
+        /* Line 登入按鈕 - 官方樣式 */
+        .line-login-button {
+            display: inline-flex;
             align-items: center;
-        }
-        
-        .section-link {
-            color: #00B900;
-            text-decoration: none;
-            font-size: 0.9rem;
-            font-weight: 500;
-        }
-        
-        .section-link:hover {
-            text-decoration: underline;
-        }
-        
-        /* 課程卡片 */
-        .courses-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 25px;
-            margin-bottom: 40px;
-        }
-        
-        .course-card {
-            background: white;
-            border-radius: 15px;
-            overflow: hidden;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
-            transition: transform 0.3s;
-        }
-        
-        .course-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 25px rgba(0,0,0,0.12);
-        }
-        
-        .course-header {
-            padding: 20px;
-            background: linear-gradient(135deg, #00B900 0%, #00C300 100%);
-            color: white;
-        }
-        
-        .course-title {
-            font-size: 1.3rem;
-            margin-bottom: 5px;
-        }
-        
-        .course-instructor {
-            font-size: 0.9rem;
-            opacity: 0.9;
-        }
-        
-        .course-content {
-            padding: 25px;
-        }
-        
-        .course-meta {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 20px;
-            font-size: 0.9rem;
-            color: #666;
-        }
-        
-        .course-time, .course-date {
-            display: flex;
-            align-items: center;
-            gap: 5px;
-        }
-        
-        .course-actions {
-            display: flex;
+            justify-content: center;
             gap: 10px;
-        }
-        
-        .btn {
-            padding: 10px 20px;
-            border-radius: 8px;
+            background-color: white;
+            color: var(--line-dark-gray);
             border: none;
-            font-weight: 600;
+            border-radius: 12px;
+            padding: 18px 35px;
+            font-size: 16px;
+            font-weight: bold;
             cursor: pointer;
-            transition: all 0.3s;
             text-decoration: none;
-            display: inline-block;
-            text-align: center;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+            margin: 10px;
         }
         
-        .btn-primary {
-            background: #00B900;
-            color: white;
-            flex: 1;
-        }
-        
-        .btn-primary:hover {
-            background: #00A000;
-        }
-        
-        .btn-secondary {
-            background: #f8f9fa;
-            color: #666;
-            border: 1px solid #dee2e6;
-        }
-        
-        .btn-secondary:hover {
-            background: #e9ecef;
-        }
-        
-        /* 快速動作 */
-        .quick-actions {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 20px;
-            margin-bottom: 40px;
-        }
-        
-        .action-card {
-            background: white;
-            padding: 25px;
-            border-radius: 15px;
-            text-align: center;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
-            transition: transform 0.3s;
-            text-decoration: none;
-            color: inherit;
-        }
-        
-        .action-card:hover {
+        .line-login-button:hover {
             transform: translateY(-3px);
-            box-shadow: 0 8px 20px rgba(0,0,0,0.12);
+            box-shadow: 0 6px 18px rgba(0,0,0,0.15);
         }
         
-        .action-icon {
+        .line-login-button .line-icon {
+            color: var(--line-green);
+            font-size: 20px;
+        }
+        
+        .line-login-button.primary {
+            background-color: white;
+            color: var(--line-dark-gray);
+        }
+        
+        .line-login-button.secondary {
+            background-color: rgba(255,255,255,0.15);
+            color: white;
+            border: 2px solid white;
+        }
+        
+        /* QR Code 區塊 */
+        .line-qr-section {
+            background: white;
+            padding: 60px 20px;
+            text-align: center;
+        }
+        
+        .qr-container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        .qr-title {
+            font-size: 1.8rem;
+            margin-bottom: 15px;
+            color: var(--line-dark-gray);
+        }
+        
+        .qr-subtitle {
+            color: var(--line-light-gray);
+            margin-bottom: 30px;
+            max-width: 500px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        
+        .qr-code-placeholder {
+            width: 200px;
+            height: 200px;
+            background: var(--line-gray);
+            border-radius: 15px;
+            margin: 0 auto 25px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: var(--line-light-gray);
+            border: 2px dashed #ddd;
+        }
+        
+        .qr-code-placeholder i {
+            font-size: 50px;
+            margin-bottom: 15px;
+        }
+        
+        /* 功能特色 */
+        .line-features {
+            padding: 60px 20px;
+            background: var(--line-gray);
+        }
+        
+        .features-container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .features-title {
+            text-align: center;
+            font-size: 1.8rem;
+            margin-bottom: 50px;
+            color: var(--line-dark-gray);
+        }
+        
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 30px;
+        }
+        
+        .feature-card {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            text-align: center;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+            transition: transform 0.3s;
+        }
+        
+        .feature-card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .feature-icon {
             width: 60px;
             height: 60px;
-            background: linear-gradient(135deg, #00B900 0%, #00C300 100%);
+            background: linear-gradient(135deg, var(--line-green) 0%, var(--line-dark-green) 100%);
             border-radius: 15px;
-            margin: 0 auto 15px;
+            margin: 0 auto 20px;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -311,516 +255,413 @@
             font-size: 24px;
         }
         
-        .action-title {
+        .feature-title {
+            font-size: 1.2rem;
+            margin-bottom: 15px;
+            color: var(--line-dark-gray);
             font-weight: 600;
-            margin-bottom: 10px;
-            color: #333;
         }
         
-        .action-desc {
-            color: #666;
-            font-size: 0.9rem;
-            line-height: 1.5;
+        .feature-description {
+            color: var(--line-light-gray);
+            font-size: 0.95rem;
         }
         
-        /* 近期活動 */
-        .activity-list {
+        /* 課程預覽 */
+        .line-courses {
+            padding: 60px 20px;
             background: white;
+        }
+        
+        .courses-title {
+            text-align: center;
+            font-size: 1.8rem;
+            margin-bottom: 40px;
+            color: var(--line-dark-gray);
+        }
+        
+        .courses-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 25px;
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+        
+        .course-card {
             border-radius: 15px;
-            padding: 25px;
+            overflow: hidden;
             box-shadow: 0 5px 15px rgba(0,0,0,0.08);
         }
         
-        .activity-item {
-            display: flex;
-            align-items: center;
-            padding: 15px 0;
-            border-bottom: 1px solid #f0f0f0;
-        }
-        
-        .activity-item:last-child {
-            border-bottom: none;
-        }
-        
-        .activity-icon {
-            width: 40px;
-            height: 40px;
-            background: #f8f9fa;
-            border-radius: 10px;
+        .course-image {
+            height: 180px;
+            background: linear-gradient(135deg, var(--line-green) 0%, var(--line-dark-green) 100%);
             display: flex;
             align-items: center;
             justify-content: center;
-            margin-right: 15px;
-            color: #00B900;
+            color: white;
+            font-size: 1.5rem;
+            font-weight: bold;
         }
         
-        .activity-content {
-            flex: 1;
+        .course-content {
+            padding: 25px;
+            background: white;
         }
         
-        .activity-title {
-            font-weight: 500;
-            margin-bottom: 5px;
-        }
-        
-        .activity-time {
-            font-size: 0.85rem;
-            color: #666;
-        }
-        
-        /* 空狀態 */
-        .empty-state {
-            text-align: center;
-            padding: 60px 20px;
-            color: #666;
-        }
-        
-        .empty-icon {
-            font-size: 3rem;
-            margin-bottom: 20px;
-            opacity: 0.3;
-        }
-        
-        .empty-title {
+        .course-title {
             font-size: 1.2rem;
             margin-bottom: 10px;
-            color: #333;
+            color: var(--line-dark-gray);
+            font-weight: 600;
+        }
+        
+        .course-description {
+            color: var(--line-light-gray);
+            margin-bottom: 20px;
+            font-size: 0.95rem;
+        }
+        
+        .course-meta {
+            display: flex;
+            justify-content: space-between;
+            color: var(--line-light-gray);
+            font-size: 0.85rem;
+        }
+        
+        /* 底部 */
+        .line-footer {
+            background: var(--line-dark-gray);
+            color: white;
+            padding: 50px 20px;
+            text-align: center;
+        }
+        
+        .footer-container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .footer-logo {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 25px;
+        }
+        
+        .footer-links {
+            display: flex;
+            justify-content: center;
+            gap: 25px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+        
+        .footer-links a {
+            color: rgba(255,255,255,0.7);
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+        
+        .footer-links a:hover {
+            color: white;
+        }
+        
+        .footer-copyright {
+            color: rgba(255,255,255,0.5);
+            font-size: 0.9rem;
+            margin-top: 20px;
         }
         
         /* 響應式設計 */
         @media (max-width: 768px) {
-            .navbar {
-                flex-direction: column;
-                gap: 15px;
-                padding: 15px;
-            }
-            
-            .user-menu {
-                width: 100%;
-                justify-content: space-between;
-            }
-            
-            .welcome-section {
-                padding: 25px;
-            }
-            
-            .welcome-title {
+            .line-hero-title {
                 font-size: 1.8rem;
+            }
+            
+            .line-hero-subtitle {
+                font-size: 1rem;
+            }
+            
+            .features-grid {
+                grid-template-columns: 1fr;
             }
             
             .courses-grid {
                 grid-template-columns: 1fr;
             }
             
-            .stats-grid {
-                grid-template-columns: 1fr;
+            .header-container {
+                flex-direction: column;
+                gap: 15px;
             }
             
-            .quick-actions {
-                grid-template-columns: 1fr;
-            }
-            
-            .dashboard-container {
-                padding: 15px;
+            .line-login-button {
+                padding: 15px 25px;
+                font-size: 15px;
             }
         }
         
-        /* 載入動畫 */
-        .loading {
-            text-align: center;
-            padding: 40px;
-            color: #666;
+        /* 動畫效果 */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
         }
         
-        .loading-spinner {
-            width: 40px;
-            height: 40px;
-            border: 4px solid #f3f3f3;
-            border-top: 4px solid #00B900;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-            margin: 0 auto 20px;
-        }
-        
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
+        .fade-in {
+            animation: fadeIn 0.6s ease-out;
         }
     </style>
 </head>
 <body>
-    <!-- 頂部導航 -->
-    <nav class="navbar">
-        <a href="../index.html" class="logo">
-            <div class="logo-icon">運</div>
-            <span>竹北運動島</span>
-        </a>
-        
-        <div class="user-menu">
-            <div class="user-info">
-                <div class="user-avatar" id="user-avatar">
-                    <span id="avatar-text">U</span>
-                </div>
-                <div class="user-details">
-                    <div class="user-name" id="user-name">載入中...</div>
-                    <div class="user-status" id="user-status">會員</div>
+    <!-- Line 風格頂部導航 -->
+    <header class="line-header">
+        <div class="header-container">
+            <div class="line-logo">
+                <div class="line-logo-icon">運</div>
+                <div>
+                    <div class="line-logo-text">竹北運動島</div>
+                    <div class="line-logo-subtext">Line 官方帳號專屬服務</div>
                 </div>
             </div>
-            <button class="logout-btn" onclick="logout()">登出</button>
+            <div>
+                <a href="auth/login.html" class="line-login-button">
+                    <i class="fab fa-line line-icon"></i>
+                    會員登入
+                </a>
+            </div>
         </div>
-    </nav>
+    </header>
     
-    <!-- 主要內容 -->
-    <main class="dashboard-container">
-        <!-- 歡迎區塊 -->
-        <section class="welcome-section">
-            <h1 class="welcome-title" id="welcome-title">歡迎回來！</h1>
-            <p class="welcome-subtitle" id="welcome-subtitle">今天要安排什麼運動呢？</p>
+    <!-- Line 登入重點區域 -->
+    <section class="line-hero">
+        <div class="hero-container fade-in">
+            <div class="line-hero-icon">
+                <i class="fas fa-dumbbell"></i>
+            </div>
+            <h1 class="line-hero-title">加入竹北運動島 Line 官方帳號</h1>
+            <p class="line-hero-subtitle">
+                專屬 Line 會員的運動課程服務，一鍵預約課程、接收最新活動通知、記錄運動成果
+            </p>
+            <div>
+                <a href="auth/login.html" class="line-login-button primary">
+                    <i class="fab fa-line line-icon"></i>
+                    使用 Line 登入會員系統
+                </a>
+                <a href="#features" class="line-login-button secondary">
+                    了解更多服務
+                </a>
+            </div>
+        </div>
+    </section>
+    
+    <!-- QR Code 加入區塊 -->
+    <section class="line-qr-section" id="qr">
+        <div class="qr-container fade-in">
+            <h2 class="qr-title">掃碼加入 Line 官方帳號</h2>
+            <p class="qr-subtitle">
+                掃描 QR Code 加入竹北運動島官方帳號，獲取最新課程資訊與專屬優惠
+            </p>
+            <div class="qr-code-placeholder">
+                <i class="fas fa-qrcode"></i>
+                <span>Line QR Code</span>
+            </div>
+            <p style="color: var(--line-light-gray); font-size: 0.9rem;">
+                *請開啟 Line App 掃描上方 QR Code
+            </p>
+        </div>
+    </section>
+    
+    <!-- 功能特色 -->
+    <section class="line-features" id="features">
+        <div class="features-container">
+            <h2 class="features-title fade-in">Line 會員專屬功能</h2>
+            <div class="features-grid">
+                <div class="feature-card fade-in">
+                    <div class="feature-icon">
+                        <i class="fas fa-calendar-check"></i>
+                    </div>
+                    <h3 class="feature-title">一鍵課程預約</h3>
+                    <p class="feature-description">
+                        直接在 Line 內預約課程，免下載其他 App，簡單快速
+                    </p>
+                </div>
+                <div class="feature-card fade-in">
+                    <div class="feature-icon">
+                        <i class="fas fa-bell"></i>
+                    </div>
+                    <h3 class="feature-title">即時通知提醒</h3>
+                    <p class="feature-description">
+                        課程提醒、優惠資訊直接推送到 Line，不錯過任何訊息
+                    </p>
+                </div>
+                <div class="feature-card fade-in">
+                    <div class="feature-icon">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                    <h3 class="feature-title">運動記錄追蹤</h3>
+                    <p class="feature-description">
+                        自動記錄運動次數、卡路里消耗，在 Line 內查看個人數據
+                    </p>
+                </div>
+                <div class="feature-card fade-in">
+                    <div class="feature-icon">
+                        <i class="fas fa-gift"></i>
+                    </div>
+                    <h3 class="feature-title">會員專屬優惠</h3>
+                    <p class="feature-description">
+                        Line 會員獨享優惠券、生日禮、點數兌換等專屬福利
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <!-- 熱門課程預覽 -->
+    <section class="line-courses" id="courses">
+        <div class="courses-container">
+            <h2 class="courses-title fade-in">熱門運動課程</h2>
+            <div class="courses-grid">
+                <div class="course-card fade-in">
+                    <div class="course-image">晨間活力瑜珈</div>
+                    <div class="course-content">
+                        <h3 class="course-title">清晨活力瑜珈</h3>
+                        <p class="course-description">
+                            適合所有程度的晨間瑜珈課程，幫助你開啟充滿活力的一天
+                        </p>
+                        <div class="course-meta">
+                            <span><i class="far fa-clock"></i> 每週一、三、五 7:00-8:00</span>
+                            <span><i class="far fa-user"></i> 李教練</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="course-card fade-in">
+                    <div class="course-image">HIIT燃脂</div>
+                    <div class="course-content">
+                        <h3 class="course-title">HIIT 高效間歇訓練</h3>
+                        <p class="course-description">
+                            短時間高強度訓練，最大化燃脂效果，適合時間有限的上班族
+                        </p>
+                        <div class="course-meta">
+                            <span><i class="far fa-clock"></i> 每週二、四 19:00-20:00</span>
+                            <span><i class="far fa-user"></i> 王教練</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="course-card fade-in">
+                    <div class="course-image">核心訓練</div>
+                    <div class="course-content">
+                        <h3 class="course-title">核心肌群強化</h3>
+                        <p class="course-description">
+                            專注核心肌群訓練，改善姿勢，減少腰背疼痛，提升運動表現
+                        </p>
+                        <div class="course-meta">
+                            <span><i class="far fa-clock"></i> 每週三、六 10:00-11:00</span>
+                            <span><i class="far fa-user"></i> 張教練</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <!-- 底部資訊 -->
+    <footer class="line-footer">
+        <div class="footer-container">
+            <div class="footer-logo">
+                <div style="width: 30px; height: 30px; background: white; border-radius: 6px; display: flex; align-items: center; justify-content: center; color: var(--line-green); font-weight: bold;">運</div>
+                <div style="font-size: 18px; font-weight: bold;">竹北運動島</div>
+            </div>
             
-            <div class="stats-grid">
-                <div class="stat-card">
-                    <div class="stat-number" id="total-courses">0</div>
-                    <div class="stat-label">已參加課程</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-number" id="attendance-rate">0%</div>
-                    <div class="stat-label">出席率</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-number" id="streak-days">0</div>
-                    <div class="stat-label">連續運動天數</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-number" id="points">0</div>
-                    <div class="stat-label">運動積分</div>
-                </div>
+            <div class="footer-links">
+                <a href="#features">服務功能</a>
+                <a href="#courses">課程介紹</a>
+                <a href="#qr">加入官方帳號</a>
+                <a href="auth/login.html">會員登入</a>
+                <a href="#">隱私權政策</a>
+                <a href="#">服務條款</a>
+                <a href="#">聯絡我們</a>
             </div>
-        </section>
-        
-        <!-- 快速動作 -->
-        <section>
-            <h2 class="section-title">快速動作</h2>
-            <div class="quick-actions">
-                <a href="../course-catalog.html" class="action-card">
-                    <div class="action-icon">📚</div>
-                    <div class="action-title">預約課程</div>
-                    <div class="action-desc">查看並預約最新運動課程</div>
-                </a>
-                <a href="my-courses.html" class="action-card">
-                    <div class="action-icon">📅</div>
-                    <div class="action-title">我的課表</div>
-                    <div class="action-desc">查看已預約的課程時間表</div>
-                </a>
-                <a href="achievements.html" class="action-card">
-                    <div class="action-icon">🏆</div>
-                    <div class="action-title">成就徽章</div>
-                    <div class="action-desc">查看已獲得的運動成就</div>
-                </a>
-                <a href="profile.html" class="action-card">
-                    <div class="action-icon">👤</div>
-                    <div class="action-title">個人資料</div>
-                    <div class="action-desc">編輯個人資訊與偏好設定</div>
-                </a>
-            </div>
-        </section>
-        
-        <!-- 今日課程 -->
-        <section>
-            <h2 class="section-title">
-                今日課程
-                <a href="my-courses.html" class="section-link">查看全部</a>
-            </h2>
             
-            <div class="courses-grid" id="today-courses">
-                <!-- 課程卡片會由 JavaScript 動態生成 -->
-                <div class="empty-state">
-                    <div class="empty-icon">📅</div>
-                    <div class="empty-title">今日沒有課程</div>
-                    <p>快去預約今天的運動課程吧！</p>
-                    <a href="../course-catalog.html" class="btn btn-primary" style="margin-top: 15px;">預約課程</a>
-                </div>
-            </div>
-        </section>
-        
-        <!-- 推薦課程 -->
-        <section>
-            <h2 class="section-title">
-                為你推薦
-                <a href="../course-catalog.html" class="section-link">查看更多</a>
-            </h2>
+            <p style="max-width: 600px; margin: 0 auto; color: rgba(255,255,255,0.7); font-size: 0.95rem;">
+                竹北運動島 Line 官方帳號提供最完整的運動課程服務，透過 Line 即可輕鬆預約課程、接收通知、記錄運動成果。
+            </p>
             
-            <div class="courses-grid" id="recommended-courses">
-                <!-- 推薦課程卡片會由 JavaScript 動態生成 -->
-            </div>
-        </section>
-        
-        <!-- 近期活動 -->
-        <section>
-            <h2 class="section-title">近期活動</h2>
-            <div class="activity-list" id="recent-activities">
-                <!-- 活動記錄會由 JavaScript 動態生成 -->
-                <div class="empty-state" style="padding: 20px;">
-                    <div class="empty-icon">📝</div>
-                    <div class="empty-title">尚無活動記錄</div>
-                    <p>開始運動後，這裡會顯示你的活動記錄</p>
-                </div>
-            </div>
-        </section>
-    </main>
+            <p class="footer-copyright">
+                © 2024 竹北運動島活動中心 版權所有<br>
+                服務時間：週一至週日 6:00-22:00 | 聯絡電話：03-668-7890
+            </p>
+        </div>
+    </footer>
     
     <script>
-        // 頁面載入時檢查登入狀態
-        window.addEventListener('DOMContentLoaded', function() {
-            checkLoginStatus();
-            loadUserData();
-            generateSampleData();
-        });
-        
-        // 檢查是否已登入
-        function checkLoginStatus() {
-            const isLoggedIn = localStorage.getItem('is_logged_in');
-            const userData = localStorage.getItem('user_data');
+        // 簡單的滾動動畫
+        document.addEventListener('DOMContentLoaded', function() {
+            // 觀察元素進入視圖時添加動畫
+            const observerOptions = {
+                threshold: 0.1,
+                rootMargin: '0px 0px -50px 0px'
+            };
             
-            if (isLoggedIn !== 'true' || !userData) {
-                // 未登入，跳轉到登入頁
-                alert('請先登入！');
-                window.location.href = '../auth/login.html';
-                return false;
-            }
-            
-            return true;
-        }
-        
-        // 載入使用者資料
-        function loadUserData() {
-            if (!checkLoginStatus()) return;
-            
-            try {
-                const userData = JSON.parse(localStorage.getItem('user_data'));
-                
-                // 顯示使用者資訊
-                document.getElementById('user-name').textContent = 
-                    userData.displayName || '會員';
-                
-                // 設定頭像
-                const avatarText = document.getElementById('avatar-text');
-                const avatarContainer = document.getElementById('user-avatar');
-                
-                if (userData.displayName) {
-                    avatarText.textContent = userData.displayName.charAt(0).toUpperCase();
-                }
-                
-                if (userData.pictureUrl) {
-                    avatarContainer.innerHTML = `<img src="${userData.pictureUrl}" alt="使用者頭像">`;
-                }
-                
-                // 顯示歡迎訊息
-                document.getElementById('welcome-title').textContent = 
-                    `歡迎回來，${userData.displayName || '會員'}！`;
-                
-                // 根據時間顯示不同問候語
-                const hour = new Date().getHours();
-                let greeting = '今天要安排什麼運動呢？';
-                
-                if (hour < 12) {
-                    greeting = '早安！開始活力滿滿的一天吧！';
-                } else if (hour < 18) {
-                    greeting = '午安！下午也要保持活力！';
-                } else {
-                    greeting = '晚安！放鬆身心，享受運動時光！';
-                }
-                
-                document.getElementById('welcome-subtitle').textContent = greeting;
-                
-                // 顯示登入方式
-                const loginMethod = userData.loginMethod === 'line' ? 'Line 會員' : '體驗會員';
-                document.getElementById('user-status').textContent = loginMethod;
-                
-            } catch (error) {
-                console.error('載入使用者資料失敗:', error);
-                showError('無法載入使用者資料');
-            }
-        }
-        
-        // 產生範例資料（實際應用中應從後端 API 取得）
-        function generateSampleData() {
-            // 統計資料
-            document.getElementById('total-courses').textContent = '12';
-            document.getElementById('attendance-rate').textContent = '85%';
-            document.getElementById('streak-days').textContent = '7';
-            document.getElementById('points').textContent = '1,250';
-            
-            // 今日課程
-            const todayCourses = [
-                {
-                    title: '晨間活力瑜珈',
-                    instructor: '李教練',
-                    time: '07:00-08:00',
-                    date: '今天',
-                    status: 'confirmed'
-                },
-                {
-                    title: 'HIIT 高效燃脂',
-                    instructor: '王教練',
-                    time: '19:00-20:00',
-                    date: '今天',
-                    status: 'upcoming'
-                }
-            ];
-            
-            const todayCoursesContainer = document.getElementById('today-courses');
-            
-            if (todayCourses.length > 0) {
-                todayCoursesContainer.innerHTML = '';
-                
-                todayCourses.forEach(course => {
-                    const courseCard = createCourseCard(course);
-                    todayCoursesContainer.appendChild(courseCard);
+            const observer = new IntersectionObserver(function(entries) {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('fade-in');
+                    }
                 });
-            }
+            }, observerOptions);
             
-            // 推薦課程
-            const recommendedCourses = [
-                {
-                    title: '核心肌群強化',
-                    instructor: '張教練',
-                    time: '10:00-11:00',
-                    date: '每週三、六',
-                    description: '專注核心訓練，改善姿勢'
-                },
-                {
-                    title: '舒壓伸展課程',
-                    instructor: '林教練',
-                    time: '20:00-21:00',
-                    date: '每週一、四',
-                    description: '放鬆肌肉，提升柔軟度'
-                },
-                {
-                    title: '拳擊有氧',
-                    instructor: '陳教練',
-                    time: '18:00-19:00',
-                    date: '每週二、五',
-                    description: '高強度有氧，全身訓練'
-                }
-            ];
-            
-            const recommendedContainer = document.getElementById('recommended-courses');
-            recommendedContainer.innerHTML = '';
-            
-            recommendedCourses.forEach(course => {
-                const courseCard = createCourseCard(course);
-                recommendedContainer.appendChild(courseCard);
+            // 觀察所有需要動畫的元素
+            document.querySelectorAll('.fade-in').forEach(el => {
+                observer.observe(el);
             });
             
-            // 近期活動
-            const activities = [
-                {
-                    icon: '✅',
-                    title: '完成晨間瑜珈課程',
-                    time: '今天 08:00'
-                },
-                {
-                    icon: '🎯',
-                    title: '達成連續運動一週成就',
-                    time: '昨天'
-                },
-                {
-                    icon: '📅',
-                    title: '預約 HIIT 高效燃脂課程',
-                    time: '2 天前'
-                },
-                {
-                    icon: '⭐',
-                    title: '獲得「運動新人」徽章',
-                    time: '3 天前'
-                }
-            ];
+            // Line 登入按鈕點擊統計（可選）
+            document.querySelectorAll('.line-login-button').forEach(button => {
+                button.addEventListener('click', function() {
+                    console.log('Line 登入按鈕點擊:', this.textContent.trim());
+                    // 這裡可以加入 GA 或數據統計代碼
+                });
+            });
             
-            const activitiesContainer = document.getElementById('recent-activities');
-            
-            if (activities.length > 0) {
-                activitiesContainer.innerHTML = '';
-                
-                activities.forEach(activity => {
-                    const activityItem = document.createElement('div');
-                    activityItem.className = 'activity-item';
-                    
-                    activityItem.innerHTML = `
-                        <div class="activity-icon">${activity.icon}</div>
-                        <div class="activity-content">
-                            <div class="activity-title">${activity.title}</div>
-                            <div class="activity-time">${activity.time}</div>
-                        </div>
-                    `;
-                    
-                    activitiesContainer.appendChild(activityItem);
+            // 模擬 QR Code 掃描提示
+            const qrPlaceholder = document.querySelector('.qr-code-placeholder');
+            if (qrPlaceholder) {
+                qrPlaceholder.addEventListener('click', function() {
+                    alert('請開啟 Line App 掃描 QR Code 加入官方帳號\n\n或直接搜尋「@sportsland」加入好友');
                 });
             }
-        }
-        
-        // 建立課程卡片
-        function createCourseCard(course) {
-            const card = document.createElement('div');
-            card.className = 'course-card';
             
-            const statusClass = course.status === 'confirmed' ? 'confirmed' : 'upcoming';
-            const statusText = course.status === 'confirmed' ? '已確認' : '即將開始';
-            
-            card.innerHTML = `
-                <div class="course-header">
-                    <div class="course-title">${course.title}</div>
-                    <div class="course-instructor">${course.instructor}</div>
-                </div>
-                <div class="course-content">
-                    <div class="course-meta">
-                        <div class="course-time">⏰ ${course.time}</div>
-                        <div class="course-date">📅 ${course.date}</div>
-                    </div>
-                    ${course.description ? `<p style="color: #666; margin-bottom: 20px; line-height: 1.5;">${course.description}</p>` : ''}
-                    <div class="course-actions">
-                        ${course.status ? `<span class="btn btn-secondary" style="flex: 0.5;">${statusText}</span>` : ''}
-                        <button class="btn btn-primary" onclick="reserveCourse('${course.title}')">${course.status ? '查看詳情' : '立即預約'}</button>
-                    </div>
-                </div>
-            `;
-            
-            return card;
-        }
-        
-        // 預約課程
-        function reserveCourse(courseTitle) {
-            alert(`已預約「${courseTitle}」課程！`);
-            // 實際應用中這裡會呼叫 API
-        }
-        
-        // 登出功能
-        function logout() {
-            if (confirm('確定要登出嗎？')) {
-                localStorage.removeItem('user_data');
-                localStorage.removeItem('is_logged_in');
-                alert('已成功登出！');
-                window.location.href = '../index.html';
+            // 檢查是否在 Line 內開啟
+            function checkLineEnvironment() {
+                const isInLine = /Line/i.test(navigator.userAgent);
+                if (isInLine) {
+                    console.log('在 Line App 內開啟');
+                    // 可以顯示 Line 內專屬提示
+                }
             }
-        }
-        
-        // 顯示錯誤
-        function showError(message) {
-            alert('錯誤：' + message);
-        }
-        
-        // 模擬載入
-        function simulateLoading() {
-            document.body.innerHTML = `
-                <div class="loading">
-                    <div class="loading-spinner"></div>
-                    <p>載入儀表板中...</p>
-                </div>
-            `;
             
-            setTimeout(() => {
-                location.reload();
-            }, 1000);
-        }
+            checkLineEnvironment();
+        });
+        
+        // 平滑滾動
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function(e) {
+                const href = this.getAttribute('href');
+                if (href !== '#' && document.querySelector(href)) {
+                    e.preventDefault();
+                    const target = document.querySelector(href);
+                    if (target) {
+                        target.scrollIntoView({
+                            behavior: 'smooth',
+                            block: 'start'
+                        });
+                    }
+                }
+            });
+        });
     </script>
 </body>
 </html>
