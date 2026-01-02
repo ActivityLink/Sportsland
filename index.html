@@ -8,107 +8,51 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
-        
-        body {
-            font-family: 'Inter', 'PingFang TC', 'Microsoft JhengHei', sans-serif;
-            background-color: #f8fafc;
-        }
-
+        body { font-family: 'Inter', 'PingFang TC', 'Microsoft JhengHei', sans-serif; background-color: #f8fafc; }
         .sidebar { transition: all 0.3s ease; width: 260px; }
         .sidebar.collapsed { width: 80px; }
         .main-content { transition: all 0.3s ease; margin-left: 260px; }
         .main-content.expanded { margin-left: 80px; }
         .nav-link.active { background-color: #3b82f6; color: white; }
-
-        .loading-spinner {
-            border: 3px solid #f3f3f3;
-            border-top: 3px solid #3b82f6;
-            border-radius: 50%;
-            width: 24px;
-            height: 24px;
-            animation: spin 1s linear infinite;
-        }
-
+        .loading-spinner { border: 3px solid #f3f3f3; border-top: 3px solid #3b82f6; border-radius: 50%; width: 24px; height: 24px; animation: spin 1s linear infinite; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-
-        .modal-overlay {
-            background-color: rgba(0, 0, 0, 0.5);
-            backdrop-filter: blur(4px);
-            display: none;
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            z-index: 1000;
-            align-items: center; justify-content: center;
-        }
-        .modal-content {
-            background: white;
-            width: 90%; max-width: 900px;
-            max-height: 90vh;
-            overflow-y: auto;
-            border-radius: 1.5rem;
-        }
-
-        .btn-loading {
-            pointer-events: none;
-            opacity: 0.7;
-        }
+        .modal-overlay { background-color: rgba(0, 0, 0, 0.5); backdrop-filter: blur(4px); display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 1000; align-items: center; justify-content: center; }
+        .modal-content { background: white; width: 95%; max-width: 1000px; max-height: 90vh; overflow-y: auto; border-radius: 1.5rem; }
+        .btn-loading { pointer-events: none; opacity: 0.7; }
+        label { display: block; font-size: 0.875rem; font-weight: 500; color: #475569; margin-bottom: 0.25rem; }
+        input, select, textarea { width: 100%; border: 1px solid #e2e8f0; rounded-radius: 0.5rem; padding: 0.625rem; font-size: 0.875rem; outline: none; transition: ring 0.2s; border-radius: 0.5rem;}
+        input:focus { ring: 2px; ring-color: #3b82f6; border-color: #3b82f6; }
+        section h3 { font-weight: 700; color: #1e293b; margin-bottom: 1rem; padding-bottom: 0.5rem; border-bottom: 1px solid #f1f5f9; display: flex; align-items: center; gap: 0.5rem; }
     </style>
 </head>
 <body class="overflow-x-hidden">
 
-    <!-- 側邊欄 -->
     <aside id="sidebar" class="sidebar fixed top-0 left-0 h-full bg-slate-900 text-white z-50 overflow-y-auto shadow-xl">
         <div class="p-6 flex items-center gap-3">
-            <div class="w-8 h-8 bg-blue-500 rounded-lg flex items-center justify-center">
-                <i class="fas fa-link text-white"></i>
-            </div>
+            <div class="w-8 h-8 bg-blue-500 rounded-lg flex items-center justify-center"><i class="fas fa-link text-white"></i></div>
             <span class="text-xl font-bold logo-text">ActivityLink</span>
         </div>
-
         <nav class="mt-6 px-4 space-y-2">
             <a href="#" onclick="switchView('dashboard')" class="nav-link flex items-center gap-4 p-3 rounded-xl transition-all hover:bg-slate-800">
-                <i class="fas fa-chart-pie w-5 text-center"></i>
-                <span class="nav-text">儀表板</span>
+                <i class="fas fa-chart-pie w-5 text-center"></i><span class="nav-text">儀表板</span>
             </a>
             <a href="#" onclick="switchView('activities')" class="nav-link flex items-center gap-4 p-3 rounded-xl transition-all hover:bg-slate-800">
-                <i class="fas fa-calendar-check w-5 text-center"></i>
-                <span class="nav-text">活動管理</span>
-            </a>
-            <a href="#" onclick="switchView('line-settings')" class="nav-link flex items-center gap-4 p-3 rounded-xl transition-all hover:bg-slate-800">
-                <i class="fab fa-line w-5 text-center text-green-400"></i>
-                <span class="nav-text">LINE 外掛設定</span>
-            </a>
-            <a href="#" onclick="switchView('analytics')" class="nav-link flex items-center gap-4 p-3 rounded-xl transition-all hover:bg-slate-800">
-                <i class="fas fa-users w-5 text-center"></i>
-                <span class="nav-text">用戶分析</span>
+                <i class="fas fa-calendar-check w-5 text-center"></i><span class="nav-text">活動管理</span>
             </a>
             <div class="pt-4 mt-4 border-t border-slate-800">
                 <a href="#" onclick="switchView('settings')" class="nav-link flex items-center gap-4 p-3 rounded-xl transition-all hover:bg-slate-800">
-                    <i class="fas fa-cog w-5 text-center text-slate-400"></i>
-                    <span class="nav-text text-slate-400">系統設定</span>
+                    <i class="fas fa-cog w-5 text-center text-slate-400"></i><span class="nav-text text-slate-400">系統設定</span>
                 </a>
             </div>
         </nav>
     </aside>
 
     <main id="main-content" class="main-content min-h-screen">
-        <nav id="topnav" class="sticky top-0 z-40 bg-white/80 backdrop-blur-md border-b border-slate-200 px-6 py-3 flex items-center justify-between">
-            <div class="flex items-center gap-4">
-                <button id="sidebar-toggle" class="p-2 hover:bg-slate-100 rounded-lg text-slate-500">
-                    <i class="fas fa-bars text-lg"></i>
-                </button>
-                <div class="text-slate-700 font-semibold hidden md:block">
-                    單日課程管理 <span class="text-slate-400 font-normal mx-2">/</span> <span class="text-sm font-normal text-slate-500">SingleCourses</span>
-                </div>
-            </div>
-            <div class="flex items-center gap-4">
-                <div class="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center text-white font-bold">JD</div>
-            </div>
+        <nav class="sticky top-0 z-40 bg-white/80 backdrop-blur-md border-b border-slate-200 px-6 py-3 flex items-center justify-between">
+            <button id="sidebar-toggle" class="p-2 hover:bg-slate-100 rounded-lg text-slate-500"><i class="fas fa-bars text-lg"></i></button>
+            <div class="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center text-white font-bold">JD</div>
         </nav>
-
-        <div class="p-6">
-            <div id="app-content"></div>
-        </div>
+        <div class="p-6"><div id="app-content"></div></div>
     </main>
 
     <!-- 新增課程 Modal -->
@@ -117,81 +61,90 @@
             <div class="sticky top-0 bg-white border-b px-8 py-4 flex items-center justify-between z-10">
                 <div>
                     <h2 class="text-xl font-bold text-slate-800">新增單日課程</h2>
-                    <p class="text-xs text-slate-500">透過 Cloudflare Worker 寫入 Google Sheet</p>
+                    <p class="text-xs text-slate-500">目標工作表: SingleCourses</p>
                 </div>
-                <button onclick="closeCourseModal()" class="w-10 h-10 rounded-full hover:bg-slate-100 flex items-center justify-center text-slate-400">
-                    <i class="fas fa-times"></i>
-                </button>
+                <button onclick="closeCourseModal()" class="text-slate-400 hover:text-slate-600"><i class="fas fa-times text-xl"></i></button>
             </div>
             
-            <form id="course-form" class="p-8 space-y-10">
-                <!-- 基本資訊 -->
+            <form id="course-form" class="p-8 space-y-12">
+                <!-- 1. 基本資訊 -->
                 <section>
-                    <h3 class="flex items-center gap-2 font-bold text-slate-800 mb-4 pb-2 border-b border-slate-100">
-                        <i class="fas fa-info-circle text-blue-500"></i> 基本資訊
-                    </h3>
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                        <div class="md:col-span-2">
-                            <label class="block text-sm font-medium text-slate-600 mb-1">課程名稱 *</label>
-                            <input type="text" name="courseName" required class="w-full border border-slate-200 rounded-lg p-2.5 focus:ring-2 focus:ring-blue-500 outline-none">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-slate-600 mb-1">運動類別</label>
-                            <select name="category" class="w-full border border-slate-200 rounded-lg p-2.5">
-                                <option value="籃球">籃球</option>
-                                <option value="羽球">羽球</option>
-                                <option value="足球">足球</option>
-                                <option value="網球">網球</option>
-                            </select>
-                        </div>
+                    <h3><i class="fas fa-tag text-blue-500"></i> 基本資訊</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div class="md:col-span-2"><label>課程名稱 *</label><input type="text" name="courseName" required></div>
+                        <div><label>運動類別</label><input type="text" name="category" placeholder="例如：籃球"></div>
+                        <div><label>年齡分級</label><input type="text" name="ageGroup" placeholder="例如：U12 / 成人"></div>
+                        <div><label>難度等級</label><select name="difficulty"><option value="初階">初階</option><option value="中階">中階</option><option value="高階">高階</option></select></div>
+                        <div><label>標籤分類</label><input type="text" name="tags" placeholder="多個標籤以逗號隔開"></div>
                     </div>
                 </section>
 
-                <!-- 時間與地點 -->
+                <!-- 2. 日期與時間 -->
                 <section>
-                    <h3 class="flex items-center gap-2 font-bold text-slate-800 mb-4 pb-2 border-b border-slate-100">
-                        <i class="fas fa-clock text-blue-500"></i> 時間與場地
-                    </h3>
-                    <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
-                        <div>
-                            <label class="block text-sm font-medium text-slate-600 mb-1">課程日期 *</label>
-                            <input type="date" name="courseDate" required class="w-full border border-slate-200 rounded-lg p-2.5">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-slate-600 mb-1">開始時間</label>
-                            <input type="time" name="startTime" class="w-full border border-slate-200 rounded-lg p-2.5">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-slate-600 mb-1">教練姓名</label>
-                            <input type="text" name="coachName" class="w-full border border-slate-200 rounded-lg p-2.5">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-slate-600 mb-1">場地名稱</label>
-                            <input type="text" name="venueName" class="w-full border border-slate-200 rounded-lg p-2.5">
-                        </div>
+                    <h3><i class="fas fa-clock text-blue-500"></i> 課程時間安排</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                        <div><label>課程日期 *</label><input type="date" name="courseDate" required></div>
+                        <div><label>開始時間</label><input type="time" name="startTime"></div>
+                        <div><label>結束時間</label><input type="time" name="endTime"></div>
+                        <div><label>課程時長 (分鐘)</label><input type="number" name="duration" value="60"></div>
+                        <div class="md:col-span-2"><label>報名開放日</label><input type="date" name="regStart"></div>
+                        <div class="md:col-span-2"><label>報名截止日</label><input type="date" name="regEnd"></div>
                     </div>
                 </section>
 
-                <!-- 價格 -->
+                <!-- 3. 教練與場地 -->
                 <section>
-                    <h3 class="flex items-center gap-2 font-bold text-slate-800 mb-4 pb-2 border-b border-slate-100">
-                        <i class="fas fa-dollar-sign text-blue-500"></i> 價格
-                    </h3>
-                    <div class="grid grid-cols-2 gap-6">
-                        <div>
-                            <label class="block text-sm font-medium text-slate-600 mb-1">原價</label>
-                            <input type="number" name="price" placeholder="0" class="w-full border border-slate-200 rounded-lg p-2.5">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-slate-600 mb-1">會員價</label>
-                            <input type="number" name="memberPrice" placeholder="0" class="w-full border border-slate-200 rounded-lg p-2.5">
-                        </div>
+                    <h3><i class="fas fa-map-marker-alt text-blue-500"></i> 教練與場地</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div><label>教練姓名</label><input type="text" name="coachName"></div>
+                        <div><label>教練 ID</label><input type="text" name="coachId"></div>
+                        <div><label>場地名稱</label><input type="text" name="venueName"></div>
+                        <div><label>場地 ID</label><input type="text" name="venueId"></div>
+                        <div class="md:col-span-2"><label>場地區域</label><input type="text" name="venueArea" placeholder="例如：A1 半場 / 3號羽球塔"></div>
                     </div>
                 </section>
 
-                <div class="sticky bottom-0 bg-white pt-6 pb-2 border-t flex justify-end gap-3">
-                    <button type="button" onclick="closeCourseModal()" class="px-6 py-2.5 rounded-xl border border-slate-200 text-slate-500 hover:bg-slate-50 font-medium">取消</button>
-                    <button type="submit" id="submit-btn" class="px-8 py-2.5 rounded-xl bg-blue-600 text-white hover:bg-blue-700 shadow-lg font-bold flex items-center gap-2">
+                <!-- 4. 費用設定 -->
+                <section>
+                    <h3><i class="fas fa-dollar-sign text-blue-500"></i> 費用設定</h3>
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                        <div><label>原價</label><input type="number" name="price" value="0"></div>
+                        <div><label>會員價</label><input type="number" name="memberPrice" value="0"></div>
+                        <div><label>親友價</label><input type="number" name="friendPrice" value="0"></div>
+                        <div><label>早鳥價</label><input type="number" name="earlyBirdPrice" value="0"></div>
+                        <div class="md:col-span-2"><label>早鳥截止日</label><input type="date" name="earlyBirdEnd"></div>
+                    </div>
+                </section>
+
+                <!-- 5. 名額與限制 -->
+                <section>
+                    <h3><i class="fas fa-users text-blue-500"></i> 名額與限制</h3>
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                        <div><label>總名額</label><input type="number" name="quota" value="20"></div>
+                        <div><label>最少開班人數</label><input type="number" name="minClass" value="5"></div>
+                        <div><label>性別限制</label><select name="genderLimit"><option value="不限">不限</option><option value="限男性">限男性</option><option value="限女性">限女性</option></select></div>
+                        <div><label>排序權重</label><input type="number" name="weight" value="0"></div>
+                    </div>
+                </section>
+
+                <!-- 6. 圖片與內容 -->
+                <section>
+                    <h3><i class="fas fa-file-alt text-blue-500"></i> 詳細介紹內容</h3>
+                    <div class="space-y-4">
+                        <div><label>封面圖片網址</label><input type="text" name="coverImage" placeholder="https://..."></div>
+                        <div><label>詳細圖片網址 (多張以逗號隔開)</label><input type="text" name="detailImage" placeholder="https://..."></div>
+                        <div><label>課程亮點 (簡短描述)</label><input type="text" name="highlights"></div>
+                        <div><label>課程內容</label><textarea name="content" rows="4"></textarea></div>
+                        <div><label>注意事項</label><textarea name="notes" rows="2"></textarea></div>
+                        <div><label>適合對象</label><textarea name="targetAudience" rows="2"></textarea></div>
+                        <div><label>特殊要求</label><input type="text" name="specialRequest"></div>
+                        <div><label>課程狀態</label><select name="status"><option value="草稿">草稿</option><option value="發佈">發佈</option><option value="下架">下架</option></select></div>
+                    </div>
+                </section>
+
+                <div class="sticky bottom-0 bg-white pt-6 pb-4 border-t flex justify-end gap-3 z-10">
+                    <button type="button" onclick="closeCourseModal()" class="px-6 py-2.5 rounded-xl border border-slate-200 font-medium">取消</button>
+                    <button type="submit" id="submit-btn" class="px-8 py-2.5 rounded-xl bg-blue-600 text-white shadow-lg font-bold flex items-center gap-2">
                         <span id="btn-text">確認儲存課程</span>
                         <div id="btn-spinner" class="hidden loading-spinner !w-4 !h-4 !border-white !border-t-transparent"></div>
                     </button>
@@ -201,9 +154,8 @@
     </div>
 
     <script>
-        // --- 設定區 ---
-        // 這裡填入你的 Cloudflare Worker 網址
-        const CLOUDFLARE_WORKER_URL = 'https://aged-rice-2438.wetw-net3.workers.dev/';
+        // --- 請確認此網址正確 ---
+        const CLOUDFLARE_WORKER_URL = 'https://aged-rice-2438.wetw-net3.workers.dev';
 
         const sidebar = document.getElementById('sidebar');
         const mainContent = document.getElementById('main-content');
@@ -222,18 +174,9 @@
             });
         });
 
-        function openCourseModal() {
-            courseModal.style.display = 'flex';
-            document.body.style.overflow = 'hidden';
-        }
+        function openCourseModal() { courseModal.style.display = 'flex'; document.body.style.overflow = 'hidden'; }
+        function closeCourseModal() { courseModal.style.display = 'none'; document.body.style.overflow = 'auto'; courseForm.reset(); }
 
-        function closeCourseModal() {
-            courseModal.style.display = 'none';
-            document.body.style.overflow = 'auto';
-            courseForm.reset();
-        }
-
-        // 提交至 Cloudflare Worker
         courseForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             setLoading(true);
@@ -242,26 +185,24 @@
             const data = Object.fromEntries(formData.entries());
 
             try {
-                // 透過 Worker 轉發，可以使用 cors 模式並獲取 JSON 回應
                 const response = await fetch(CLOUDFLARE_WORKER_URL, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(data)
                 });
 
-                const result = await response.json();
+                if (!response.ok) throw new Error('連線錯誤: ' + response.status);
 
+                const result = await response.json();
                 if (result.status === "success") {
-                    alert('課程已透過 Worker 成功寫入 Google 試算表！');
+                    alert('課程資料已成功寫入 Google Sheets！');
                     closeCourseModal();
-                    switchView('activities');
                 } else {
                     throw new Error(result.message || '寫入失敗');
                 }
-
             } catch (error) {
                 console.error('提交失敗:', error);
-                alert('提交失敗: ' + error.message);
+                alert('提交失敗: ' + error.message + '\n請確認 Worker 是否正確部署並對應 GAS URL。');
             } finally {
                 setLoading(false);
             }
@@ -270,15 +211,9 @@
         function setLoading(isLoading) {
             const btnText = document.getElementById('btn-text');
             const btnSpinner = document.getElementById('btn-spinner');
-            if (isLoading) {
-                submitBtn.classList.add('btn-loading');
-                btnText.innerText = '正在轉發處理...';
-                btnSpinner.classList.remove('hidden');
-            } else {
-                submitBtn.classList.remove('btn-loading');
-                btnText.innerText = '確認儲存課程';
-                btnSpinner.classList.add('hidden');
-            }
+            submitBtn.classList.toggle('btn-loading', isLoading);
+            btnText.innerText = isLoading ? '正在儲存...' : '確認儲存課程';
+            btnSpinner.classList.toggle('hidden', !isLoading);
         }
 
         const views = {
@@ -286,20 +221,21 @@
                 <div class="animate-in slide-in-from-bottom-4 duration-500">
                     <div class="flex items-center justify-between mb-8">
                         <div>
-                            <h1 class="text-2xl font-bold text-slate-800">單日課程管理</h1>
-                            <p class="text-slate-500 text-sm">中介層：Cloudflare Workers 已啟用</p>
+                            <h1 class="text-2xl font-bold text-slate-800">活動管理</h1>
+                            <p class="text-slate-500 text-sm">管理 SingleCourses 單日課程</p>
                         </div>
                         <button onclick="openCourseModal()" class="bg-blue-600 text-white px-5 py-2 rounded-lg hover:bg-blue-700 shadow-lg font-bold flex items-center gap-2">
                             <i class="fas fa-plus"></i> 新增單日課程
                         </button>
                     </div>
                     <div class="bg-white p-20 rounded-2xl border-2 border-dashed border-slate-200 text-center">
-                        <i class="fas fa-shield-alt text-4xl text-slate-200 mb-4 block"></i>
-                        <p class="text-slate-400">目前所有資料將經由 Cloudflare 安全轉發至 Google</p>
+                        <i class="fas fa-table text-4xl text-slate-200 mb-4 block"></i>
+                        <p class="text-slate-400">目前所有資料將透過 Cloudflare 中介層寫入 Google</p>
                     </div>
                 </div>
             `,
-            dashboard: `<div class="p-8">載入中...</div>`
+            dashboard: `<div class="p-8">儀表板載入中...</div>`,
+            settings: `<div class="p-8">系統設定</div>`
         };
 
         function switchView(viewName) {
