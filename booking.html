@@ -11,7 +11,7 @@
         
         :root {
             --line-green: #06C755;
-            --line-green-dark: #05b34c;
+            --line-blue: #007AFF; /* 藍色背景色 */
         }
 
         body { 
@@ -42,57 +42,59 @@
         }
     </style>
 </head>
-<body class="pb-20">
+<body class="pb-24">
 
     <!-- 頂部導航 -->
-    <header class="sticky top-0 z-50 bg-white/90 backdrop-blur-md px-5 py-4 flex items-center justify-between border-b border-gray-100">
+    <header class="sticky top-0 z-50 bg-white/90 backdrop-blur-md px-5 py-3 flex items-center justify-between border-b border-gray-100">
         <div class="flex items-center gap-2">
             <div class="w-8 h-8 bg-[#06C755] rounded-lg flex items-center justify-center">
                 <i class="fas fa-comment-dots text-white text-xs"></i>
             </div>
             <h1 class="text-xl font-black tracking-tighter">ActivityLink</h1>
         </div>
-        <button class="w-10 h-10 rounded-full bg-gray-50 flex items-center justify-center">
-            <i class="fas fa-user text-gray-400"></i>
-        </button>
+        <div class="flex items-center gap-4">
+            <button class="text-gray-400"><i class="fas fa-search"></i></button>
+            <button class="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-gray-400">
+                <i class="fas fa-user text-sm"></i>
+            </button>
+        </div>
     </header>
 
-    <!-- 橫幅 Banner 區 -->
-    <div class="px-5 py-6">
-        <div class="flex gap-4 overflow-x-auto no-scrollbar py-2">
-            <div class="min-w-[280px] h-40 bg-gradient-to-br from-[#06C755] to-green-400 rounded-2xl p-6 text-white relative overflow-hidden shadow-lg shadow-green-100">
-                <div class="relative z-10">
-                    <h2 class="text-2xl font-black mb-1">活動專區</h2>
-                    <p class="text-white/90 text-sm font-medium">探索最新運動課程</p>
-                </div>
-                <i class="fas fa-basketball-ball absolute -right-4 -bottom-4 text-white/20 text-8xl transform rotate-12"></i>
-            </div>
-            <div class="min-w-[280px] h-40 bg-slate-900 rounded-2xl p-6 text-white relative overflow-hidden shadow-lg shadow-slate-200">
-                <div class="relative z-10">
-                    <h2 class="text-2xl font-black mb-1">會員專屬</h2>
-                    <p class="text-white/90 text-sm font-medium">查看您的積分與優惠</p>
-                </div>
-                <i class="fas fa-crown absolute -right-4 -bottom-4 text-white/10 text-8xl transform -rotate-12"></i>
-            </div>
-        </div>
+    <!-- 主 Banner (等比縮放) -->
+    <div class="w-full overflow-hidden">
+        <img src="https://aiwe.cc/wp-content/uploads/2025/12/3486bc19dc6317e16bf4f1449ec52ae4.jpg" 
+             class="w-full h-auto block" 
+             alt="ActivityLink Banner">
+    </div>
+
+    <!-- 功能快速選單 (Banner 下方，左右各一，藍色背景) -->
+    <div class="px-5 py-4 grid grid-cols-2 gap-3">
+        <button class="flex items-center justify-center gap-3 bg-blue-600 h-16 rounded-xl text-white shadow-md active:bg-blue-700 transition-colors">
+            <i class="fas fa-calendar-star text-lg"></i>
+            <span class="font-bold">活動專區</span>
+        </button>
+        <button class="flex items-center justify-center gap-3 bg-blue-600 h-16 rounded-xl text-white shadow-md active:bg-blue-700 transition-colors">
+            <i class="fas fa-id-card text-lg"></i>
+            <span class="font-bold">會員專區</span>
+        </button>
     </div>
 
     <!-- 課程清單區 (UberEats Style) -->
-    <main class="px-5">
+    <main class="px-5 mt-4">
         <div class="flex items-center justify-between mb-6">
-            <h3 class="text-lg font-black">推薦課程</h3>
-            <span class="text-xs font-bold text-gray-400 uppercase tracking-widest">See All</span>
+            <h3 class="text-lg font-black tracking-tight">推薦熱門課程</h3>
+            <span class="text-xs font-bold text-gray-400 uppercase tracking-widest">查看全部</span>
         </div>
 
         <!-- 課程容器 -->
         <div id="course-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-y-10 gap-x-8">
             <!-- 初始骨架屏 -->
-            <div class="space-y-4">
+            <div class="space-y-4 skeleton-wrapper">
                 <div class="aspect-[16/9] skeleton rounded-2xl"></div>
                 <div class="h-6 skeleton rounded w-3/4"></div>
                 <div class="h-4 skeleton rounded w-1/2"></div>
             </div>
-            <div class="space-y-4">
+            <div class="space-y-4 skeleton-wrapper">
                 <div class="aspect-[16/9] skeleton rounded-2xl"></div>
                 <div class="h-6 skeleton rounded w-3/4"></div>
                 <div class="h-4 skeleton rounded w-1/2"></div>
@@ -107,16 +109,16 @@
             <span class="text-[10px] font-bold">首頁</span>
         </button>
         <button class="flex flex-col items-center gap-1 text-gray-300">
-            <i class="fas fa-search text-lg"></i>
-            <span class="text-[10px] font-bold">探索</span>
+            <i class="fas fa-compass text-lg"></i>
+            <span class="text-[10px] font-bold">探索活動</span>
         </button>
         <button class="flex flex-col items-center gap-1 text-gray-300">
-            <i class="fas fa-calendar-alt text-lg"></i>
+            <i class="fas fa-clipboard-list text-lg"></i>
             <span class="text-[10px] font-bold">我的預約</span>
         </button>
         <button class="flex flex-col items-center gap-1 text-gray-300">
-            <i class="fas fa-user text-lg"></i>
-            <span class="text-[10px] font-bold">帳戶</span>
+            <i class="fas fa-user-circle text-lg"></i>
+            <span class="text-[10px] font-bold">個人帳號</span>
         </button>
     </footer>
 
@@ -140,7 +142,7 @@
 
         function renderCourses(data) {
             if (!data || data.length === 0) {
-                container.innerHTML = `<div class="col-span-full py-20 text-center text-gray-400">目前沒有開放中的課程。</div>`;
+                container.innerHTML = `<div class="col-span-full py-20 text-center text-gray-400 font-bold">目前沒有開放中的課程。</div>`;
                 return;
             }
 
@@ -150,16 +152,16 @@
                 const progress = Math.min((enrolled / total) * 100, 100);
                 const cover = item['封面圖片'] || 'https://images.unsplash.com/photo-1546519638-68e109498ffc?w=800';
                 
-                // 格式化日期
+                // 格式化日期 (處理 GAS 傳來的日期)
                 const dateObj = new Date(item['課程日期']);
-                const formattedDate = dateObj.toLocaleDateString('zh-TW', { month: 'short', day: 'numeric', weekday: 'short' });
+                const formattedDate = isNaN(dateObj) ? item['課程日期'] : dateObj.toLocaleDateString('zh-TW', { month: 'short', day: 'numeric', weekday: 'short' });
 
                 return `
                     <div class="course-card group">
                         <!-- 圖片區 -->
-                        <div class="relative aspect-[16/9] rounded-2xl overflow-hidden mb-4 shadow-sm">
+                        <div class="relative aspect-[16/9] rounded-2xl overflow-hidden mb-4 shadow-sm bg-gray-100">
                             <img src="${cover}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" alt="${item['課程名稱']}">
-                            <div class="absolute top-3 left-3 px-3 py-1 bg-black/60 backdrop-blur-md text-white text-[10px] font-bold rounded-full">
+                            <div class="absolute top-3 left-3 px-3 py-1 bg-black/60 backdrop-blur-md text-white text-[10px] font-black rounded-full uppercase">
                                 ${item['運動類別'] || '運動'}
                             </div>
                             ${item['課程狀態'] === '已額滿' ? `
@@ -170,35 +172,35 @@
                         </div>
 
                         <!-- 內容區 -->
-                        <div class="space-y-2">
+                        <div class="px-1 space-y-2">
                             <div class="flex justify-between items-start gap-2">
                                 <h4 class="text-lg font-black leading-tight text-gray-900">${item['課程名稱']}</h4>
                                 <div class="flex flex-col items-end flex-shrink-0">
-                                    <span class="text-[#06C755] font-black text-lg font-mono">$${item['會員價'] || 0}</span>
-                                    <span class="text-[9px] text-gray-400 font-bold uppercase tracking-tighter">Member Only</span>
+                                    <span class="text-[#06C755] font-black text-xl font-mono leading-none">$${item['會員價'] || 0}</span>
+                                    <span class="text-[9px] text-gray-400 font-bold uppercase tracking-tighter mt-1">Special Offer</span>
                                 </div>
                             </div>
                             
-                            <div class="flex items-center gap-3 text-xs text-gray-500 font-medium">
-                                <span class="flex items-center gap-1"><i class="far fa-calendar"></i> ${formattedDate}</span>
-                                <span class="flex items-center gap-1"><i class="fas fa-map-marker-alt"></i> ${item['場地名稱'] || '地點'}</span>
+                            <div class="flex items-center gap-3 text-xs text-gray-500 font-bold">
+                                <span class="flex items-center gap-1.5"><i class="far fa-calendar-alt text-[#06C755]"></i> ${formattedDate}</span>
+                                <span class="flex items-center gap-1.5"><i class="fas fa-map-marker-alt text-[#06C755]"></i> ${item['場地名稱'] || '地點'}</span>
                             </div>
 
                             <!-- 報名進度條 -->
                             <div class="pt-2">
-                                <div class="flex justify-between text-[10px] font-bold text-gray-400 mb-1 tracking-tighter uppercase">
-                                    <span>目前報名人數</span>
+                                <div class="flex justify-between text-[10px] font-black text-gray-400 mb-1.5 tracking-tighter uppercase">
+                                    <span>熱烈報名中</span>
                                     <span>${enrolled} / ${total}</span>
                                 </div>
-                                <div class="h-1.5 w-full bg-gray-100 rounded-full overflow-hidden">
+                                <div class="h-2 w-full bg-gray-100 rounded-full overflow-hidden">
                                     <div class="h-full bg-[#06C755]" style="width: ${progress}%"></div>
                                 </div>
                             </div>
 
                             <!-- 預約按鈕 -->
                             <div class="pt-3">
-                                <button onclick="handleBooking('${item['課程ID']}')" class="w-full py-3 bg-[#06C755] text-white font-black rounded-xl shadow-lg shadow-green-100 active:bg-green-600 transition-colors">
-                                    立即預約
+                                <button onclick="handleBooking('${item['課程ID']}')" class="w-full py-3 bg-[#06C755] text-white font-black rounded-xl shadow-lg shadow-green-100 active:scale-95 transition-transform">
+                                    立即預約課程
                                 </button>
                             </div>
                         </div>
@@ -208,8 +210,18 @@
         }
 
         function handleBooking(courseId) {
-            // 這裡未來可以對接 LINE Liff 傳送訊息或跳轉
-            alert('預約課程 ID: ' + courseId + '\n接下來將進入 LINE 報名流程。');
+            // 對接 LINE LIFF 或訊息流程
+            console.log('Booking Course ID:', courseId);
+            if (typeof liff !== 'undefined' && liff.isInClient()) {
+                liff.sendMessages([{
+                    type: 'text',
+                    text: '我要預約課程，ID: ' + courseId
+                }]).then(() => {
+                    liff.closeWindow();
+                });
+            } else {
+                alert('預約成功！課程 ID: ' + courseId + '\n接下來將跳轉至 LINE 結帳流程。');
+            }
         }
 
         window.onload = fetchCourses;
