@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ActivityLink - 系統參數設定</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;900&display=swap');
+        :root { --line-green: #06C755; --sidebar-bg: #111111; }
+        body { font-family: 'Inter', 'PingFang TC', sans-serif; background-color: #F8FAFC; color: #333; }
+        
+        .sidebar { transition: width 0.2s; width: 240px; background-color: var(--sidebar-bg); position: fixed; height: 100%; z-index: 50; }
+        .sidebar.collapsed { width: 64px; }
+        .main-content { transition: margin-left 0.2s; margin-left: 240px; min-height: 100vh; }
+        .main-content.expanded { margin-left: 64px; }
+        .collapsed .nav-text, .collapsed .logo-text { display: none; }
+        
+        .nav-link { color: #A0A0A0; padding: 14px 24px; display: flex; align-items: center; gap: 16px; cursor: pointer; transition: 0.2s; }
+        .nav-link:hover { color: white; background-color: rgba(255, 255, 255, 0.05); }
+        .nav-link.active { background-color: var(--line-green); color: white; }
+        
+        label { display: block; font-size: 0.75rem; font-weight: 800; color: #64748B; margin-bottom: 0.5rem; text-transform: uppercase; }
+        input { width: 100%; border: 1px solid #E2E8F0; border-radius: 8px; padding: 12px; font-size: 0.95rem; outline: none; transition: all 0.2s; }
+        input:focus { border-color: var(--line-green); box-shadow: 0 0 0 3px rgba(6, 199, 85, 0.1); }
+        
+        .card { background: white; border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); padding: 32px; margin-bottom: 32px; border: 1px solid #F1F5F9; }
+        .btn-line { padding: 12px 36px; border-radius: 8px; font-weight: 800; cursor: pointer; display: inline-flex; align-items: center; gap: 10px; transition: 0.2s; border: none; }
+        .btn-line-green { background-color: var(--line-green); color: white; }
+        .btn-line-green:hover { background-color: #05b34c; transform: translateY(-1px); }
+        
+        .loading-spinner { border: 3px solid #f3f3f3; border-top: 3px solid var(--line-green); border-radius: 50%; width: 24px; height: 24px; animation: spin 1s linear infinite; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    </style>
+</head>
+<body>
+
+    <aside id="sidebar" class="sidebar">
+        <div class="p-8 flex items-center gap-4 mb-6">
+            <div class="w-10 h-10 bg-[#06C755] rounded-lg flex items-center justify-center shadow-lg">
+                <i class="fas fa-link text-white text-lg"></i>
+            </div>
+            <span class="text-xl font-black logo-text text-white tracking-tighter">ActivityLink</span>
+        </div>
+        <nav>
+            <a href="index.html" class="nav-link"><i class="fas fa-list-ul w-6 text-center text-lg"></i><span class="nav-text font-bold">課程內容管理</span></a>
+            <a href="sys.html" class="nav-link active"><i class="fas fa-cog w-6 text-center text-lg"></i><span class="nav-text font-bold">系統參數設定</span></a>
+        </nav>
+    </aside>
+
+    <main id="main-content" class="main-content">
+        <nav class="sticky top-0 z-40 bg-white/80 backdrop-blur-md border-b border-slate-200 px-10 py-5 flex items-center justify-between">
+            <div class="flex items-center gap-8">
+                <button onclick="sidebar.classList.toggle('collapsed'); mainContent.classList.toggle('expanded');" class="text-slate-400 hover:text-slate-600 bg-transparent border-none cursor-pointer"><i class="fas fa-bars text-xl"></i></button>
+                <h2 class="text-2xl font-black tracking-tight text-slate-800">系統參數設定 (JSON 核心)</h2>
+            </div>
+            <div id="sync-status" class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Checking Cloud...</div>
+        </nav>
+
+        <div class="px-10 py-10 max-w-5xl mx-auto">
+            <!-- 1. 匯款資訊 -->
+            <div class="card">
+                <h3 class="text-lg font-black mb-8 flex items-center gap-3"><i class="fas fa-university text-blue-500"></i> 1. 官方匯款帳戶設定 (JSON Object)</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div><label>銀行名稱</label><input type="text" id="bank-name" placeholder="例如：國泰世華"></div>
+                    <div><label>銀行代碼</label><input type="text" id="bank-code" placeholder="例如：013"></div>
+                    <div><label>受款戶名</label><input type="text" id="bank-acc-name" placeholder="例如：活動連結有限公司"></div>
+                    <div><label>轉帳帳號</label><input type="text" id="bank-acc-num" placeholder="請輸入完整帳號"></div>
+                </div>
+            </div>
+
+            <!-- 2. 租借設備 -->
+            <div class="card">
+                <div class="flex justify-between items-center mb-8">
+                    <h3 class="text-lg font-black flex items-center gap-3"><i class="fas fa-tools text-orange-500"></i> 2. 租借設備清單設定 (JSON Array)</h3>
+                    <button onclick="addEqItem()" class="text-xs bg-slate-100 hover:bg-slate-200 px-4 py-2 rounded-lg font-bold text-slate-600"><i class="fas fa-plus mr-1"></i> 新增項目</button>
+                </div>
+                <div id="eq-container" class="space-y-4">
+                    <!-- JS 動態生成 -->
+                </div>
+            </div>
+
+            <div class="flex justify-end gap-4 mt-10">
+                <button onclick="saveAllJSON()" id="save-btn" class="btn-line btn-line-green px-20 py-5 shadow-xl shadow-green-200 text-lg font-black">
+                    儲存設定並同步雲端
+                </button>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        const CLOUDFLARE_URL = 'https://aged-rice-2438.wetw-net3.workers.dev/';
+        let eqList = [];
+
+        async function loadConfig() {
+            const status = document.getElementById('sync-status');
+            try {
+                const res = await fetch(`${CLOUDFLARE_URL}?type=config`);
+                const result = await res.json();
+                const allConfig = result.config || [];
+
+                // 匯款
+                const bankRow = allConfig.find(i => i.type === 'remittance');
+                if (bankRow && bankRow.options) {
+                    const bank = JSON.parse(bankRow.options);
+                    document.getElementById('bank-name').value = bank.bankName || "";
+                    document.getElementById('bank-code').value = bank.bankCode || "";
+                    document.getElementById('bank-acc-name').value = bank.accountName || "";
+                    document.getElementById('bank-acc-num').value = bank.accountNumber || "";
+                }
+
+                // 設備
+                const equipRow = allConfig.find(i => i.type === 'equipment_list');
+                eqList = (equipRow && equipRow.options) ? JSON.parse(equipRow.options) : [];
+                renderEq();
+
+                status.innerText = "Cloud Synced";
+                status.className = "text-[10px] font-black text-green-500 uppercase tracking-widest";
+            } catch (e) { 
+                status.innerText = "Sync Error"; 
+                status.className = "text-[10px] font-black text-red-500 uppercase tracking-widest";
+            }
+        }
+
+        function renderEq() {
+            const container = document.getElementById('eq-container');
+            container.innerHTML = eqList.map((eq, i) => `
+                <div class="flex gap-6 items-center p-5 bg-slate-50 rounded-xl border border-slate-100 group transition-all">
+                    <div class="flex-1"><label class="text-[9px]">設備名稱</label><input type="text" value="${eq.name}" oninput="eqList[${i}].name=this.value" class="bg-white"></div>
+                    <div class="w-32"><label class="text-[9px]">租用費用</label><input type="number" value="${eq.price}" oninput="eqList[${i}].price=this.value" class="bg-white"></div>
+                    <button onclick="eqList.splice(${i},1);renderEq()" class="mt-4 text-slate-300 hover:text-red-500 bg-transparent border-none cursor-pointer"><i class="fas fa-trash-alt"></i></button>
+                </div>
+            `).join('');
+        }
+
+        function addEqItem() { eqList.push({ name: '', price: 0 }); renderEq(); }
+
+        async function saveAllJSON() {
+            const btn = document.getElementById('save-btn');
+            btn.disabled = true; btn.innerText = "Syncing...";
+            
+            const bankInfo = {
+                bankName: document.getElementById('bank-name').value,
+                bankCode: document.getElementById('bank-code').value,
+                accountName: document.getElementById('bank-acc-name').value,
+                accountNumber: document.getElementById('bank-acc-num').value
+            };
+
+            const payload = [
+                { type: 'remittance', name: 'Global', options: JSON.stringify(bankInfo) },
+                { type: 'equipment_list', name: 'Global', options: JSON.stringify(eqList) }
+            ];
+
+            try {
+                const res = await fetch(CLOUDFLARE_URL, { method: 'POST', body: JSON.stringify({ type: 'config_update', data: payload }) });
+                if ((await res.json()).status === "success") { alert("參數已成功更新！"); loadConfig(); }
+            } catch (e) { alert("儲存失敗"); }
+            finally { btn.disabled = false; btn.innerText = "儲存設定並同步雲端"; }
+        }
+
+        window.onload = loadConfig;
+    </script>
+</body>
+</html>
