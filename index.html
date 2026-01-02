@@ -3,668 +3,396 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>竹北運動島 - Line 官方帳號</title>
-    <!-- Line 官方設計資源 -->
+    <title>ActivityLink - 管理後台</title>
+    <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        :root {
-            --line-green: #06C755;
-            --line-dark-green: #05A944;
-            --line-gray: #F5F5F5;
-            --line-dark-gray: #333333;
-            --line-light-gray: #666666;
-        }
-        
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
         
         body {
-            font-family: 'Hiragino Sans', 'ヒラギノ角ゴシック', 'Hiragino Kaku Gothic ProN', 'メイリオ', Meiryo, sans-serif;
-            background-color: var(--line-gray);
-            color: var(--line-dark-gray);
-            line-height: 1.6;
+            font-family: 'Inter', 'PingFang TC', 'Microsoft JhengHei', sans-serif;
+            background-color: #f8fafc;
         }
-        
-        /* Line 風格頂部導航 */
-        .line-header {
-            background-color: white;
-            padding: 15px 20px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-            position: sticky;
-            top: 0;
-            z-index: 1000;
-        }
-        
-        .header-container {
-            max-width: 1200px;
-            margin: 0 auto;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        
-        .line-logo {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        
-        .line-logo-icon {
-            width: 40px;
-            height: 40px;
-            background: linear-gradient(135deg, var(--line-green) 0%, var(--line-dark-green) 100%);
-            border-radius: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-weight: bold;
-            font-size: 18px;
-        }
-        
-        .line-logo-text {
-            font-size: 18px;
-            font-weight: bold;
-            color: var(--line-dark-gray);
-        }
-        
-        .line-logo-subtext {
-            font-size: 12px;
-            color: var(--line-light-gray);
-            margin-top: 2px;
-        }
-        
-        /* Line 登入區域 - 重點區塊 */
-        .line-hero {
-            background: linear-gradient(135deg, #06C755 0%, #05A944 100%);
-            color: white;
-            padding: 60px 20px;
-            text-align: center;
-        }
-        
-        .hero-container {
-            max-width: 800px;
-            margin: 0 auto;
-        }
-        
-        .line-hero-icon {
-            width: 80px;
-            height: 80px;
-            background: white;
-            border-radius: 20px;
-            margin: 0 auto 25px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: var(--line-green);
-            font-size: 36px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-        }
-        
-        .line-hero-title {
-            font-size: 2.2rem;
-            margin-bottom: 15px;
-            font-weight: bold;
-        }
-        
-        .line-hero-subtitle {
-            font-size: 1.1rem;
-            opacity: 0.9;
-            margin-bottom: 35px;
-            max-width: 600px;
-            margin-left: auto;
-            margin-right: auto;
-        }
-        
-        /* Line 登入按鈕 - 官方樣式 */
-        .line-login-button {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-            background-color: white;
-            color: var(--line-dark-gray);
-            border: none;
-            border-radius: 12px;
-            padding: 18px 35px;
-            font-size: 16px;
-            font-weight: bold;
-            cursor: pointer;
-            text-decoration: none;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+
+        .sidebar {
             transition: all 0.3s ease;
-            margin: 10px;
+            width: 260px;
         }
-        
-        .line-login-button:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 6px 18px rgba(0,0,0,0.15);
+
+        .sidebar.collapsed {
+            width: 80px;
         }
-        
-        .line-login-button .line-icon {
-            color: var(--line-green);
-            font-size: 20px;
+
+        .main-content {
+            transition: all 0.3s ease;
+            margin-left: 260px;
         }
-        
-        .line-login-button.primary {
-            background-color: white;
-            color: var(--line-dark-gray);
+
+        .main-content.expanded {
+            margin-left: 80px;
         }
-        
-        .line-login-button.secondary {
-            background-color: rgba(255,255,255,0.15);
-            color: white;
-            border: 2px solid white;
-        }
-        
-        /* QR Code 區塊 */
-        .line-qr-section {
-            background: white;
-            padding: 60px 20px;
-            text-align: center;
-        }
-        
-        .qr-container {
-            max-width: 800px;
-            margin: 0 auto;
-        }
-        
-        .qr-title {
-            font-size: 1.8rem;
-            margin-bottom: 15px;
-            color: var(--line-dark-gray);
-        }
-        
-        .qr-subtitle {
-            color: var(--line-light-gray);
-            margin-bottom: 30px;
-            max-width: 500px;
-            margin-left: auto;
-            margin-right: auto;
-        }
-        
-        .qr-code-placeholder {
-            width: 200px;
-            height: 200px;
-            background: var(--line-gray);
-            border-radius: 15px;
-            margin: 0 auto 25px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            color: var(--line-light-gray);
-            border: 2px dashed #ddd;
-        }
-        
-        .qr-code-placeholder i {
-            font-size: 50px;
-            margin-bottom: 15px;
-        }
-        
-        /* 功能特色 */
-        .line-features {
-            padding: 60px 20px;
-            background: var(--line-gray);
-        }
-        
-        .features-container {
-            max-width: 1200px;
-            margin: 0 auto;
-        }
-        
-        .features-title {
-            text-align: center;
-            font-size: 1.8rem;
-            margin-bottom: 50px;
-            color: var(--line-dark-gray);
-        }
-        
-        .features-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 30px;
-        }
-        
-        .feature-card {
-            background: white;
-            border-radius: 15px;
-            padding: 30px;
-            text-align: center;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
-            transition: transform 0.3s;
-        }
-        
-        .feature-card:hover {
-            transform: translateY(-5px);
-        }
-        
-        .feature-icon {
-            width: 60px;
-            height: 60px;
-            background: linear-gradient(135deg, var(--line-green) 0%, var(--line-dark-green) 100%);
-            border-radius: 15px;
-            margin: 0 auto 20px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-size: 24px;
-        }
-        
-        .feature-title {
-            font-size: 1.2rem;
-            margin-bottom: 15px;
-            color: var(--line-dark-gray);
-            font-weight: 600;
-        }
-        
-        .feature-description {
-            color: var(--line-light-gray);
-            font-size: 0.95rem;
-        }
-        
-        /* 課程預覽 */
-        .line-courses {
-            padding: 60px 20px;
-            background: white;
-        }
-        
-        .courses-title {
-            text-align: center;
-            font-size: 1.8rem;
-            margin-bottom: 40px;
-            color: var(--line-dark-gray);
-        }
-        
-        .courses-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 25px;
-            max-width: 1000px;
-            margin: 0 auto;
-        }
-        
-        .course-card {
-            border-radius: 15px;
-            overflow: hidden;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
-        }
-        
-        .course-image {
-            height: 180px;
-            background: linear-gradient(135deg, var(--line-green) 0%, var(--line-dark-green) 100%);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-size: 1.5rem;
-            font-weight: bold;
-        }
-        
-        .course-content {
-            padding: 25px;
-            background: white;
-        }
-        
-        .course-title {
-            font-size: 1.2rem;
-            margin-bottom: 10px;
-            color: var(--line-dark-gray);
-            font-weight: 600;
-        }
-        
-        .course-description {
-            color: var(--line-light-gray);
-            margin-bottom: 20px;
-            font-size: 0.95rem;
-        }
-        
-        .course-meta {
-            display: flex;
-            justify-content: space-between;
-            color: var(--line-light-gray);
-            font-size: 0.85rem;
-        }
-        
-        /* 底部 */
-        .line-footer {
-            background: var(--line-dark-gray);
-            color: white;
-            padding: 50px 20px;
-            text-align: center;
-        }
-        
-        .footer-container {
-            max-width: 1200px;
-            margin: 0 auto;
-        }
-        
-        .footer-logo {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-            margin-bottom: 25px;
-        }
-        
-        .footer-links {
-            display: flex;
-            justify-content: center;
-            gap: 25px;
-            margin-bottom: 30px;
-            flex-wrap: wrap;
-        }
-        
-        .footer-links a {
-            color: rgba(255,255,255,0.7);
-            text-decoration: none;
-            transition: color 0.3s;
-        }
-        
-        .footer-links a:hover {
+
+        .nav-link.active {
+            background-color: #3b82f6;
             color: white;
         }
-        
-        .footer-copyright {
-            color: rgba(255,255,255,0.5);
-            font-size: 0.9rem;
-            margin-top: 20px;
+
+        .loading-spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #3b82f6;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            animation: spin 1s linear infinite;
         }
-        
-        /* 響應式設計 */
-        @media (max-width: 768px) {
-            .line-hero-title {
-                font-size: 1.8rem;
-            }
-            
-            .line-hero-subtitle {
-                font-size: 1rem;
-            }
-            
-            .features-grid {
-                grid-template-columns: 1fr;
-            }
-            
-            .courses-grid {
-                grid-template-columns: 1fr;
-            }
-            
-            .header-container {
-                flex-direction: column;
-                gap: 15px;
-            }
-            
-            .line-login-button {
-                padding: 15px 25px;
-                font-size: 15px;
-            }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
         }
-        
-        /* 動畫效果 */
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
+
+        /* 自定義捲軸 */
+        ::-webkit-scrollbar {
+            width: 6px;
         }
-        
-        .fade-in {
-            animation: fadeIn 0.6s ease-out;
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
         }
     </style>
 </head>
-<body>
-    <!-- Line 風格頂部導航 -->
-    <header class="line-header">
-        <div class="header-container">
-            <div class="line-logo">
-                <div class="line-logo-icon">運</div>
-                <div>
-                    <div class="line-logo-text">竹北運動島</div>
-                    <div class="line-logo-subtext">Line 官方帳號專屬服務</div>
-                </div>
+<body class="overflow-x-hidden">
+
+    <!-- 側邊欄 -->
+    <aside id="sidebar" class="sidebar fixed top-0 left-0 h-full bg-slate-900 text-white z-50 overflow-y-auto shadow-xl">
+        <div class="p-6 flex items-center gap-3">
+            <div class="w-8 h-8 bg-blue-500 rounded-lg flex items-center justify-center">
+                <i class="fas fa-link text-white"></i>
             </div>
-            <div>
-                <!-- 正確路徑：./auth/login.html -->
-                <a href="./auth/login.html" class="line-login-button">
-                    <i class="fab fa-line line-icon"></i>
-                    會員登入
+            <span class="text-xl font-bold logo-text">ActivityLink</span>
+        </div>
+
+        <nav class="mt-6 px-4 space-y-2">
+            <a href="#" onclick="switchView('dashboard')" class="nav-link active flex items-center gap-4 p-3 rounded-xl transition-all hover:bg-slate-800">
+                <i class="fas fa-chart-pie w-5 text-center"></i>
+                <span class="nav-text">儀表板</span>
+            </a>
+            <a href="#" onclick="switchView('activities')" class="nav-link flex items-center gap-4 p-3 rounded-xl transition-all hover:bg-slate-800">
+                <i class="fas fa-calendar-check w-5 text-center"></i>
+                <span class="nav-text">活動管理</span>
+            </a>
+            <a href="#" onclick="switchView('line-settings')" class="nav-link flex items-center gap-4 p-3 rounded-xl transition-all hover:bg-slate-800">
+                <i class="fab fa-line w-5 text-center text-green-400"></i>
+                <span class="nav-text">LINE 外掛設定</span>
+            </a>
+            <a href="#" onclick="switchView('analytics')" class="nav-link flex items-center gap-4 p-3 rounded-xl transition-all hover:bg-slate-800">
+                <i class="fas fa-users w-5 text-center"></i>
+                <span class="nav-text">用戶分析</span>
+            </a>
+            <div class="pt-4 mt-4 border-t border-slate-800">
+                <!-- 修正：原本這裡沒有 onclick 導致 switchView 報錯 -->
+                <a href="#" onclick="switchView('settings')" class="nav-link flex items-center gap-4 p-3 rounded-xl transition-all hover:bg-slate-800">
+                    <i class="fas fa-cog w-5 text-center text-slate-400"></i>
+                    <span class="nav-text text-slate-400">系統設定</span>
                 </a>
             </div>
-        </div>
-    </header>
-    
-    <!-- Line 登入重點區域 -->
-    <section class="line-hero">
-        <div class="hero-container fade-in">
-            <div class="line-hero-icon">
-                <i class="fas fa-dumbbell"></i>
-            </div>
-            <h1 class="line-hero-title">加入竹北運動島 Line 官方帳號</h1>
-            <p class="line-hero-subtitle">
-                專屬 Line 會員的運動課程服務，一鍵預約課程、接收最新活動通知、記錄運動成果
-            </p>
-            <div>
-                <!-- 正確路徑：./auth/login.html -->
-                <a href="./auth/login.html" class="line-login-button primary">
-                    <i class="fab fa-line line-icon"></i>
-                    使用 Line 登入會員系統
-                </a>
-                <a href="#features" class="line-login-button secondary">
-                    了解更多服務
-                </a>
+        </nav>
+
+        <!-- 側邊欄底部狀態 -->
+        <div class="absolute bottom-0 left-0 w-full p-6 bg-slate-900/50 backdrop-blur-sm border-t border-slate-800">
+            <div class="flex items-center gap-3">
+                <div class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                <span class="text-xs text-slate-400">API 服務連線正常</span>
             </div>
         </div>
-    </section>
-    
-    <!-- QR Code 加入區塊 -->
-    <section class="line-qr-section" id="qr">
-        <div class="qr-container fade-in">
-            <h2 class="qr-title">掃碼加入 Line 官方帳號</h2>
-            <p class="qr-subtitle">
-                掃描 QR Code 加入竹北運動島官方帳號，獲取最新課程資訊與專屬優惠
-            </p>
-            <div class="qr-code-placeholder">
-                <i class="fas fa-qrcode"></i>
-                <span>Line QR Code</span>
-            </div>
-            <p style="color: var(--line-light-gray); font-size: 0.9rem;">
-                *請開啟 Line App 掃描上方 QR Code
-            </p>
-        </div>
-    </section>
-    
-    <!-- 功能特色 -->
-    <section class="line-features" id="features">
-        <div class="features-container">
-            <h2 class="features-title fade-in">Line 會員專屬功能</h2>
-            <div class="features-grid">
-                <div class="feature-card fade-in">
-                    <div class="feature-icon">
-                        <i class="fas fa-calendar-check"></i>
-                    </div>
-                    <h3 class="feature-title">一鍵課程預約</h3>
-                    <p class="feature-description">
-                        直接在 Line 內預約課程，免下載其他 App，簡單快速
-                    </p>
-                </div>
-                <div class="feature-card fade-in">
-                    <div class="feature-icon">
-                        <i class="fas fa-bell"></i>
-                    </div>
-                    <h3 class="feature-title">即時通知提醒</h3>
-                    <p class="feature-description">
-                        課程提醒、優惠資訊直接推送到 Line，不錯過任何訊息
-                    </p>
-                </div>
-                <div class="feature-card fade-in">
-                    <div class="feature-icon">
-                        <i class="fas fa-chart-line"></i>
-                    </div>
-                    <h3 class="feature-title">運動記錄追蹤</h3>
-                    <p class="feature-description">
-                        自動記錄運動次數、卡路里消耗，在 Line 內查看個人數據
-                    </p>
-                </div>
-                <div class="feature-card fade-in">
-                    <div class="feature-icon">
-                        <i class="fas fa-gift"></i>
-                    </div>
-                    <h3 class="feature-title">會員專屬優惠</h3>
-                    <p class="feature-description">
-                        Line 會員獨享優惠券、生日禮、點數兌換等專屬福利
-                    </p>
-                </div>
-            </div>
-        </div>
-    </section>
-    
-    <!-- 熱門課程預覽 -->
-    <section class="line-courses" id="courses">
-        <div class="courses-container">
-            <h2 class="courses-title fade-in">熱門運動課程</h2>
-            <div class="courses-grid">
-                <div class="course-card fade-in">
-                    <div class="course-image">晨間活力瑜珈</div>
-                    <div class="course-content">
-                        <h3 class="course-title">清晨活力瑜珈</h3>
-                        <p class="course-description">
-                            適合所有程度的晨間瑜珈課程，幫助你開啟充滿活力的一天
-                        </p>
-                        <div class="course-meta">
-                            <span><i class="far fa-clock"></i> 每週一、三、五 7:00-8:00</span>
-                            <span><i class="far fa-user"></i> 李教練</span>
-                        </div>
-                    </div>
-                </div>
-                <div class="course-card fade-in">
-                    <div class="course-image">HIIT燃脂</div>
-                    <div class="course-content">
-                        <h3 class="course-title">HIIT 高效間歇訓練</h3>
-                        <p class="course-description">
-                            短時間高強度訓練，最大化燃脂效果，適合時間有限的上班族
-                        </p>
-                        <div class="course-meta">
-                            <span><i class="far fa-clock"></i> 每週二、四 19:00-20:00</span>
-                            <span><i class="far fa-user"></i> 王教練</span>
-                        </div>
-                    </div>
-                </div>
-                <div class="course-card fade-in">
-                    <div class="course-image">核心訓練</div>
-                    <div class="course-content">
-                        <h3 class="course-title">核心肌群強化</h3>
-                        <p class="course-description">
-                            專注核心肌群訓練，改善姿勢，減少腰背疼痛，提升運動表現
-                        </p>
-                        <div class="course-meta">
-                            <span><i class="far fa-clock"></i> 每週三、六 10:00-11:00</span>
-                            <span><i class="far fa-user"></i> 張教練</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-    
-    <!-- 底部資訊 -->
-    <footer class="line-footer">
-        <div class="footer-container">
-            <div class="footer-logo">
-                <div style="width: 30px; height: 30px; background: white; border-radius: 6px; display: flex; align-items: center; justify-content: center; color: var(--line-green); font-weight: bold;">運</div>
-                <div style="font-size: 18px; font-weight: bold;">竹北運動島</div>
-            </div>
-            
-            <div class="footer-links">
-                <a href="#features">服務功能</a>
-                <a href="#courses">課程介紹</a>
-                <a href="#qr">加入官方帳號</a>
-                <!-- 正確路徑：./auth/login.html -->
-                <a href="./auth/login.html">會員登入</a>
-                <a href="#">隱私權政策</a>
-                <a href="#">服務條款</a>
-                <a href="#">聯絡我們</a>
-            </div>
-            
-            <p style="max-width: 600px; margin: 0 auto; color: rgba(255,255,255,0.7); font-size: 0.95rem;">
-                竹北運動島 Line 官方帳號提供最完整的運動課程服務，透過 Line 即可輕鬆預約課程、接收通知、記錄運動成果。
-            </p>
-            
-            <p class="footer-copyright">
-                © 2024 竹北運動島活動中心 版權所有<br>
-                服務時間：週一至週日 6:00-22:00 | 聯絡電話：03-668-7890
-            </p>
-        </div>
-    </footer>
-    
-    <script>
-        // 簡單的滾動動畫
-        document.addEventListener('DOMContentLoaded', function() {
-            // 觀察元素進入視圖時添加動畫
-            const observerOptions = {
-                threshold: 0.1,
-                rootMargin: '0px 0px -50px 0px'
-            };
-            
-            const observer = new IntersectionObserver(function(entries) {
-                entries.forEach(entry => {
-                    if (entry.isIntersecting) {
-                        entry.target.classList.add('fade-in');
-                    }
-                });
-            }, observerOptions);
-            
-            // 觀察所有需要動畫的元素
-            document.querySelectorAll('.fade-in').forEach(el => {
-                observer.observe(el);
-            });
-            
-            // Line 登入按鈕點擊統計（可選）
-            document.querySelectorAll('.line-login-button').forEach(button => {
-                button.addEventListener('click', function() {
-                    console.log('Line 登入按鈕點擊:', this.textContent.trim());
-                    // 這裡可以加入 GA 或數據統計代碼
-                });
-            });
-            
-            // 模擬 QR Code 掃描提示
-            const qrPlaceholder = document.querySelector('.qr-code-placeholder');
-            if (qrPlaceholder) {
-                qrPlaceholder.addEventListener('click', function() {
-                    alert('請開啟 Line App 掃描 QR Code 加入官方帳號\n\n或直接搜尋「@sportsland」加入好友');
-                });
-            }
-            
-            // 檢查是否在 Line 內開啟
-            function checkLineEnvironment() {
-                const isInLine = /Line/i.test(navigator.userAgent);
-                if (isInLine) {
-                    console.log('在 Line App 內開啟');
-                    // 可以顯示 Line 內專屬提示
-                }
-            }
-            
-            checkLineEnvironment();
-        });
+    </aside>
+
+    <!-- 主要內容區 -->
+    <main id="main-content" class="main-content min-h-screen">
         
-        // 平滑滾動
-        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-            anchor.addEventListener('click', function(e) {
-                const href = this.getAttribute('href');
-                if (href !== '#' && document.querySelector(href)) {
-                    e.preventDefault();
-                    const target = document.querySelector(href);
-                    if (target) {
-                        target.scrollIntoView({
-                            behavior: 'smooth',
-                            block: 'start'
-                        });
-                    }
-                }
+        <!-- 頂部導航 -->
+        <nav id="topnav" class="sticky top-0 z-40 bg-white/80 backdrop-blur-md border-b border-slate-200 px-6 py-3 flex items-center justify-between">
+            <div class="flex items-center gap-4">
+                <button id="sidebar-toggle" class="p-2 hover:bg-slate-100 rounded-lg text-slate-500 transition-colors">
+                    <i class="fas fa-bars text-lg"></i>
+                </button>
+                <div class="hidden md:flex items-center bg-slate-100 rounded-full px-4 py-1.5 gap-2 text-slate-400 focus-within:ring-2 focus-within:ring-blue-100 transition-all">
+                    <i class="fas fa-search text-sm"></i>
+                    <input type="text" placeholder="搜尋活動或用戶..." class="bg-transparent outline-none text-sm text-slate-600 w-48">
+                </div>
+            </div>
+
+            <div class="flex items-center gap-4">
+                <button class="relative p-2 text-slate-500 hover:bg-slate-100 rounded-lg">
+                    <i class="far fa-bell text-lg"></i>
+                    <span class="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full border-2 border-white"></span>
+                </button>
+                <div class="h-8 w-px bg-slate-200 mx-2"></div>
+                <div class="flex items-center gap-3 cursor-pointer group">
+                    <div class="text-right hidden sm:block">
+                        <p class="text-sm font-semibold text-slate-700">管理員帳號</p>
+                        <p class="text-[10px] text-slate-400">LINE Developer Admin</p>
+                    </div>
+                    <div class="w-10 h-10 bg-gradient-to-tr from-blue-500 to-indigo-600 rounded-full flex items-center justify-center text-white font-bold shadow-md shadow-blue-100">
+                        JD
+                    </div>
+                    <i class="fas fa-chevron-down text-xs text-slate-400 group-hover:translate-y-0.5 transition-transform"></i>
+                </div>
+            </div>
+        </nav>
+
+        <!-- 內容視圖區 -->
+        <div class="p-6">
+            <div id="app-content">
+                <!-- 預設載入狀態 -->
+                <div class="flex flex-col items-center justify-center min-h-[60vh] text-slate-400">
+                    <div class="loading-spinner mb-4"></div>
+                    <p>正在同步數據...</p>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- JavaScript 邏輯 -->
+    <script>
+        const sidebar = document.getElementById('sidebar');
+        const mainContent = document.getElementById('main-content');
+        const sidebarToggle = document.getElementById('sidebar-toggle');
+        const appContent = document.getElementById('app-content');
+
+        // 側邊欄切換邏輯
+        sidebarToggle.addEventListener('click', () => {
+            sidebar.classList.toggle('collapsed');
+            mainContent.classList.toggle('expanded');
+            
+            const isCollapsed = sidebar.classList.contains('collapsed');
+            document.querySelectorAll('.nav-text, .logo-text').forEach(el => {
+                el.style.display = isCollapsed ? 'none' : 'block';
             });
         });
+
+        // 視圖內容定義
+        const views = {
+            dashboard: `
+                <div class="animate-in fade-in duration-500">
+                    <div class="flex items-center justify-between mb-8">
+                        <div>
+                            <h1 class="text-2xl font-bold text-slate-800">數據概覽</h1>
+                            <p class="text-slate-500">歡迎回來，這是您目前的 LINE 活動表現指標。</p>
+                        </div>
+                        <button class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2">
+                            <i class="fas fa-plus text-sm"></i> 建立新活動
+                        </button>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                        ${generateStatCard('總點擊數', '42,904', 'fa-mouse-pointer', 'text-blue-600', '+12.5%')}
+                        ${generateStatCard('進行中活動', '8', 'fa-calendar-check', 'text-green-600', '0')}
+                        ${generateStatCard('LINE 累計用戶', '1,280', 'fa-user-plus', 'text-indigo-600', '+5.2%')}
+                        ${generateStatCard('平均點擊率', '18.4%', 'fa-percent', 'text-orange-600', '-2.1%')}
+                    </div>
+
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                        <div class="lg:col-span-2 bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
+                            <div class="flex items-center justify-between mb-6">
+                                <h3 class="font-bold text-slate-700">近 7 日點擊走勢</h3>
+                                <select class="bg-slate-50 border-none outline-none text-xs text-slate-500 px-2 py-1 rounded">
+                                    <option>過去 7 天</option>
+                                    <option>過去 30 天</option>
+                                </select>
+                            </div>
+                            <div class="h-64 flex items-end justify-between gap-2">
+                                ${[40, 60, 45, 90, 70, 85, 100].map(h => `
+                                    <div class="flex-1 bg-blue-100 hover:bg-blue-500 transition-all rounded-t-lg group relative cursor-pointer" style="height: ${h}%">
+                                        <div class="absolute -top-8 left-1/2 -translate-x-1/2 bg-slate-800 text-white text-[10px] px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">${h * 10} 點擊</div>
+                                    </div>
+                                `).join('')}
+                            </div>
+                            <div class="flex justify-between mt-4 text-[10px] text-slate-400 uppercase font-medium">
+                                <span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span><span>Sun</span>
+                            </div>
+                        </div>
+                        
+                        <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
+                            <h3 class="font-bold text-slate-700 mb-6">LINE 外掛狀態</h3>
+                            <div class="space-y-6">
+                                ${generateLineStatusItem('訊息推送介面', '正常連線', 'bg-green-500')}
+                                ${generateLineStatusItem('LIFF 網頁嵌入', '正常連線', 'bg-green-500')}
+                                ${generateLineStatusItem('用戶驗證模組', '更新中', 'bg-blue-500')}
+                                ${generateLineStatusItem('資料庫同步', '延遲 2ms', 'bg-yellow-500')}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `,
+            activities: `
+                <div class="animate-in slide-in-from-bottom-4 duration-500">
+                    <div class="flex items-center justify-between mb-8">
+                        <h1 class="text-2xl font-bold text-slate-800">活動管理清單</h1>
+                    </div>
+                    <div class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
+                        <table class="w-full text-left">
+                            <thead class="bg-slate-50 text-slate-500 text-sm uppercase">
+                                <tr>
+                                    <th class="px-6 py-4 font-semibold">活動名稱</th>
+                                    <th class="px-6 py-4 font-semibold">狀態</th>
+                                    <th class="px-6 py-4 font-semibold">點擊數</th>
+                                    <th class="px-6 py-4 font-semibold">建立日期</th>
+                                    <th class="px-6 py-4 font-semibold">操作</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-slate-100">
+                                ${[1, 2, 3, 4, 5].map(i => `
+                                    <tr class="hover:bg-slate-50 transition-colors">
+                                        <td class="px-6 py-4">
+                                            <div class="font-medium text-slate-700">2026 春季促銷活動 - 領券專用 ${i}</div>
+                                            <div class="text-xs text-slate-400">ID: act_20260${i}</div>
+                                        </td>
+                                        <td class="px-6 py-4">
+                                            <span class="px-2 py-1 bg-green-100 text-green-600 text-[10px] font-bold rounded-full">進行中</span>
+                                        </td>
+                                        <td class="px-6 py-4 font-mono text-sm">1,20${i}</td>
+                                        <td class="px-6 py-4 text-sm text-slate-500">2026-01-0${i}</td>
+                                        <td class="px-6 py-4">
+                                            <div class="flex items-center gap-2">
+                                                <button class="p-2 hover:bg-blue-50 text-blue-500 rounded-lg"><i class="fas fa-edit"></i></button>
+                                                <button class="p-2 hover:bg-red-50 text-red-500 rounded-lg"><i class="fas fa-trash"></i></button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            `,
+            'line-settings': `
+                <div class="max-w-4xl mx-auto py-8">
+                    <div class="bg-white rounded-2xl p-8 shadow-sm border border-slate-100">
+                        <div class="flex items-center gap-4 mb-8">
+                            <div class="w-12 h-12 bg-green-100 text-green-600 rounded-xl flex items-center justify-center text-2xl">
+                                <i class="fab fa-line"></i>
+                            </div>
+                            <div>
+                                <h2 class="text-xl font-bold text-slate-800">LINE Channel 設定</h2>
+                                <p class="text-sm text-slate-500">管理您 LINE 官方帳號與外掛的對接金鑰。</p>
+                            </div>
+                        </div>
+                        <div class="space-y-6">
+                            <div>
+                                <label class="block text-sm font-medium text-slate-700 mb-2">Channel ID</label>
+                                <input type="text" value="1657890XXX" readonly class="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-2 text-slate-500 outline-none">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-slate-700 mb-2">Channel Secret</label>
+                                <div class="relative">
+                                    <input type="password" value="••••••••••••••••" readonly class="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-2 text-slate-500 outline-none">
+                                    <button class="absolute right-3 top-2 text-blue-500 text-xs hover:underline">顯示</button>
+                                </div>
+                            </div>
+                            <div class="p-4 bg-yellow-50 rounded-xl border border-yellow-100 flex gap-4">
+                                <i class="fas fa-exclamation-triangle text-yellow-500 mt-1"></i>
+                                <div class="text-xs text-yellow-700 leading-relaxed">
+                                    請確保 Webhook URL 指向正確的後端地址：<br>
+                                    <span class="font-mono bg-white/50 px-1">https://api.activitylink.tw/line/webhook</span>
+                                </div>
+                            </div>
+                            <div class="pt-4 flex justify-end">
+                                <button class="bg-slate-800 text-white px-6 py-2 rounded-lg hover:bg-slate-900 transition-all">儲存並測試連線</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `,
+            analytics: `
+                <div class="flex items-center justify-center min-h-[50vh] text-slate-400 italic">
+                    <div class="text-center">
+                        <i class="fas fa-tools text-4xl mb-4 block text-slate-200"></i>
+                        用戶分析模組正在開發中...
+                    </div>
+                </div>
+            `,
+            settings: `
+                <div class="max-w-4xl mx-auto py-8">
+                    <div class="bg-white rounded-2xl p-8 shadow-sm border border-slate-100">
+                        <h2 class="text-xl font-bold text-slate-800 mb-6">系統設定</h2>
+                        <p class="text-slate-500">這裡可以調整系統全域參數。</p>
+                    </div>
+                </div>
+            `
+        };
+
+        // 輔助函式：產生數據卡片
+        function generateStatCard(title, value, icon, iconColor, trend) {
+            const isTrendPositive = trend.startsWith('+');
+            const trendColor = trend === '0' ? 'text-slate-400' : (isTrendPositive ? 'text-green-500' : 'text-red-500');
+            const trendIcon = isTrendPositive ? 'fa-arrow-up' : (trend === '0' ? '' : 'fa-arrow-down');
+
+            return `
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 hover:shadow-md transition-shadow">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="w-10 h-10 bg-slate-50 rounded-lg flex items-center justify-center ${iconColor}">
+                            <i class="fas ${icon}"></i>
+                        </div>
+                        <span class="text-[10px] font-bold ${trendColor} bg-slate-50 px-2 py-1 rounded-full">
+                            ${trendIcon ? `<i class="fas ${trendIcon} mr-1"></i>` : ''} ${trend}
+                        </span>
+                    </div>
+                    <p class="text-slate-400 text-xs mb-1">${title}</p>
+                    <h2 class="text-2xl font-bold text-slate-800">${value}</h2>
+                </div>
+            `;
+        }
+
+        // 輔助函式：產生 LINE 狀態列
+        function generateLineStatusItem(name, status, dotColor) {
+            return `
+                <div class="flex items-center justify-between p-3 rounded-xl hover:bg-slate-50 transition-colors">
+                    <div class="flex items-center gap-3">
+                        <div class="w-2 h-2 ${dotColor} rounded-full"></div>
+                        <span class="text-sm font-medium text-slate-600">${name}</span>
+                    </div>
+                    <span class="text-xs text-slate-400">${status}</span>
+                </div>
+            `;
+        }
+
+        // 切換視圖主函式
+        function switchView(viewName) {
+            // 更新 Nav Active 狀態
+            document.querySelectorAll('.nav-link').forEach(link => {
+                link.classList.remove('active');
+                
+                // 修正：檢查 onclick 屬性是否存在，避免 null 錯誤
+                const onclickAttr = link.getAttribute('onclick');
+                if (onclickAttr && onclickAttr.includes(viewName)) {
+                    link.classList.add('active');
+                }
+            });
+
+            // 模擬載入效果
+            appContent.innerHTML = `
+                <div class="flex flex-col items-center justify-center min-h-[60vh] text-slate-400">
+                    <div class="loading-spinner mb-4"></div>
+                    <p>載入中...</p>
+                </div>
+            `;
+
+            setTimeout(() => {
+                appContent.innerHTML = views[viewName] || `<div class="p-8 text-center text-slate-400">找不到此頁面內容</div>`;
+            }, 300);
+        }
+
+        // 初始載入
+        window.onload = () => {
+            switchView('dashboard');
+        };
     </script>
 </body>
 </html>
