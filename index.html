@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ActivityLink - 管理後台 (完整 40 欄位版)</title>
+    <title>ActivityLink - 管理後台 (完整 40 欄位修正版)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -99,8 +99,9 @@
             </div>
             <div class="modal-body">
                 <form id="course-form">
+                    <!-- 隱藏欄位 -->
                     <input type="hidden" name="courseId" id="form-courseId">
-                    <input type="hidden" name="status" id="form-status" value="報名中">
+                    <input type="hidden" name="courseType" id="form-courseType" value="single"> <!-- 修正：新增此 ID 以避免 JS 報錯 -->
                     
                     <section>
                         <h3><i class="fas fa-tag text-green-500"></i> 基本與分類資訊 (A-F)</h3>
@@ -137,16 +138,32 @@
                     </section>
 
                     <section>
-                        <h3><i class="fas fa-money-bill-wave text-green-500"></i> 費用與名額設定 (R-AA)</h3>
-                        <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+                        <h3><i class="fas fa-money-bill-wave text-green-500"></i> 費用設定 (R-V)</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-5 gap-6">
                             <div><label>原價 (R)</label><input type="number" name="price" value="0"></div>
                             <div><label>早鳥價 (S)</label><input type="number" name="earlyBirdPrice" value="0"></div>
                             <div><label>早鳥截止 (T)</label><input type="date" name="earlyBirdEnd"></div>
                             <div><label>會員價 * (U)</label><input type="number" name="memberPrice" value="0" required></div>
                             <div><label>親友價 (V)</label><input type="number" name="friendPrice" value="0"></div>
+                        </div>
+                    </section>
+
+                    <section>
+                        <h3><i class="fas fa-users text-green-500"></i> 名額與報名狀態 (W-AA)</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
                             <div><label>總名額 (W)</label><input type="number" name="quota" value="20"></div>
                             <div><label>最少開班 (X)</label><input type="number" name="minClass" value="3"></div>
+                            <div><label>已報名人數 (Y)</label><input type="number" name="enrolled" value="0"></div>
+                            <div><label>剩餘名額 (Z)</label><input type="number" name="remaining" value="20"></div>
+                            <div><label>候補名額 (AA)</label><input type="number" name="waiting" value="0"></div>
+                        </div>
+                    </section>
+
+                    <section>
+                        <h3><i class="fas fa-venus-mars text-green-500"></i> 限制與特殊要求 (AB-AC)</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div><label>性別限制 (AB)</label><select name="genderLimit"><option value="不限">不限</option><option value="限男性">限男性</option><option value="限女性">限女性</option></select></div>
+                            <div><label>特殊要求 (AC)</label><input type="text" name="specialRequest" placeholder="如：需自備水壺"></div>
                         </div>
                     </section>
 
@@ -175,7 +192,7 @@
                     <section>
                         <h3><i class="fas fa-sort-amount-down text-green-500"></i> 管理參數 (AJ-AK)</h3>
                         <div class="grid grid-cols-2 gap-6">
-                            <div><label>課程狀態 (AJ)</label><select name="status"><option value="報名中">報名中</option><option value="已額滿">已額滿</option><option value="已結束">已結束</option><option value="草稿">草稿</option></select></div>
+                            <div><label>課程狀態 (AJ)</label><select name="status" id="form-status-select"><option value="報名中">報名中</option><option value="已額滿">已額滿</option><option value="已結束">已結束</option><option value="草稿">草稿</option></select></div>
                             <div><label>排序權重 (AK) [大到小]</label><input type="number" name="weight" value="0"></div>
                         </div>
                     </section>
@@ -194,27 +211,28 @@
         const sidebar = document.getElementById('sidebar');
         const mainContent = document.getElementById('main-content');
         
-        let rawCourses = []; // 存儲從後端抓取的原始資料
-        let equipmentData = []; // 系統設定中的設備列表
+        let rawCourses = []; 
+        let equipmentData = []; 
 
-        // 側邊欄切換
         function toggleSidebar() {
             sidebar.classList.toggle('collapsed');
             mainContent.classList.toggle('expanded');
         }
 
-        // 課程種類切換 (UI 表現)
         function setCourseType(type) {
-            document.getElementById('form-courseType').value = type;
+            // 修正：確保此 ID 存在，避免 TypeError
+            const typeInput = document.getElementById('form-courseType');
+            if (typeInput) typeInput.value = type;
+            
             document.querySelectorAll('.type-banner-btn').forEach(btn => btn.classList.remove('active'));
             const target = document.getElementById(`btn-type-${type}`);
             if(target) target.classList.add('active');
         }
 
-        // 切換主頁面視圖
         async function switchView(viewName) {
             document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
-            document.getElementById(`nav-${viewName}`).classList.add('active');
+            const navLink = document.getElementById(`nav-${viewName}`);
+            if(navLink) navLink.classList.add('active');
             document.getElementById('page-title').innerText = viewName === 'activities' ? '課程內容管理' : '系統參數設定';
 
             appContent.innerHTML = `<div class="p-40 text-center flex flex-col items-center gap-6"><div class="loading-spinner"></div><p class="font-black text-slate-300 tracking-widest uppercase text-xs">Syncing Cloud Database</p></div>`;
@@ -223,21 +241,18 @@
             else await loadActivities();
         }
 
-        // --- 系統設定模組 (JSON 格式儲存匯款與設備) ---
         async function loadSettings() {
             try {
                 const res = await fetch(`${CLOUDFLARE_URL}?type=config`);
                 const result = await res.json();
                 const allConfig = result.config || [];
 
-                // 獲取匯款 JSON
                 const bankRow = allConfig.find(i => i.type === 'remittance');
                 let bankInfo = { bankName: "", bankCode: "", accountName: "", accountNumber: "" };
                 if (bankRow && bankRow.options) {
                     try { bankInfo = JSON.parse(bankRow.options); } catch(e) {}
                 }
 
-                // 獲取設備 JSON 陣列
                 const equipRow = allConfig.find(i => i.type === 'equipment_list');
                 equipmentData = [];
                 if (equipRow && equipRow.options) {
@@ -245,7 +260,7 @@
                 }
 
                 renderSettingsUI(bankInfo, equipmentData);
-            } catch (e) { appContent.innerHTML = `<div class="p-20 text-center text-red-500 font-bold">無法讀取系統參數，請檢查 GAS 是否部署成功。</div>`; }
+            } catch (e) { appContent.innerHTML = `<div class="p-20 text-center text-red-500 font-bold">無法讀取系統參數。</div>`; }
         }
 
         function renderSettingsUI(bank, equips) {
@@ -264,7 +279,7 @@
                     <section>
                         <div class="flex justify-between items-center mb-10 pb-4 border-b">
                             <h3 class="!mb-0 border-0"><i class="fas fa-tools text-[#06C755]"></i> 2. 租借設備項管理 (JSON Array)</h3>
-                            <button onclick="addEquipmentSettingItem()" class="btn-line btn-line-green text-xs font-black px-6"><i class="fas fa-plus"></i> 新增設備項目</button>
+                            <button onclick="addEquipmentSettingItem()" class="btn-line btn-line-green text-xs font-black px-6"><i class="fas fa-plus"></i> 新增項目</button>
                         </div>
                         <div id="equipment-setup-list" class="space-y-4">
                             ${equips.map((eq, index) => `
@@ -280,18 +295,16 @@
                                     <button onclick="removeEquipmentSettingItem(${index})" class="mt-4 p-4 text-slate-300 hover:text-red-500 bg-transparent border-none cursor-pointer"><i class="fas fa-trash-alt text-lg"></i></button>
                                 </div>
                             `).join('')}
-                            ${equips.length === 0 ? '<p class="text-center text-slate-300 py-16 font-bold">目前無設定任何租借設備</p>' : ''}
                         </div>
                     </section>
 
                     <div class="mt-20 flex justify-end">
-                        <button onclick="saveGlobalConfig()" id="save-config-btn" class="btn-line btn-line-green px-24 py-5 shadow-2xl shadow-green-100 text-lg font-black tracking-widest uppercase">儲存所有參數並同步雲端</button>
+                        <button onclick="saveGlobalConfig()" id="save-config-btn" class="btn-line btn-line-green px-24 py-5 shadow-2xl text-lg font-black">儲存所有參數</button>
                     </div>
                 </div>
             `;
         }
 
-        // 更新設備設定數據
         function updateEqSetting(i, key, val) { equipmentData[i][key] = val; }
         function addEquipmentSettingItem() { equipmentData.push({ name: '', price: 0 }); renderSettingsUI(getBankFields(), equipmentData); }
         function removeEquipmentSettingItem(i) { equipmentData.splice(i, 1); renderSettingsUI(getBankFields(), equipmentData); }
@@ -306,22 +319,20 @@
 
         async function saveGlobalConfig() {
             const btn = document.getElementById('save-config-btn');
-            btn.disabled = true; btn.innerText = "正在儲存...";
+            btn.disabled = true; btn.innerText = "儲存中...";
             const payload = [
                 { type: 'remittance', name: 'Global', options: JSON.stringify(getBankFields()) },
                 { type: 'equipment_list', name: 'Global', options: JSON.stringify(equipmentData) }
             ];
             try {
                 const res = await fetch(CLOUDFLARE_URL, { method: 'POST', body: JSON.stringify({ type: 'config_update', data: payload }) });
-                if ((await res.json()).status === "success") alert("設定已成功存入系統分頁！");
+                if ((await res.json()).status === "success") alert("設定已成功同步！");
             } catch (e) { alert("儲存失敗"); }
-            finally { btn.disabled = false; btn.innerText = "儲存所有參數並同步雲端"; }
+            finally { btn.disabled = false; btn.innerText = "儲存所有參數"; }
         }
 
-        // --- 課程內容管理模組 ---
         async function loadActivities() {
             try {
-                // 先同步一次設備清單，確保編輯器能顯示
                 const confRes = await fetch(`${CLOUDFLARE_URL}?type=config`);
                 const confResData = await confRes.json();
                 const equipRow = (confResData.config || []).find(i => i.type === 'equipment_list');
@@ -329,40 +340,36 @@
 
                 const res = await fetch(CLOUDFLARE_URL);
                 const result = await res.json();
-                if (result.status === "error") throw new Error(result.message);
-                
                 rawCourses = result.data || [];
                 renderActivityList(rawCourses);
-            } catch (e) { 
-                appContent.innerHTML = `<div class="p-20 text-center text-red-500 font-bold">抓取失敗: ${e.message}</div>`; 
-            }
+            } catch (e) { appContent.innerHTML = `<div class="p-20 text-center text-red-500">抓取失敗</div>`; }
         }
 
         function renderActivityList(data) {
             const rows = data.map(item => `
-                <tr class="hover:bg-slate-50 transition-colors group">
+                <tr class="hover:bg-slate-50 transition-colors">
                     <td>
-                        <div class="font-black text-slate-800 text-base">${item.courseName || '未命名課程'}</div>
+                        <div class="font-black text-slate-800 text-base">${item.courseName || '未命名'}</div>
                         <div class="text-[10px] text-slate-400 font-mono font-bold uppercase tracking-tighter">${item.courseId || '-'}</div>
                     </td>
                     <td><div class="text-sm font-bold text-slate-500">${item.courseDate ? item.courseDate.split('T')[0] : '-'}</div></td>
-                    <td><span class="px-4 py-1.5 rounded-full text-[10px] font-black tracking-tight ${item.status === '報名中' ? 'bg-green-100 text-green-700' : 'bg-slate-100 text-slate-500'}">${item.status || '報名中'}</span></td>
+                    <td><span class="px-4 py-1.5 rounded-full text-[10px] font-black ${item.status === '報名中' ? 'bg-green-100 text-green-700' : 'bg-slate-100 text-slate-500'}">${item.status || '報名中'}</span></td>
                     <td class="text-right flex justify-end gap-3">
-                        <button onclick="editCourse('${item.courseId}')" class="w-10 h-10 rounded-full hover:bg-slate-100 text-slate-300 hover:text-blue-500 transition-all border-none bg-transparent cursor-pointer"><i class="fas fa-edit"></i></button>
-                        <button onclick="deleteCourse('${item.courseId}')" class="w-10 h-10 rounded-full hover:bg-red-50 text-slate-200 hover:text-red-500 transition-all border-none bg-transparent cursor-pointer"><i class="fas fa-trash-alt"></i></button>
+                        <button onclick="editCourse('${item.courseId}')" class="w-10 h-10 rounded-full hover:bg-slate-100 text-slate-300 hover:text-blue-500 border-none bg-transparent cursor-pointer"><i class="fas fa-edit"></i></button>
+                        <button onclick="deleteCourse('${item.courseId}')" class="w-10 h-10 rounded-full hover:bg-red-50 text-slate-200 hover:text-red-500 border-none bg-transparent cursor-pointer"><i class="fas fa-trash-alt"></i></button>
                     </td>
                 </tr>`).join('');
 
             appContent.innerHTML = `
-                <div class="px-10 py-12 flex justify-between items-end border-b animate-in slide-in-from-bottom duration-300">
+                <div class="px-10 py-12 flex justify-between items-end border-b">
                     <div>
-                        <h1 class="text-3xl font-black text-slate-800 tracking-tight">課程內容清單</h1>
-                        <p class="text-slate-400 text-xs font-bold mt-2 uppercase tracking-widest">Total ${data.length} records in SingleCourses</p>
+                        <h1 class="text-3xl font-black text-slate-800">課程內容清單</h1>
+                        <p class="text-slate-400 text-xs font-bold mt-2 uppercase tracking-widest">Total ${data.length} records</p>
                     </div>
-                    <button onclick="openCourseModal()" class="btn-line btn-line-green shadow-xl shadow-green-100 px-12 py-4">建立新課程內容</button>
+                    <button onclick="openCourseModal()" class="btn-line btn-line-green px-12 py-4">建立新課程</button>
                 </div>
                 <table class="flat-table">
-                    <thead><tr><th>課程標題 / 唯一ID</th><th>活動日期</th><th>當前狀態</th><th class="text-right">系統操作</th></tr></thead>
+                    <thead><tr><th>課程標題 / ID</th><th>活動日期</th><th>當前狀態</th><th class="text-right">系統操作</th></tr></thead>
                     <tbody>${rows}</tbody>
                 </table>
             `;
@@ -373,20 +380,15 @@
             document.getElementById('form-courseId').value = '';
             setCourseType('single');
             
-            // 生成可選租借設備 (來自系統設定)
             const container = document.getElementById('equipment-checkboxes');
-            if (equipmentData.length === 0) {
-                container.innerHTML = '<p class="text-slate-300 text-[10px] font-bold italic py-4">請先至系統設定新增設備 JSON 資料</p>';
-            } else {
-                container.innerHTML = equipmentData.map(eq => `
-                    <label class="flex items-center gap-4 p-5 border-2 border-slate-50 rounded-xl cursor-pointer hover:border-green-100 hover:bg-green-50/20 transition-all group">
-                        <input type="checkbox" name="eq_check" value="${eq.name}" class="w-6 h-6 rounded accent-green-600">
-                        <div class="flex-1">
-                            <div class="text-xs font-black text-slate-800">${eq.name}</div>
-                            <div class="text-[10px] text-blue-500 font-black">加購: $${eq.price}</div>
-                        </div>
-                    </label>`).join('');
-            }
+            container.innerHTML = (equipmentData.length === 0) ? '<p class="text-slate-300 text-xs">無租借設定</p>' : equipmentData.map(eq => `
+                <label class="flex items-center gap-4 p-5 border-2 border-slate-50 rounded-xl cursor-pointer hover:border-green-100 transition-all">
+                    <input type="checkbox" name="eq_check" value="${eq.name}" class="w-6 h-6 accent-green-600">
+                    <div class="flex-1">
+                        <div class="text-xs font-black text-slate-800">${eq.name}</div>
+                        <div class="text-[10px] text-blue-500 font-black">+$${eq.price}</div>
+                    </div>
+                </label>`).join('');
 
             document.getElementById('course-modal').style.display = 'flex';
             document.body.style.overflow = 'hidden';
@@ -399,29 +401,26 @@
             const form = document.getElementById('course-form');
             document.getElementById('form-courseId').value = item.courseId;
             
-            // 遍歷所有 40 個欄位對應的 input
-            const formDataNames = [
+            // 完整 40 欄位回填
+            const fieldNames = [
                 "courseName", "category", "ageGroup", "difficulty", "tags", 
                 "regStart", "regEnd", "courseDate", "startTime", "endTime", "duration",
                 "coachId", "coachName", "venueId", "venueName", "venueArea",
                 "price", "earlyBirdPrice", "earlyBirdEnd", "memberPrice", "friendPrice",
-                "quota", "minClass", "genderLimit", "specialRequest", 
-                "coverImage", "detailImage", "highlights", "content", "notes", "targetAudience",
-                "status", "weight"
+                "quota", "minClass", "enrolled", "remaining", "waiting",
+                "genderLimit", "specialRequest", "coverImage", "detailImage", 
+                "highlights", "content", "notes", "targetAudience", "status", "weight"
             ];
 
-            formDataNames.forEach(name => {
+            fieldNames.forEach(name => {
                 const input = form.querySelector(`[name="${name}"]`);
                 if (input && item[name] !== undefined) {
                     let val = item[name];
-                    if (input.type === 'date' && val) {
-                        try { val = val.split('T')[0]; } catch(e) {}
-                    }
-                    input.value = val || '';
+                    if (input.type === 'date' && val) val = val.split('T')[0];
+                    input.value = val || (input.type === 'number' ? 0 : '');
                 }
             });
 
-            // 處理租用設備勾選回填 (AN 欄位：selectedEquipment)
             const selectedStr = item.selectedEquipment || '';
             const selectedArr = selectedStr.split(',').map(s => s.trim());
             form.querySelectorAll('input[name="eq_check"]').forEach(cb => {
@@ -431,34 +430,31 @@
 
         async function submitCourseForm() {
             const btn = document.getElementById('submit-btn');
-            btn.disabled = true; btn.innerText = "資料連線同步中...";
+            btn.disabled = true; btn.innerText = "同步中...";
             
             const formData = new FormData(document.getElementById('course-form'));
             const payload = Object.fromEntries(formData.entries());
             
-            // 收集選中的租借項目
             const checkedItems = Array.from(document.querySelectorAll('input[name="eq_check"]:checked')).map(cb => cb.value);
             payload.selectedEquipment = checkedItems.join(',');
 
             try {
                 const res = await fetch(CLOUDFLARE_URL, { method: 'POST', body: JSON.stringify(payload) });
-                const result = await res.json();
-                if (result.status === "success") { 
+                if ((await res.json()).status === "success") { 
                     closeCourseModal(); 
                     await loadActivities(); 
                 }
-            } catch (e) { alert("同步至 Google Sheet 失敗，請檢查網路。"); }
+            } catch (e) { alert("同步失敗"); }
             finally { btn.disabled = false; btn.innerText = "儲存並更新試算表"; }
         }
 
         function deleteCourse(id) {
-            if (!confirm('確定要永久刪除此課程記錄？此動作無法撤銷。')) return;
+            if (!confirm('確定刪除？')) return;
             fetch(CLOUDFLARE_URL, { method: 'POST', body: JSON.stringify({ type: 'course_delete', courseId: id }) }).then(() => loadActivities());
         }
 
         function closeCourseModal() { document.getElementById('course-modal').style.display = 'none'; document.body.style.overflow = 'auto'; }
 
-        // 初始化
         window.onload = () => switchView('activities');
     </script>
 </body>
