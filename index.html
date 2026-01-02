@@ -15,7 +15,7 @@
         .main-content { transition: margin-left 0.2s; margin-left: 240px; min-height: 100vh; }
         .main-content.expanded { margin-left: 64px; }
         .collapsed .nav-text, .collapsed .logo-text { display: none; }
-        .nav-link { color: #A0A0A0; padding: 14px 24px; display: flex; align-items: center; gap: 16px; cursor: pointer; transition: 0.2s; }
+        .nav-link { color: #A0A0A0; padding: 14px 24px; display: flex; align-items: center; gap: 16px; cursor: pointer; transition: 0.2s; text-decoration: none; }
         .nav-link:hover { color: white; background-color: rgba(255, 255, 255, 0.05); }
         .nav-link.active { background-color: var(--line-green); color: white; }
         .flat-table { width: 100%; border-collapse: collapse; }
@@ -24,14 +24,10 @@
         .modal-overlay { background-color: rgba(0, 0, 0, 0.5); display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 1000; align-items: center; justify-content: center; }
         .modal-content { background: white; width: 95%; max-width: 1350px; height: 95vh; display: flex; flex-direction: column; border-radius: 12px; overflow: hidden; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25); }
         .modal-body { overflow-y: auto; flex: 1; padding: 40px 60px; }
-        .type-banner-btn { flex: 1; padding: 18px; text-align: center; font-weight: 800; border-bottom: 2px solid #EEE; color: #999; cursor: pointer; }
-        .type-banner-btn.active { border-bottom: 4px solid var(--line-green); color: var(--line-green); background-color: #FAFAFA; }
         label { display: block; font-size: 0.8rem; font-weight: 800; color: #111; margin-bottom: 0.6rem; }
         input, select, textarea { width: 100%; border: 1px solid #E2E8F0; border-radius: 6px; padding: 12px; font-size: 0.95rem; outline: none; }
         .btn-line { padding: 12px 36px; border-radius: 6px; font-weight: 800; cursor: pointer; display: inline-flex; align-items: center; gap: 10px; transition: 0.2s; border: none; }
         .btn-line-green { background-color: var(--line-green); color: white; }
-        section { margin-bottom: 45px; }
-        section h3 { font-size: 1.1rem; font-weight: 900; color: #111; margin-bottom: 20px; border-bottom: 2px solid #F1F5F9; padding-bottom: 10px; display: flex; align-items: center; gap: 12px; }
         .loading-spinner { border: 3px solid #f3f3f3; border-top: 3px solid var(--line-green); border-radius: 50%; width: 28px; height: 28px; animation: spin 1s linear infinite; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
     </style>
@@ -44,13 +40,13 @@
             <span class="text-xl font-black logo-text text-white tracking-tighter">ActivityLink</span>
         </div>
         <nav>
-            <div onclick="location.reload()" class="nav-link active"><i class="fas fa-list-ul w-6 text-center text-lg"></i><span class="nav-text font-bold">課程內容管理</span></div>
+            <a href="index.html" class="nav-link active"><i class="fas fa-list-ul w-6 text-center text-lg"></i><span class="nav-text font-bold">課程內容管理</span></a>
             <a href="sys.html" class="nav-link"><i class="fas fa-cog w-6 text-center text-lg"></i><span class="nav-text font-bold">系統參數設定</span></a>
         </nav>
     </aside>
 
     <main id="main-content" class="main-content">
-        <nav class="sticky top-0 z-40 bg-white border-b border-slate-200 px-10 py-5 flex items-center justify-between shadow-sm">
+        <nav class="sticky top-0 z-40 bg-white border-b border-slate-200 px-10 py-5 flex items-center justify-between">
             <div class="flex items-center gap-8">
                 <button onclick="sidebar.classList.toggle('collapsed'); mainContent.classList.toggle('expanded');" class="text-slate-400 hover:text-slate-600 bg-transparent border-none cursor-pointer"><i class="fas fa-bars text-xl"></i></button>
                 <h2 class="text-2xl font-black tracking-tight text-slate-800">所有活動課程管理</h2>
@@ -63,45 +59,40 @@
     <!-- 課程編輯彈窗 -->
     <div id="course-modal" class="modal-overlay">
         <div class="modal-content">
-            <div class="flex bg-white border-b">
-                <div onclick="setCourseType('single')" id="btn-type-single" class="type-banner-btn active">單日課程</div>
-                <div onclick="setCourseType('multi')" id="btn-type-multi" class="type-banner-btn">梯次課程</div>
-                <div onclick="setCourseType('camp')" id="btn-type-camp" class="type-banner-btn">營隊活動</div>
-                <div onclick="setCourseType('semester')" id="btn-type-semester" class="type-banner-btn">學期課後班</div>
-                <div class="flex items-center px-6"><button onclick="closeCourseModal()" class="text-slate-300 hover:text-slate-600 border-none bg-transparent cursor-pointer"><i class="fas fa-times text-xl"></i></button></div>
+            <div class="flex bg-white border-b px-6 py-4 justify-between items-center">
+                <h3 class="text-xl font-black">課程內容編輯</h3>
+                <button onclick="document.getElementById('course-modal').style.display='none';" class="text-slate-300 hover:text-slate-600 bg-transparent border-none cursor-pointer"><i class="fas fa-times text-2xl"></i></button>
             </div>
             <div class="modal-body">
                 <form id="course-form">
                     <input type="hidden" name="courseId" id="form-courseId">
-                    <input type="hidden" name="courseType" id="form-courseType" value="single">
                     <section>
-                        <h3><i class="fas fa-info-circle text-green-500"></i> 核心資訊與日期</h3>
-                        <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
-                            <div class="md:col-span-2"><label>課程名稱 *</label><input type="text" name="courseName" required></div>
-                            <div><label>運動類別</label><input type="text" name="category"></div>
+                        <h3><i class="fas fa-info-circle text-green-500"></i> 基本資訊</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div><label>課程名稱 *</label><input type="text" name="courseName" required></div>
                             <div><label>活動日期 *</label><input type="date" name="courseDate" required></div>
                         </div>
                     </section>
                     <section>
                         <h3><i class="fas fa-shopping-basket text-green-500"></i> 課程租用設備設定 (AN)</h3>
-                        <p class="text-slate-400 text-[10px] font-bold mb-4 italic">※ 參數數據同步自「系統參數設定」頁面</p>
-                        <div id="equipment-checkboxes" class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
-                            <!-- JS 動態生成 -->
+                        <div id="equipment-checkboxes" class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                            <!-- 由 JS 動態生成 -->
                         </div>
                     </section>
                     <section>
-                        <h3><i class="fas fa-align-left text-green-500"></i> 詳細介紹內容</h3>
+                        <h3><i class="fas fa-align-left text-green-500"></i> 詳細介紹</h3>
                         <div class="space-y-6">
-                            <div><label>封面網址 (AD)</label><input type="text" name="coverImage"></div>
-                            <div><label>課程亮點 (AF)</label><input type="text" name="highlights"></div>
-                            <div><label>完整介紹 (AG)</label><textarea name="content" rows="6"></textarea></div>
-                            <div><label>課程狀態 (AJ)</label><select name="status"><option value="報名中">報名中</option><option value="已額滿">已額滿</option><option value="草稿">草稿</option></select></div>
+                            <div><label>封面網址</label><input type="text" name="coverImage"></div>
+                            <div><label>亮點</label><input type="text" name="highlights"></div>
+                            <div><label>內容</label><textarea name="content" rows="6"></textarea></div>
+                            <div><label>注意事項</label><textarea name="notes" rows="3"></textarea></div>
+                            <div><label>狀態</label><select name="status"><option value="報名中">報名中</option><option value="已額滿">已額滿</option><option value="草稿">草稿</option></select></div>
                         </div>
                     </section>
                 </form>
             </div>
             <div class="px-10 py-8 border-t flex justify-end gap-5 bg-white sticky bottom-0 z-10 shadow-2xl">
-                <button type="button" onclick="closeCourseModal()" class="btn-line btn-line-outline">取消編輯</button>
+                <button type="button" onclick="document.getElementById('course-modal').style.display='none';" class="btn-line btn-line-outline">取消編輯</button>
                 <button type="button" onclick="submitCourseForm()" id="submit-btn" class="btn-line btn-line-green px-16 shadow-xl">儲存並同步至雲端</button>
             </div>
         </div>
@@ -113,40 +104,48 @@
 
         async function init() {
             const app = document.getElementById('app-content');
-            app.innerHTML = `<div class="p-40 text-center flex flex-col items-center gap-4"><div class="loading-spinner"></div>數據加載中...</div>`;
+            app.innerHTML = `<div class="p-40 text-center"><div class="loading-spinner mx-auto mb-4"></div>數據加載中...</div>`;
             
             try {
-                // 1. 同步設備清單 (供 Modal 使用)
+                // 1. 同步設備清單 (使用深度搜尋邏輯)
                 const confRes = await fetch(`${CLOUDFLARE_URL}?type=config`);
                 const confData = await confRes.json();
-                const equipRow = (confData.config || []).find(i => i.type === 'equipment_list');
-                if (equipRow && equipRow.options) equipList = JSON.parse(equipRow.options);
+                const rawConfig = confData.data || confData.config || [];
+                const equipRow = rawConfig.find(i => {
+                    const t = (i.type || (Array.isArray(i) ? i[0] : '')).toString().toLowerCase().trim();
+                    return t === 'equipment_list' || t === 'equip';
+                });
+                if (equipRow) {
+                    const jsonStr = equipRow.options || (Array.isArray(equipRow) ? equipRow[2] : '');
+                    equipList = jsonStr ? JSON.parse(jsonStr) : [];
+                }
 
                 // 2. 同步課程
                 const res = await fetch(CLOUDFLARE_URL);
-                allCourses = (await res.json()).data || [];
+                const courseResult = await res.json();
+                allCourses = courseResult.data || [];
                 renderList();
-            } catch (e) { app.innerHTML = `<div class="p-20 text-center text-red-500 font-bold">連線失敗，請確認後端部署。</div>`; }
+            } catch (e) { console.error(e); }
         }
 
         function renderList() {
             const rows = allCourses.map(item => `
-                <tr class="hover:bg-slate-50 transition-colors group">
-                    <td><div class="font-black text-slate-800 text-base">${item.courseName || '未命名'}</div><div class="text-[10px] text-slate-400 font-mono">${item.courseId}</div></td>
+                <tr class="hover:bg-slate-50 transition-colors">
+                    <td><div class="font-black text-slate-800">${item.courseName || '未命名'}</div><div class="text-[10px] text-slate-400 font-mono">${item.courseId}</div></td>
                     <td><div class="text-sm font-bold text-slate-500">${item.courseDate ? item.courseDate.split('T')[0] : '-'}</div></td>
                     <td><span class="px-4 py-1.5 rounded-full text-[10px] font-black ${item.status === '報名中' ? 'bg-green-100 text-green-700' : 'bg-slate-100 text-slate-500'}">${item.status || '報名中'}</span></td>
                     <td class="text-right flex justify-end gap-3">
                         <button onclick="editCourse('${item.courseId}')" class="w-10 h-10 rounded-full hover:bg-slate-100 text-slate-300 hover:text-blue-500 transition-all border-none bg-transparent cursor-pointer"><i class="fas fa-edit"></i></button>
-                        <button onclick="deleteCourse('${item.courseId}')" class="w-10 h-10 rounded-full hover:bg-red-50 text-slate-200 hover:text-red-500 border-none bg-transparent cursor-pointer"><i class="fas fa-trash-alt"></i></button>
+                        <button onclick="deleteCourse('${item.courseId}')" class="w-10 h-10 rounded-full hover:bg-red-50 text-slate-200 hover:text-red-500 transition-all border-none bg-transparent cursor-pointer"><i class="fas fa-trash-alt"></i></button>
                     </td>
                 </tr>`).join('');
 
             document.getElementById('app-content').innerHTML = `
                 <div class="px-10 py-12 flex justify-between items-end border-b">
-                    <div><h1 class="text-3xl font-black text-slate-800">課程內容清單</h1><p class="text-slate-400 text-xs font-bold mt-2 uppercase tracking-widest">Total ${allCourses.length} Records</p></div>
-                    <button onclick="openCourseModal()" class="btn-line btn-line-green shadow-xl px-12 py-4">建立新課程</button>
+                    <div><h1 class="text-3xl font-black text-slate-800">活動課程管理</h1></div>
+                    <button onclick="openCourseModal()" class="btn-line btn-line-green shadow-xl px-12 py-4 font-black">建立新課程</button>
                 </div>
-                <table class="flat-table"><thead><tr><th>標題 / ID</th><th>活動日期</th><th>狀態</th><th class="text-right">操作</th></tr></thead><tbody>${rows}</tbody></table>`;
+                <table class="flat-table"><thead><tr><th>標題 / ID</th><th>日期</th><th>狀態</th><th class="text-right">操作</th></tr></thead><tbody>${rows}</tbody></table>`;
         }
 
         function openCourseModal() {
@@ -154,11 +153,11 @@
             document.getElementById('form-courseId').value = '';
             
             const container = document.getElementById('equipment-checkboxes');
-            container.innerHTML = (equipList.length === 0) ? '<p class="text-slate-300 text-xs py-4 italic">無可用設備參數</p>' : equipList.map(eq => `
+            container.innerHTML = equipList.map(eq => `
                 <label class="flex items-center gap-4 p-5 border-2 border-slate-50 rounded-xl cursor-pointer hover:border-green-100 transition-all">
                     <input type="checkbox" name="eq_check" value="${eq.name}" class="w-6 h-6 rounded accent-green-600">
                     <div class="flex-1"><div class="text-xs font-black text-slate-800">${eq.name}</div><div class="text-[10px] text-blue-500 font-black">+$${eq.price}</div></div>
-                </label>`).join('');
+                </label>`).join('') || '<p class="text-slate-300 text-xs italic">無可用設備，請至系統設定新增。</p>';
 
             document.getElementById('course-modal').style.display = 'flex';
         }
@@ -170,8 +169,7 @@
             const form = document.getElementById('course-form');
             document.getElementById('form-courseId').value = item.courseId;
             
-            // 基礎資料回填
-            ["courseName", "category", "courseDate", "memberPrice", "highlights", "content", "status", "coverImage", "notes"].forEach(name => {
+            ["courseName", "courseDate", "coverImage", "highlights", "content", "status", "notes"].forEach(name => {
                 const input = form.querySelector(`[name="${name}"]`);
                 if (input && item[name]) {
                     let val = item[name];
@@ -180,7 +178,6 @@
                 }
             });
 
-            // 設備回填
             const selectedArr = (item.selectedEquipment || '').split(',').map(s => s.trim());
             form.querySelectorAll('input[name="eq_check"]').forEach(cb => cb.checked = selectedArr.includes(cb.value));
         }
@@ -194,12 +191,14 @@
 
             try {
                 const res = await fetch(CLOUDFLARE_URL, { method: 'POST', body: JSON.stringify(payload) });
-                if ((await res.json()).status === "success") { closeCourseModal(); init(); }
+                if ((await res.json()).status === "success") { 
+                    document.getElementById('course-modal').style.display = 'none'; 
+                    init(); 
+                }
             } catch (e) { alert("同步失敗"); }
             finally { btn.disabled = false; btn.innerText = "確認並同步雲端"; }
         }
 
-        function closeCourseModal() { document.getElementById('course-modal').style.display = 'none'; }
         function deleteCourse(id) { if(confirm('刪除？')) fetch(CLOUDFLARE_URL, { method: 'POST', body: JSON.stringify({ type: 'course_delete', courseId: id }) }).then(() => init()); }
 
         window.onload = init;
