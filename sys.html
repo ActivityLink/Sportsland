@@ -96,128 +96,124 @@
         }
 
         async function loadConfig() {
-            const status = document.getElementById('sync-status');
-            try {
-                // 添加錯誤處理和除錯
-                console.log('正在請求配置數據...');
-                const response = await fetch(`${API_URL}?type=config&_t=${Date.now()}`, {
-                    headers: {
-                        'Content-Type': 'application/json'
-                    }
-                });
-                
-                if (!response.ok) {
-                    throw new Error(`HTTP 錯誤! 狀態碼: ${response.status}`);
-                }
-                
-                const result = await response.json();
-                console.log("Cloud Config 響應:", result);
-
-                // 提取配置數據 - 支援多種可能的數據結構
-                let configData = [];
-                
-                if (result && result.data) {
-                    configData = result.data;
-                } else if (result && Array.isArray(result)) {
-                    configData = result;
-                } else if (result && result.config) {
-                    configData = result.config;
-                } else if (result && result.rows) {
-                    configData = result.rows;
-                }
-
-                console.log("解析後的配置數據:", configData);
-
-                // 重置狀態
-                let bankData = {};
-                eqList = [];
-
-                // 處理每一行配置數據
-                configData.forEach(item => {
-                    // 處理不同格式的數據
-                    let type = '';
-                    let options = '';
-                    
-                    if (typeof item === 'object') {
-                        // 物件格式 {type: '...', options: '...'}
-                        type = item.type || '';
-                        options = item.options || item.value || '';
-                    } else if (Array.isArray(item)) {
-                        // 陣列格式 [type, name, options]
-                        type = item[0] || '';
-                        options = item[2] || '';
-                    }
-                    
-                    if (!type) return;
-                    
-                    switch(type.toLowerCase()) {
-                        case 'remittance':
-                        case '匯款資訊':
-                        case 'bank':
-                            try {
-                                if (options) {
-                                    bankData = JSON.parse(options);
-                                }
-                            } catch (e) {
-                                console.error('解析匯款資訊失敗:', e);
-                            }
-                            break;
-                            
-                        case 'equipment_list':
-                        case 'equipment':
-                        case '設備清單':
-                            try {
-                                if (options) {
-                                    eqList = JSON.parse(options);
-                                }
-                            } catch (e) {
-                                console.error('解析設備清單失敗:', e);
-                            }
-                            break;
-                    }
-                });
-
-                // 填充匯款資訊表單
-                if (bankData) {
-                    document.getElementById('bank-name').value = bankData.bankName || bankData.bank_name || '';
-                    document.getElementById('bank-code').value = bankData.bankCode || bankData.bank_code || '';
-                    document.getElementById('bank-acc-name').value = bankData.accountName || bankData.account_name || bankData.accName || '';
-                    document.getElementById('bank-acc-num').value = bankData.accountNumber || bankData.account_number || bankData.accNumber || '';
-                }
-
-                // 渲染設備列表
-                renderEq();
-
-                // 更新狀態顯示
-                status.innerText = "連線正常";
-                status.style.color = '#10B981'; // green-500
-                status.style.borderColor = '#10B981';
-                
-            } catch (error) {
-                console.error('載入配置時發生錯誤:', error);
-                status.innerText = "連線失敗";
-                status.style.color = '#EF4444'; // red-500
-                status.style.borderColor = '#EF4444';
-                
-                // 顯示錯誤信息
-                const eqContainer = document.getElementById('eq-container');
-                eqContainer.innerHTML = `
-                    <div class="p-6 bg-red-50 border border-red-200 rounded-lg">
-                        <p class="text-red-600 font-bold mb-2">載入配置失敗</p>
-                        <p class="text-red-500 text-sm">${error.message}</p>
-                        <p class="text-gray-500 text-xs mt-4">
-                            請檢查:<br>
-                            1. Worker 服務是否正常運行<br>
-                            2. GAS 配置端點是否正確<br>
-                            3. 網路連線是否正常
-                        </p>
-                        <button onclick="loadConfig()" class="mt-3 px-4 py-2 bg-red-100 text-red-700 rounded text-sm font-bold hover:bg-red-200 transition">
-                            重新載入
-                        </button>
-                    </div>
-                `;
+    const status = document.getElementById('sync-status');
+    try {
+        // 添加調試信息
+        console.log('正在請求配置數據...');
+        const response = await fetch(`${API_URL}?type=config&_t=${Date.now()}`, {
+            headers: {
+                'Content-Type': 'application/json'
             }
+        });
+        
+        if (!response.ok) {
+            throw new Error(`HTTP 錯誤! 狀態碼: ${response.status}`);
         }
+        
+        const result = await response.json();
+        console.log("Cloud Config 原始響應:", result);
+        
+        // 提取配置數據
+        let configData = [];
+        
+        // 優先使用 data 屬性，這是修改後 GAS 返回的格式
+        if (result && result.data && Array.isArray(result.data)) {
+            configData = result.data;
+        } else if (result && result.config && Array.isArray(result.config)) {
+            // 備用：使用舊格式的 config 屬性
+            configData = result.config;
+        }
+        
+        console.log("提取的 configData:", configData);
+        
+        // 初始化變數
+        let bankData = {};
+        let eqListData = [];
+        
+        // 遍歷配置數據，分類處理
+        configData.forEach(item => {
+            if (!item) return;
+            
+            console.log("處理項目:", item);
+            
+            // 檢查項目類型
+            const itemType = (item.type || '').toLowerCase().trim();
+            const options = item.options || '';
+            
+            if (!options) return;
+            
+            try {
+                // 解析 JSON 選項
+                const parsedOptions = JSON.parse(options);
+                
+                if (itemType === 'remittance' || itemType === '匯款資訊' || itemType === 'bank') {
+                    bankData = parsedOptions;
+                    console.log("找到匯款資訊:", bankData);
+                } else if (itemType === 'equipment_list' || itemType === 'equipment' || itemType === '設備清單') {
+                    eqListData = Array.isArray(parsedOptions) ? parsedOptions : [];
+                    console.log("找到設備清單:", eqListData);
+                }
+            } catch (e) {
+                console.error("解析 JSON 失敗:", options, "錯誤:", e);
+            }
+        });
+        
+        // 填充匯款資訊表單
+        console.log("要填充的銀行資料:", bankData);
+        
+        // 支援多種可能的欄位名稱
+        if (bankData) {
+            const bankNameInput = document.getElementById('bank-name');
+            const bankCodeInput = document.getElementById('bank-code');
+            const bankAccNameInput = document.getElementById('bank-acc-name');
+            const bankAccNumInput = document.getElementById('bank-acc-num');
+            
+            // 優先使用標準欄位名稱，後備使用可能的中文或其他名稱
+            bankNameInput.value = bankData.bankName || bankData['銀行名稱'] || bankData.bank_name || '';
+            bankCodeInput.value = bankData.bankCode || bankData['銀行代碼'] || bankData.bank_code || '';
+            bankAccNameInput.value = bankData.accountName || bankData['戶名'] || bankData.accName || bankData.account_name || '';
+            bankAccNumInput.value = bankData.accountNumber || bankData['帳號'] || bankData.accNumber || bankData.account_number || '';
+            
+            console.log("填充後的銀行名稱:", bankNameInput.value);
+            console.log("填充後的銀行代碼:", bankCodeInput.value);
+        } else {
+            console.warn("未找到銀行資料");
+        }
+        
+        // 更新設備列表
+        eqList = eqListData;
+        renderEq();
+        
+        // 更新狀態顯示
+        status.innerText = "連線正常";
+        status.style.color = '#10B981'; // green-500
+        status.style.borderColor = '#10B981';
+        
+    } catch (error) {
+        console.error('載入配置時發生錯誤:', error);
+        status.innerText = "連線失敗";
+        status.style.color = '#EF4444'; // red-500
+        status.style.borderColor = '#EF4444';
+        
+        // 顯示錯誤信息
+        const eqContainer = document.getElementById('eq-container');
+        if (eqContainer) {
+            eqContainer.innerHTML = `
+                <div class="p-6 bg-red-50 border border-red-200 rounded-lg">
+                    <p class="text-red-600 font-bold mb-2">載入配置失敗</p>
+                    <p class="text-red-500 text-sm">${error.message}</p>
+                    <p class="text-gray-500 text-xs mt-4">
+                        響應數據：<br>
+                        <pre class="bg-gray-100 p-2 text-xs overflow-auto">${JSON.stringify(error, null, 2)}</pre>
+                    </p>
+                    <button onclick="loadConfig()" class="mt-3 px-4 py-2 bg-red-100 text-red-700 rounded text-sm font-bold hover:bg-red-200 transition">
+                        重新載入
+                    </button>
+                </div>
+            `;
+        }
+    }
+}
 
         function renderEq() {
             const container = document.getElementById('eq-container');
