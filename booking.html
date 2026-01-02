@@ -3,425 +3,225 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ActivityLink - 管理後台</title>
+    <title>ActivityLink - 課程預約</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&display=swap');
         
         :root {
             --line-green: #06C755;
-            --line-green-dark: #05b34c;
-            --sidebar-bg: #111111;
-            --body-bg: #FFFFFF;
+            --line-blue: #007AFF; 
         }
 
         body { 
-            font-family: 'Inter', 'PingFang TC', 'Microsoft JhengHei', sans-serif; 
-            background-color: var(--body-bg); 
-            color: #333333;
+            font-family: 'Noto Sans TC', sans-serif; 
+            background-color: #FFFFFF;
+            color: #000000; /* 全局使用純黑 */
         }
 
-        /* 側邊欄：收合時完全隱藏文字 */
-        .sidebar { 
-            transition: width 0.2s ease-in-out; 
-            width: 220px; 
-            background-color: var(--sidebar-bg);
-            z-index: 50;
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+
+        .course-card {
+            transition: transform 0.2s ease;
         }
-        
-        .sidebar.collapsed { 
-            width: 64px; 
+        .course-card:active {
+            transform: scale(0.98);
         }
 
-        .main-content { 
-            transition: margin-left 0.2s ease-in-out; 
-            margin-left: 220px; 
+        /* 骨架屏 */
+        @keyframes shimmer {
+            0% { background-position: -1000px 0; }
+            100% { background-position: 1000px 0; }
         }
-        
-        .main-content.expanded { 
-            margin-left: 64px; 
+        .skeleton {
+            background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+            background-size: 1000px 100%;
+            animation: shimmer 2s infinite linear;
         }
-
-        .collapsed .nav-text, .collapsed .logo-text {
-            display: none;
-        }
-
-        .nav-link {
-            color: #A0A0A0;
-            padding: 12px 20px;
-            display: flex;
-            align-items: center;
-            gap: 16px;
-            cursor: pointer;
-        }
-
-        .nav-link:hover {
-            color: white;
-            background-color: rgba(255, 255, 255, 0.05);
-        }
-
-        .nav-link.active { 
-            background-color: var(--line-green); 
-            color: white; 
-        }
-
-        /* 扁平化表單樣式 */
-        label { 
-            display: block; 
-            font-size: 0.85rem; 
-            font-weight: 700; 
-            color: #111111; 
-            margin-bottom: 0.75rem; 
-        }
-        
-        input, select, textarea { 
-            width: 100%; 
-            border: 1px solid #DDDDDD; 
-            border-radius: 4px; 
-            padding: 12px; 
-            font-size: 0.95rem; 
-            background: #FFFFFF;
-        }
-        
-        input:focus { 
-            border-color: var(--line-green); 
-            outline: none;
-        }
-
-        /* 扁平列表表格 */
-        .flat-table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-        .flat-table th {
-            background-color: #F8F9FA;
-            color: #666666;
-            font-weight: 700;
-            font-size: 0.75rem;
-            padding: 16px 24px;
-            border-bottom: 1px solid #EEEEEE;
-            text-align: left;
-        }
-        .flat-table td {
-            padding: 20px 24px;
-            border-bottom: 1px solid #F6F6F6;
-        }
-
-        /* 按鈕風格 */
-        .btn-line {
-            padding: 10px 32px;
-            border-radius: 4px;
-            font-weight: 700;
-            transition: all 0.2s;
-            cursor: pointer;
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-        }
-        .btn-line-green {
-            background-color: var(--line-green);
-            color: white;
-        }
-        .btn-line-green:hover {
-            background-color: var(--line-green-dark);
-        }
-        .btn-line-outline {
-            border: 1px solid #DDDDDD;
-            color: #666666;
-        }
-
-        .loading-spinner { 
-            border: 3px solid #f3f3f3; 
-            border-top: 3px solid var(--line-green); 
-            border-radius: 50%; 
-            width: 24px; height: 24px; 
-            animation: spin 1s linear infinite; 
-        }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
     </style>
 </head>
-<body class="overflow-x-hidden">
+<body class="pb-28">
 
-    <!-- 側邊欄 -->
-    <aside id="sidebar" class="sidebar fixed top-0 left-0 h-full text-white z-50 overflow-y-auto">
-        <div class="p-6 flex items-center gap-4 mb-8">
-            <div class="w-8 h-8 bg-[#06C755] rounded-sm flex items-center justify-center">
-                <i class="fas fa-link text-white text-xs"></i>
+    <!-- 頂部導航 -->
+    <header class="sticky top-0 z-50 bg-white px-5 py-4 flex items-center justify-between border-b-2 border-gray-100">
+        <div class="flex items-center gap-2">
+            <div class="w-9 h-9 bg-[#06C755] rounded-lg flex items-center justify-center">
+                <i class="fas fa-comment-dots text-white text-lg"></i>
             </div>
-            <span class="text-lg font-bold logo-text tracking-tight">ActivityLink</span>
+            <h1 class="text-2xl font-black tracking-tighter">ActivityLink</h1>
         </div>
-        
-        <nav class="space-y-0">
-            <a onclick="switchView('dashboard')" class="nav-link">
-                <i class="fas fa-chart-bar w-6 text-center"></i>
-                <span class="nav-text">分析儀表板</span>
-            </a>
-            <a onclick="switchView('activities')" class="nav-link">
-                <i class="fas fa-list-ul w-6 text-center"></i>
-                <span class="nav-text">內容管理</span>
-            </a>
-            <a onclick="switchView('line-oa')" class="nav-link">
-                <i class="fab fa-line w-6 text-center"></i>
-                <span class="nav-text">OA 帳號設定</span>
-            </a>
-            <div class="mt-8 pt-8 border-t border-white/5">
-                <a onclick="switchView('settings')" class="nav-link active">
-                    <i class="fas fa-cog w-6 text-center"></i>
-                    <span class="nav-text">系統設定</span>
-                </a>
-            </div>
-        </nav>
-    </aside>
+        <div class="flex items-center gap-5">
+            <button class="text-black text-xl"><i class="fas fa-search"></i></button>
+            <button class="w-10 h-10 rounded-full bg-black flex items-center justify-center text-white">
+                <i class="fas fa-user"></i>
+            </button>
+        </div>
+    </header>
 
-    <!-- 主要內容區 -->
-    <main id="main-content" class="main-content min-h-screen">
-        <nav class="sticky top-0 z-40 bg-white border-b border-slate-200 px-8 py-4 flex items-center justify-between shadow-sm">
-            <div class="flex items-center gap-6">
-                <button id="sidebar-toggle" class="text-slate-400 hover:text-slate-600 transition-colors">
-                    <i class="fas fa-bars text-xl"></i>
-                </button>
-                <h2 id="page-title" class="text-xl font-bold text-slate-800 tracking-tight">系統設定</h2>
-            </div>
-            <div class="flex items-center gap-4">
-                <div class="flex flex-col text-right">
-                    <span class="text-[10px] font-bold text-green-500 uppercase tracking-tighter">Live Connection</span>
-                    <span class="text-[10px] text-slate-400">Database Active</span>
-                </div>
-                <div class="w-8 h-8 bg-slate-100 rounded-full flex items-center justify-center text-slate-400 font-bold border border-slate-200">A</div>
-            </div>
-        </nav>
+    <!-- 主 Banner (等比縮放) -->
+    <div class="w-full">
+        <img src="https://aiwe.cc/wp-content/uploads/2025/12/3486bc19dc6317e16bf4f1449ec52ae4.jpg" 
+             class="w-full h-auto block" 
+             alt="ActivityLink Banner">
+    </div>
 
-        <div id="app-content">
-            <!-- 動態內容將插入於此 -->
+    <!-- 功能快速選單 (單一藍色 BAR 條) -->
+    <div class="w-full bg-blue-600 flex divide-x divide-blue-500 shadow-md">
+        <button class="flex-1 py-4 flex items-center justify-center gap-3 text-white active:bg-blue-700 transition-colors">
+            <i class="fas fa-calendar-star text-lg"></i>
+            <span class="font-bold text-lg">活動專區</span>
+        </button>
+        <button class="flex-1 py-4 flex items-center justify-center gap-3 text-white active:bg-blue-700 transition-colors">
+            <i class="fas fa-id-card text-lg"></i>
+            <span class="font-bold text-lg">會員專區</span>
+        </button>
+    </div>
+
+    <!-- 課程清單區 -->
+    <main class="px-5 mt-8">
+        <div class="flex items-center justify-between mb-8">
+            <h3 class="text-2xl font-black tracking-tight">推薦熱門課程</h3>
+            <span class="text-sm font-bold text-blue-600">查看全部</span>
+        </div>
+
+        <!-- 課程容器 -->
+        <div id="course-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-y-12 gap-x-8">
+            <!-- 初始載入骨架 -->
+            <div class="space-y-4">
+                <div class="aspect-[16/9] skeleton rounded-2xl"></div>
+                <div class="h-8 skeleton rounded w-3/4"></div>
+                <div class="h-6 skeleton rounded w-1/2"></div>
+            </div>
+            <div class="space-y-4">
+                <div class="aspect-[16/9] skeleton rounded-2xl"></div>
+                <div class="h-8 skeleton rounded w-3/4"></div>
+                <div class="h-6 skeleton rounded w-1/2"></div>
+            </div>
         </div>
     </main>
 
+    <!-- 底部導覽 (提高文字與圖示對比) -->
+    <footer class="fixed bottom-0 left-0 w-full bg-white border-t-2 border-gray-100 px-6 py-4 flex justify-between items-center z-50">
+        <button class="flex flex-col items-center gap-1 text-[#06C755]">
+            <i class="fas fa-home text-2xl"></i>
+            <span class="text-xs font-bold">首頁</span>
+        </button>
+        <button class="flex flex-col items-center gap-1 text-black">
+            <i class="fas fa-compass text-2xl"></i>
+            <span class="text-xs font-bold">探索</span>
+        </button>
+        <button class="flex flex-col items-center gap-1 text-black">
+            <i class="fas fa-clipboard-list text-2xl"></i>
+            <span class="text-xs font-bold">預約</span>
+        </button>
+        <button class="flex flex-col items-center gap-1 text-black">
+            <i class="fas fa-user-circle text-2xl"></i>
+            <span class="text-xs font-bold">帳號</span>
+        </button>
+    </footer>
+
     <script>
         const CLOUDFLARE_WORKER_URL = 'https://aged-rice-2438.wetw-net3.workers.dev/';
-        const appContent = document.getElementById('app-content');
-        const sidebar = document.getElementById('sidebar');
-        const mainContent = document.getElementById('main-content');
-        let configData = []; 
+        const container = document.getElementById('course-container');
 
-        // 側邊欄收合邏輯
-        document.getElementById('sidebar-toggle').onclick = () => {
-            sidebar.classList.toggle('collapsed');
-            mainContent.classList.toggle('expanded');
-        };
-
-        // 核心視圖切換
-        async function switchView(viewName) {
-            const links = document.querySelectorAll('.nav-link');
-            links.forEach(l => l.classList.remove('active'));
-            const activeLink = Array.from(links).find(l => l.getAttribute('onclick').includes(viewName));
-            if (activeLink) activeLink.classList.add('active');
-
-            // 更改頁面標題
-            const titleMap = {
-                'dashboard': '分析儀表板',
-                'activities': '內容管理',
-                'line-oa': 'OA 帳號設定',
-                'settings': '系統設定'
-            };
-            document.getElementById('page-title').innerText = titleMap[viewName] || 'ActivityLink';
-
-            appContent.innerHTML = `<div class="flex flex-col items-center justify-center min-h-[60vh] text-slate-300">
-                <div class="loading-spinner mb-4"></div><p class="font-bold">正在讀取雲端數據...</p></div>`;
-
-            if (viewName === 'settings') {
-                await loadSettings();
-            } else if (viewName === 'activities') {
-                await loadActivities();
-            } else {
-                appContent.innerHTML = `<div class="p-20 text-center text-slate-400 font-bold">「${viewName}」功能開發中</div>`;
-            }
-        }
-
-        // --- 系統設定 (Setup) 邏輯 ---
-
-        async function loadSettings() {
-            try {
-                // 確保 type=config 能正確請求 setup 工作表
-                const response = await fetch(`${CLOUDFLARE_WORKER_URL}?type=config`);
-                const result = await response.json();
-                
-                // 相容不同後端回傳格式 (config 或 setup)
-                configData = result.config || result.setup || [];
-                renderSettingsUI();
-            } catch (e) {
-                appContent.innerHTML = `<div class="p-20 text-center text-red-500 font-bold">無法讀取系統設定，請檢查網路連線或試算表狀態。</div>`;
-            }
-        }
-
-        function renderSettingsUI() {
-            appContent.innerHTML = `
-                <div class="px-10 py-10 max-w-full">
-                    <div class="flex justify-between items-end mb-10 pb-6 border-b">
-                        <div>
-                            <h1 class="text-3xl font-black text-slate-800">報名參數管理 (Setup)</h1>
-                            <p class="text-slate-400 text-sm mt-2 font-medium">在此定義預約彈窗中顯示的下拉選單欄位，數據將即時同步至 LINE 前端。</p>
-                        </div>
-                        <button onclick="addConfigField()" class="btn-line btn-line-green shadow-xl shadow-green-100">
-                            <i class="fas fa-plus"></i> 新增參數欄位
-                        </button>
-                    </div>
-
-                    <div class="space-y-2" id="config-list-container">
-                        ${configData.length === 0 ? `
-                            <div class="py-32 text-center">
-                                <i class="fas fa-sliders-h text-slate-100 text-6xl mb-4 block"></i>
-                                <p class="text-slate-300 font-bold">目前無現有參數資料</p>
-                            </div>
-                        ` : configData.map((item, index) => `
-                            <div class="flex items-center gap-10 p-8 hover:bg-slate-50 transition-colors border-b border-slate-50 group">
-                                <div class="flex-1 grid grid-cols-1 md:grid-cols-2 gap-10">
-                                    <div>
-                                        <label class="uppercase tracking-widest text-[10px] text-slate-400 mb-2">參數名稱 (例如: 午餐選擇)</label>
-                                        <input type="text" value="${item.name || ''}" 
-                                               class="border-transparent hover:border-slate-200 focus:border-line-green transition-all px-0 py-2 text-xl font-bold bg-transparent"
-                                               oninput="updateLocalConfig(${index}, 'name', this.value)" 
-                                               placeholder="點擊輸入欄位名稱">
-                                    </div>
-                                    <div>
-                                        <label class="uppercase tracking-widest text-[10px] text-slate-400 mb-2">可選項 (請用半形逗號分隔)</label>
-                                        <input type="text" value="${item.options || ''}" 
-                                               class="border-transparent hover:border-slate-200 focus:border-line-green transition-all px-0 py-2 text-lg text-slate-600 bg-transparent"
-                                               oninput="updateLocalConfig(${index}, 'options', this.value)" 
-                                               placeholder="例如: 葷食, 素食, 自備">
-                                    </div>
-                                </div>
-                                <button onclick="deleteConfigField(${index})" class="text-slate-200 group-hover:text-red-400 transition-colors p-4">
-                                    <i class="fas fa-trash-alt text-xl"></i>
-                                </button>
-                            </div>
-                        `).join('')}
-                    </div>
-
-                    <div class="mt-20 pt-10 flex items-center justify-between">
-                        <div class="flex items-center gap-3 text-slate-400">
-                            <i class="fas fa-info-circle"></i>
-                            <span class="text-xs font-medium text-slate-400">變更後請務必點擊「儲存」以同步至雲端。</span>
-                        </div>
-                        <button onclick="saveSettingsToCloud()" id="save-btn" class="btn-line btn-line-green px-20 py-5 text-xl shadow-2xl shadow-green-100">
-                            儲存所有設定
-                        </button>
-                    </div>
-                </div>
-            `;
-        }
-
-        function addConfigField() {
-            configData.push({ name: '', options: '' });
-            renderSettingsUI();
-        }
-
-        function updateLocalConfig(index, key, value) {
-            configData[index][key] = value;
-        }
-
-        function deleteConfigField(index) {
-            configData.splice(index, 1);
-            renderSettingsUI();
-        }
-
-        async function saveSettingsToCloud() {
-            const btn = document.getElementById('save-btn');
-            btn.disabled = true;
-            btn.innerHTML = `<div class="loading-spinner !w-4 !h-4 !border-white mr-2"></div> 儲存中...`;
-
-            try {
-                const response = await fetch(CLOUDFLARE_WORKER_URL, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        type: 'config_update', 
-                        data: configData
-                    })
-                });
-                const result = await response.json();
-                if (result.status === "success") {
-                    alert('系統設定已成功同步！');
-                } else {
-                    throw new Error(result.message);
-                }
-            } catch (e) {
-                alert('儲存失敗：' + e.message);
-            } finally {
-                btn.disabled = false;
-                btn.innerHTML = `儲存所有設定`;
-            }
-        }
-
-        // --- 內容管理 (Activities) 邏輯 ---
-
-        async function loadActivities() {
+        async function fetchCourses() {
             try {
                 const response = await fetch(CLOUDFLARE_WORKER_URL);
                 const result = await response.json();
-                if (result.status === "success") renderActivityList(result.data);
-                else throw new Error(result.message);
+                if (result.status === "success") {
+                    renderCourses(result.data);
+                } else {
+                    throw new Error(result.message);
+                }
             } catch (error) {
-                appContent.innerHTML = `<div class="p-20 text-center text-red-500 font-bold">課程資料讀取失敗</div>`;
+                container.innerHTML = `<div class="col-span-full py-20 text-center text-black font-bold">無法載入課程，請檢查連線。</div>`;
             }
         }
 
-        function renderActivityList(data) {
-            const rows = data.map(item => `
-                <tr class="hover:bg-slate-50 transition-colors">
-                    <td>
-                        <div class="font-bold text-slate-800 text-base">${item['課程名稱'] || '未命名的活動'}</div>
-                        <div class="text-[10px] text-slate-400 font-mono tracking-widest mt-1 uppercase">${item['課程ID'] || '-'}</div>
-                    </td>
-                    <td>
-                        <div class="text-sm font-bold text-slate-600">${item['課程日期'] ? new Date(item['課程日期']).toLocaleDateString() : '-'}</div>
-                    </td>
-                    <td class="text-sm text-slate-500 font-medium">${item['場地名稱'] || '-'}</td>
-                    <td class="w-48">
-                        <div class="flex items-center gap-3">
-                            <div class="flex-grow h-1.5 bg-slate-100 rounded-full overflow-hidden">
-                                <div class="h-full bg-line-green" style="width: ${(item['已報名人數']/item['總名額'])*100}%"></div>
-                            </div>
-                            <span class="text-[10px] font-black text-slate-500">${item['已報名人數'] || 0}/${item['總名額'] || 0}</span>
-                        </div>
-                    </td>
-                    <td>
-                        <span class="px-3 py-1 rounded-full text-[10px] font-black ${item['課程狀態'] === '報名中' ? 'bg-green-100 text-green-700' : 'bg-slate-100 text-slate-500'}">
-                            ${item['課程狀態'] || '草稿'}
-                        </span>
-                    </td>
-                    <td class="text-right">
-                        <button class="w-10 h-10 rounded-full hover:bg-slate-100 text-slate-300 hover:text-blue-500 transition-all"><i class="fas fa-edit"></i></button>
-                    </td>
-                </tr>
-            `).join('');
+        function renderCourses(data) {
+            if (!data || data.length === 0) {
+                container.innerHTML = `<div class="col-span-full py-20 text-center text-black font-black text-xl">目前沒有開放中的課程</div>`;
+                return;
+            }
 
-            appContent.innerHTML = `
-                <div class="px-8 py-10 flex justify-between items-center border-b">
-                    <div>
-                        <h1 class="text-2xl font-black text-slate-800">所有活動清單</h1>
-                        <p class="text-slate-400 text-xs mt-1 font-medium tracking-tight">目前雲端共有 ${data.length} 筆課程</p>
+            container.innerHTML = data.map(item => {
+                const enrolled = parseInt(item['已報名人數']) || 0;
+                const total = parseInt(item['總名額']) || 1;
+                const progress = Math.min((enrolled / total) * 100, 100);
+                const cover = item['封面圖片'] || 'https://images.unsplash.com/photo-1546519638-68e109498ffc?w=800';
+                
+                const dateObj = new Date(item['課程日期']);
+                const formattedDate = isNaN(dateObj) ? item['課程日期'] : dateObj.toLocaleDateString('zh-TW', { month: 'short', day: 'numeric', weekday: 'short' });
+
+                return `
+                    <div class="course-card group">
+                        <!-- 圖片區 -->
+                        <div class="relative aspect-[16/9] rounded-3xl overflow-hidden mb-5 shadow-lg bg-gray-100 border border-gray-100">
+                            <img src="${cover}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" alt="${item['課程名稱']}">
+                            <div class="absolute top-4 left-4 px-4 py-1.5 bg-black text-white text-xs font-black rounded-lg uppercase tracking-tight">
+                                ${item['運動類別'] || '運動'}
+                            </div>
+                            ${item['課程狀態'] === '已額滿' ? `
+                                <div class="absolute inset-0 bg-black/60 flex items-center justify-center">
+                                    <span class="px-6 py-3 bg-white text-black font-black rounded-xl text-lg shadow-xl">已額滿</span>
+                                </div>
+                            ` : ''}
+                        </div>
+
+                        <!-- 內容區 -->
+                        <div class="px-1 space-y-4">
+                            <div class="flex justify-between items-start gap-4">
+                                <h4 class="text-xl font-black leading-tight text-black">${item['課程名稱']}</h4>
+                                <div class="flex flex-col items-end flex-shrink-0">
+                                    <span class="text-[#06C755] font-black text-2xl font-mono leading-none">$${item['會員價'] || 0}</span>
+                                    <span class="text-[10px] text-black font-black uppercase tracking-widest mt-1">特惠價格</span>
+                                </div>
+                            </div>
+                            
+                            <div class="flex flex-col gap-2">
+                                <span class="flex items-center gap-2 text-base font-bold text-black"><i class="far fa-calendar-alt text-[#06C755] w-5"></i> ${formattedDate}</span>
+                                <span class="flex items-center gap-2 text-base font-bold text-black"><i class="fas fa-map-marker-alt text-[#06C755] w-5"></i> ${item['場地名稱'] || '活動地點'}</span>
+                            </div>
+
+                            <!-- 報名進度條 -->
+                            <div class="pt-2">
+                                <div class="flex justify-between text-sm font-black text-black mb-2 uppercase">
+                                    <span>報名狀態</span>
+                                    <span>${enrolled} / ${total} 人</span>
+                                </div>
+                                <div class="h-3 w-full bg-gray-100 rounded-full overflow-hidden border border-gray-100">
+                                    <div class="h-full bg-[#06C755]" style="width: ${progress}%"></div>
+                                </div>
+                            </div>
+
+                            <!-- 預約按鈕 -->
+                            <div class="pt-4">
+                                <button onclick="handleBooking('${item['課程ID']}')" class="w-full py-4 bg-[#06C755] text-white font-black text-lg rounded-2xl shadow-xl shadow-green-100 active:scale-95 transition-transform">
+                                    立即預約
+                                </button>
+                            </div>
+                        </div>
                     </div>
-                    <button class="btn-line btn-line-green shadow-xl shadow-green-100 px-10 py-3">建立新課程</button>
-                </div>
-                <table class="flat-table">
-                    <thead>
-                        <tr>
-                            <th>課程標題 / ID</th>
-                            <th>日期</th>
-                            <th>場地</th>
-                            <th>報名進度</th>
-                            <th>狀態</th>
-                            <th class="text-right">管理</th>
-                        </tr>
-                    </thead>
-                    <tbody>${rows}</tbody>
-                </table>
-            `;
+                `;
+            }).join('');
         }
 
-        // 預設載入系統設定頁面
-        window.onload = () => switchView('settings');
+        function handleBooking(courseId) {
+            console.log('Booking Course ID:', courseId);
+            if (typeof liff !== 'undefined' && liff.isInClient()) {
+                liff.sendMessages([{
+                    type: 'text',
+                    text: '我要預約課程，ID: ' + courseId
+                }]).then(() => {
+                    liff.closeWindow();
+                });
+            } else {
+                alert('預約成功！\n課程代碼：' + courseId + '\n將為您轉接客服專員。');
+            }
+        }
+
+        window.onload = fetchCourses;
     </script>
 </body>
 </html>
