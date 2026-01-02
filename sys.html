@@ -33,10 +33,10 @@
         .loading-spinner { border: 3px solid #f3f3f3; border-top: 3px solid var(--line-green); border-radius: 50%; width: 24px; height: 24px; animation: spin 1s linear infinite; display: inline-block; vertical-align: middle; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
         
-        .status-badge { font-size: 10px; font-weight: 900; padding: 4px 8px; border-radius: 4px; text-transform: uppercase; }
+        .status-badge { font-size: 10px; font-weight: 900; padding: 4px 10px; border-radius: 20px; text-transform: uppercase; border: 1px solid currentColor; }
         .status-syncing { color: #94A3B8; }
-        .status-active { color: #10B981; }
-        .status-error { color: #EF4444; }
+        .status-active { color: #10B981; background-color: #ECFDF5; }
+        .status-error { color: #EF4444; background-color: #FEF2F2; }
     </style>
 </head>
 <body>
@@ -58,17 +58,19 @@
         <nav class="sticky top-0 z-40 bg-white/80 backdrop-blur-md border-b border-slate-200 px-10 py-5 flex items-center justify-between shadow-sm">
             <div class="flex items-center gap-8">
                 <button id="toggle-btn" class="text-slate-400 hover:text-slate-600 bg-transparent border-none cursor-pointer"><i class="fas fa-bars text-xl"></i></button>
-                <h2 class="text-2xl font-black tracking-tight text-slate-800">系統參數設定 (JSON 核心)</h2>
+                <h2 class="text-2xl font-black tracking-tight text-slate-800">系統參數設定</h2>
             </div>
             <div class="flex items-center gap-3">
-                <span id="sync-status" class="status-badge status-syncing">正在連線雲端...</span>
+                <span id="sync-status" class="status-badge status-syncing">偵測中...</span>
                 <div class="w-8 h-8 bg-slate-100 rounded-full flex items-center justify-center font-bold border text-slate-400 text-xs shadow-inner">AD</div>
             </div>
         </nav>
 
         <div class="px-10 py-10 max-w-5xl mx-auto">
-            <div id="error-message" class="hidden mb-8 p-4 bg-red-50 border border-red-100 text-red-600 rounded-lg font-bold text-sm">
-                <i class="fas fa-exclamation-circle mr-2"></i> <span></span>
+            <!-- 偵錯資訊顯示區 -->
+            <div id="debug-info" class="hidden mb-6 p-4 bg-slate-800 text-green-400 font-mono text-xs rounded-lg overflow-x-auto">
+                <p class="mb-2 text-white font-bold border-b border-slate-600 pb-1">系統診斷數據：</p>
+                <pre id="debug-text"></pre>
             </div>
 
             <!-- 1. 匯款資訊 -->
@@ -77,9 +79,9 @@
                     <i class="fas fa-university text-blue-500"></i> 1. 官方匯款帳戶設定 (JSON)
                 </h3>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                    <div><label>銀行名稱</label><input type="text" id="bank-name" placeholder="例如：國泰世華"></div>
-                    <div><label>銀行代碼</label><input type="text" id="bank-code" placeholder="例如：013"></div>
-                    <div><label>受款戶名</label><input type="text" id="bank-acc-name" placeholder="例如：活動連結有限公司"></div>
+                    <div><label>銀行名稱</label><input type="text" id="bank-name" placeholder="請輸入銀行名稱"></div>
+                    <div><label>銀行代碼</label><input type="text" id="bank-code" placeholder="請輸入代碼"></div>
+                    <div><label>受款戶名</label><input type="text" id="bank-acc-name" placeholder="請輸入戶名"></div>
                     <div><label>轉帳帳號</label><input type="text" id="bank-acc-num" placeholder="請輸入完整帳號"></div>
                 </div>
             </div>
@@ -95,7 +97,7 @@
                     </button>
                 </div>
                 <div id="eq-container" class="space-y-4">
-                    <!-- JS 動態生成項目 -->
+                    <div class="text-center py-10 text-slate-300 font-bold italic">載入雲端數據中...</div>
                 </div>
             </div>
 
@@ -112,7 +114,6 @@
         const sidebar = document.getElementById('sidebar');
         const mainContent = document.getElementById('main-content');
         const syncStatus = document.getElementById('sync-status');
-        const errorMsg = document.getElementById('error-message');
         
         let eqList = [];
 
@@ -122,56 +123,65 @@
         };
 
         async function loadConfig() {
-            syncStatus.innerText = "正在連線雲端...";
+            syncStatus.innerText = "正在連線...";
             syncStatus.className = "status-badge status-syncing";
-            errorMsg.classList.add('hidden');
 
             try {
-                const res = await fetch(`${CLOUDFLARE_URL}?type=config`, {
-                    method: 'GET',
-                    headers: { 'Accept': 'application/json' }
-                });
-
-                if (!res.ok) throw new Error(`HTTP 錯誤: ${res.status}`);
+                const res = await fetch(`${CLOUDFLARE_URL}?type=config&_t=${Date.now()}`);
+                if (!res.ok) throw new Error(`HTTP Error: ${res.status}`);
                 
                 const result = await res.json();
-                console.log("Cloud Config Data:", result);
+                console.log("Response JSON:", result);
 
-                if (result.status !== "success") throw new Error(result.message || "未知後端錯誤");
+                // 顯示偵錯資訊，讓您能看到回傳了什麼
+                document.getElementById('debug-info').classList.remove('hidden');
+                document.getElementById('debug-text').innerText = JSON.stringify(result, null, 2);
 
-                // 重要修正：相容 data 與 config 屬性
-                const allConfig = result.data || result.config || [];
+                if (result.status !== "success") throw new Error("後端回傳失敗狀態");
 
-                // 1. 解析匯款資訊 (支援不同的 type 名稱判定)
-                const bankRow = allConfig.find(i => i.type === 'remittance' || i.type === 'remit');
-                if (bankRow && bankRow.options) {
-                    try {
-                        const bank = JSON.parse(bankRow.options);
-                        document.getElementById('bank-name').value = bank.bankName || "";
-                        document.getElementById('bank-code').value = bank.bankCode || "";
-                        document.getElementById('bank-acc-name').value = bank.accountName || "";
-                        document.getElementById('bank-acc-num').value = bank.accountNumber || "";
-                    } catch (err) { console.error("Bank JSON Parse Error", err); }
+                // 核心修正：採用「深度搜尋」不論是 result.data 還是 result.config
+                const rawData = result.data || result.config || [];
+                
+                // 1. 搜尋匯款資訊行 (Remittance)
+                const bankRow = rawData.find(i => {
+                    const cell0 = (i.type || (Array.isArray(i) ? i[0] : '')).toString().toLowerCase().trim();
+                    return cell0 === 'remittance' || cell0 === 'remit' || cell0 === '匯款資訊';
+                });
+
+                if (bankRow) {
+                    const jsonStr = bankRow.options || (Array.isArray(bankRow) ? bankRow[2] : '');
+                    if (jsonStr) {
+                        try {
+                            const bank = JSON.parse(jsonStr);
+                            document.getElementById('bank-name').value = bank.bankName || "";
+                            document.getElementById('bank-code').value = bank.bankCode || "";
+                            document.getElementById('bank-acc-name').value = bank.accountName || "";
+                            document.getElementById('bank-acc-num').value = bank.accountNumber || "";
+                        } catch (e) { console.error("Bank JSON fail"); }
+                    }
                 }
 
-                // 2. 解析設備清單
-                const equipRow = allConfig.find(i => i.type === 'equipment_list' || i.type === 'equip');
+                // 2. 搜尋設備清單行 (Equipment List)
+                const equipRow = rawData.find(i => {
+                    const cell0 = (i.type || (Array.isArray(i) ? i[0] : '')).toString().toLowerCase().trim();
+                    return cell0 === 'equipment_list' || cell0 === 'equip' || cell0 === '租借清單';
+                });
+
                 eqList = [];
-                if (equipRow && equipRow.options) {
-                    try {
-                        eqList = JSON.parse(equipRow.options);
-                    } catch (err) { console.error("Equip JSON Parse Error", err); }
+                if (equipRow) {
+                    const jsonStr = equipRow.options || (Array.isArray(equipRow) ? equipRow[2] : '');
+                    if (jsonStr) {
+                        try { eqList = JSON.parse(jsonStr); } catch (e) { console.error("Equip JSON fail"); }
+                    }
                 }
                 renderEq();
 
                 syncStatus.innerText = "資料庫連線正常";
                 syncStatus.className = "status-badge status-active";
             } catch (e) { 
-                console.error("Fetch Error:", e);
+                console.error("Load fail:", e);
                 syncStatus.innerText = "連線失敗"; 
                 syncStatus.className = "status-badge status-error";
-                errorMsg.classList.remove('hidden');
-                errorMsg.querySelector('span').innerText = `數據導入失敗：${e.message}。請確認後端回應格式。`;
             }
         }
 
@@ -182,18 +192,16 @@
                 return;
             }
             container.innerHTML = eqList.map((eq, i) => `
-                <div class="flex gap-6 items-center p-6 bg-slate-50/50 rounded-xl border border-slate-100 group transition-all hover:bg-slate-50 hover:border-slate-300">
+                <div class="flex gap-6 items-center p-6 bg-slate-50/50 rounded-xl border border-slate-100 group transition-all hover:bg-slate-50">
                     <div class="flex-1">
                         <label class="text-[9px] font-black uppercase text-slate-400">設備名稱</label>
-                        <input type="text" value="${eq.name || ''}" oninput="eqList[${i}].name=this.value" class="bg-white" placeholder="如：羽球拍">
+                        <input type="text" value="${eq.name || ''}" oninput="eqList[${i}].name=this.value" class="bg-white">
                     </div>
                     <div class="w-40">
-                        <label class="text-[9px] font-black uppercase text-slate-400">租用費用</label>
-                        <input type="number" value="${eq.price || 0}" oninput="eqList[${i}].price=this.value" class="bg-white" placeholder="0">
+                        <label class="text-[9px] font-black uppercase text-slate-400">費用</label>
+                        <input type="number" value="${eq.price || 0}" oninput="eqList[${i}].price=this.value" class="bg-white">
                     </div>
-                    <button onclick="eqList.splice(${i},1);renderEq()" class="mt-4 p-4 text-slate-300 hover:text-red-500 bg-transparent border-none cursor-pointer transition-colors">
-                        <i class="fas fa-trash-alt text-lg"></i>
-                    </button>
+                    <button onclick="eqList.splice(${i},1);renderEq()" class="mt-4 p-4 text-slate-300 hover:text-red-500 bg-transparent border-none cursor-pointer"><i class="fas fa-trash-alt text-lg"></i></button>
                 </div>
             `).join('');
         }
@@ -208,7 +216,7 @@
             const btn = document.getElementById('save-btn');
             const originalText = btn.innerText;
             btn.disabled = true; 
-            btn.innerHTML = `<div class="loading-spinner mr-2"></div> 資料同步中...`;
+            btn.innerHTML = `<div class="loading-spinner mr-2"></div> 同步寫入中...`;
             
             const bankInfo = {
                 bankName: document.getElementById('bank-name').value,
@@ -228,19 +236,12 @@
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ type: 'config_update', data: payload }) 
                 });
-                const result = await res.json();
-                if (result.status === "success") { 
+                if ((await res.json()).status === "success") { 
                     alert("✅ 系統參數已同步成功！"); 
                     loadConfig(); 
-                } else {
-                    throw new Error(result.message);
                 }
-            } catch (e) { 
-                alert("❌ 儲存失敗：" + e.message); 
-            } finally { 
-                btn.disabled = false; 
-                btn.innerText = originalText; 
-            }
+            } catch (e) { alert("❌ 儲存失敗"); } 
+            finally { btn.disabled = false; btn.innerText = originalText; }
         }
 
         window.onload = loadConfig;
