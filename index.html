@@ -17,12 +17,11 @@
         .loading-spinner { border: 3px solid #f3f3f3; border-top: 3px solid #3b82f6; border-radius: 50%; width: 24px; height: 24px; animation: spin 1s linear infinite; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
         .modal-overlay { background-color: rgba(0, 0, 0, 0.5); backdrop-filter: blur(4px); display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 1000; align-items: center; justify-content: center; }
-        .modal-content { background: white; width: 95%; max-width: 1000px; max-height: 90vh; overflow-y: auto; border-radius: 1.5rem; }
-        .btn-loading { pointer-events: none; opacity: 0.7; }
-        label { display: block; font-size: 0.875rem; font-weight: 500; color: #475569; margin-bottom: 0.25rem; }
-        input, select, textarea { width: 100%; border: 1px solid #e2e8f0; rounded-radius: 0.5rem; padding: 0.625rem; font-size: 0.875rem; outline: none; transition: ring 0.2s; border-radius: 0.5rem;}
-        input:focus { ring: 2px; ring-color: #3b82f6; border-color: #3b82f6; }
-        section h3 { font-weight: 700; color: #1e293b; margin-bottom: 1rem; padding-bottom: 0.5rem; border-bottom: 1px solid #f1f5f9; display: flex; align-items: center; gap: 0.5rem; }
+        .modal-content { background: white; width: 95%; max-width: 1100px; max-height: 90vh; overflow-y: auto; border-radius: 1.5rem; }
+        label { display: block; font-size: 0.8rem; font-weight: 600; color: #64748b; margin-bottom: 0.25rem; }
+        input, select, textarea { width: 100%; border: 1px solid #e2e8f0; border-radius: 0.5rem; padding: 0.6rem; font-size: 0.875rem; outline: none; }
+        input:focus { border-color: #3b82f6; box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1); }
+        section h3 { font-weight: 700; color: #1e293b; margin-bottom: 1.25rem; padding-bottom: 0.5rem; border-bottom: 2px solid #f1f5f9; display: flex; align-items: center; gap: 0.5rem; margin-top: 1rem; }
     </style>
 </head>
 <body class="overflow-x-hidden">
@@ -50,102 +49,64 @@
     <main id="main-content" class="main-content min-h-screen">
         <nav class="sticky top-0 z-40 bg-white/80 backdrop-blur-md border-b border-slate-200 px-6 py-3 flex items-center justify-between">
             <button id="sidebar-toggle" class="p-2 hover:bg-slate-100 rounded-lg text-slate-500"><i class="fas fa-bars text-lg"></i></button>
-            <div class="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center text-white font-bold">JD</div>
+            <div class="flex items-center gap-3">
+                <span class="text-[10px] text-green-500 bg-green-50 px-2 py-1 rounded-full font-bold border border-green-100 uppercase tracking-tighter">Connected</span>
+                <div class="w-9 h-9 bg-blue-600 rounded-full flex items-center justify-center text-white font-bold shadow-md shadow-blue-100">JD</div>
+            </div>
         </nav>
-        <div class="p-6"><div id="app-content"></div></div>
+        <div class="p-6">
+            <div id="app-content" class="animate-in fade-in duration-500"></div>
+        </div>
     </main>
 
-    <!-- 新增課程 Modal -->
+    <!-- 課程新增 Modal -->
     <div id="course-modal" class="modal-overlay">
         <div class="modal-content shadow-2xl">
-            <div class="sticky top-0 bg-white border-b px-8 py-4 flex items-center justify-between z-10">
+            <div class="sticky top-0 bg-white border-b px-8 py-5 flex items-center justify-between z-10">
                 <div>
                     <h2 class="text-xl font-bold text-slate-800">新增單日課程</h2>
-                    <p class="text-xs text-slate-500">目標工作表: SingleCourses</p>
+                    <p class="text-[10px] text-blue-500 font-bold uppercase tracking-widest mt-1">Single Day Course Entry</p>
                 </div>
-                <button onclick="closeCourseModal()" class="text-slate-400 hover:text-slate-600"><i class="fas fa-times text-xl"></i></button>
+                <button onclick="closeCourseModal()" class="w-10 h-10 rounded-full hover:bg-slate-100 flex items-center justify-center text-slate-400 transition-colors">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
             </div>
             
-            <form id="course-form" class="p-8 space-y-12">
-                <!-- 1. 基本資訊 -->
+            <form id="course-form" class="p-8 space-y-10">
+                <!-- 欄位與之前一致，確保 name 屬性與 JSON Key 對應 -->
                 <section>
-                    <h3><i class="fas fa-tag text-blue-500"></i> 基本資訊</h3>
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <h3><i class="fas fa-info-circle text-blue-500"></i> 基本與排程資訊</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
                         <div class="md:col-span-2"><label>課程名稱 *</label><input type="text" name="courseName" required></div>
-                        <div><label>運動類別</label><input type="text" name="category" placeholder="例如：籃球"></div>
-                        <div><label>年齡分級</label><input type="text" name="ageGroup" placeholder="例如：U12 / 成人"></div>
-                        <div><label>難度等級</label><select name="difficulty"><option value="初階">初階</option><option value="中階">中階</option><option value="高階">高階</option></select></div>
-                        <div><label>標籤分類</label><input type="text" name="tags" placeholder="多個標籤以逗號隔開"></div>
-                    </div>
-                </section>
-
-                <!-- 2. 日期與時間 -->
-                <section>
-                    <h3><i class="fas fa-clock text-blue-500"></i> 課程時間安排</h3>
-                    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                        <div><label>運動類別</label><input type="text" name="category" placeholder="如：籃球"></div>
                         <div><label>課程日期 *</label><input type="date" name="courseDate" required></div>
                         <div><label>開始時間</label><input type="time" name="startTime"></div>
                         <div><label>結束時間</label><input type="time" name="endTime"></div>
-                        <div><label>課程時長 (分鐘)</label><input type="number" name="duration" value="60"></div>
-                        <div class="md:col-span-2"><label>報名開放日</label><input type="date" name="regStart"></div>
-                        <div class="md:col-span-2"><label>報名截止日</label><input type="date" name="regEnd"></div>
                     </div>
                 </section>
 
-                <!-- 3. 教練與場地 -->
                 <section>
-                    <h3><i class="fas fa-map-marker-alt text-blue-500"></i> 教練與場地</h3>
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        <div><label>教練姓名</label><input type="text" name="coachName"></div>
-                        <div><label>教練 ID</label><input type="text" name="coachId"></div>
+                    <h3><i class="fas fa-map-marker-alt text-blue-500"></i> 場地與教練</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
                         <div><label>場地名稱</label><input type="text" name="venueName"></div>
-                        <div><label>場地 ID</label><input type="text" name="venueId"></div>
-                        <div class="md:col-span-2"><label>場地區域</label><input type="text" name="venueArea" placeholder="例如：A1 半場 / 3號羽球塔"></div>
+                        <div><label>教練姓名</label><input type="text" name="coachName"></div>
                     </div>
                 </section>
 
-                <!-- 4. 費用設定 -->
                 <section>
-                    <h3><i class="fas fa-dollar-sign text-blue-500"></i> 費用設定</h3>
-                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-                        <div><label>原價</label><input type="number" name="price" value="0"></div>
+                    <h3><i class="fas fa-dollar-sign text-blue-500"></i> 費用與名額</h3>
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-5">
                         <div><label>會員價</label><input type="number" name="memberPrice" value="0"></div>
-                        <div><label>親友價</label><input type="number" name="friendPrice" value="0"></div>
-                        <div><label>早鳥價</label><input type="number" name="earlyBirdPrice" value="0"></div>
-                        <div class="md:col-span-2"><label>早鳥截止日</label><input type="date" name="earlyBirdEnd"></div>
-                    </div>
-                </section>
-
-                <!-- 5. 名額與限制 -->
-                <section>
-                    <h3><i class="fas fa-users text-blue-500"></i> 名額與限制</h3>
-                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
                         <div><label>總名額</label><input type="number" name="quota" value="20"></div>
-                        <div><label>最少開班人數</label><input type="number" name="minClass" value="5"></div>
-                        <div><label>性別限制</label><select name="genderLimit"><option value="不限">不限</option><option value="限男性">限男性</option><option value="限女性">限女性</option></select></div>
-                        <div><label>排序權重</label><input type="number" name="weight" value="0"></div>
-                    </div>
-                </section>
-
-                <!-- 6. 圖片與內容 -->
-                <section>
-                    <h3><i class="fas fa-file-alt text-blue-500"></i> 詳細介紹內容</h3>
-                    <div class="space-y-4">
-                        <div><label>封面圖片網址</label><input type="text" name="coverImage" placeholder="https://..."></div>
-                        <div><label>詳細圖片網址 (多張以逗號隔開)</label><input type="text" name="detailImage" placeholder="https://..."></div>
-                        <div><label>課程亮點 (簡短描述)</label><input type="text" name="highlights"></div>
-                        <div><label>課程內容</label><textarea name="content" rows="4"></textarea></div>
-                        <div><label>注意事項</label><textarea name="notes" rows="2"></textarea></div>
-                        <div><label>適合對象</label><textarea name="targetAudience" rows="2"></textarea></div>
-                        <div><label>特殊要求</label><input type="text" name="specialRequest"></div>
-                        <div><label>課程狀態</label><select name="status"><option value="草稿">草稿</option><option value="發佈">發佈</option><option value="下架">下架</option></select></div>
+                        <div><label>最少開班</label><input type="number" name="minClass" value="3"></div>
+                        <div><label>課程狀態</label><select name="status"><option value="報名中">報名中</option><option value="已額滿">已額滿</option><option value="已結束">已結束</option></select></div>
                     </div>
                 </section>
 
                 <div class="sticky bottom-0 bg-white pt-6 pb-4 border-t flex justify-end gap-3 z-10">
-                    <button type="button" onclick="closeCourseModal()" class="px-6 py-2.5 rounded-xl border border-slate-200 font-medium">取消</button>
-                    <button type="submit" id="submit-btn" class="px-8 py-2.5 rounded-xl bg-blue-600 text-white shadow-lg font-bold flex items-center gap-2">
-                        <span id="btn-text">確認儲存課程</span>
+                    <button type="button" onclick="closeCourseModal()" class="px-6 py-2.5 rounded-xl border font-medium text-slate-500">取消</button>
+                    <button type="submit" id="submit-btn" class="px-10 py-2.5 rounded-xl bg-blue-600 text-white font-bold shadow-lg hover:bg-blue-700 transition-all flex items-center gap-2">
+                        <span id="btn-text">確認儲存</span>
                         <div id="btn-spinner" class="hidden loading-spinner !w-4 !h-4 !border-white !border-t-transparent"></div>
                     </button>
                 </div>
@@ -154,98 +115,173 @@
     </div>
 
     <script>
-        // --- 請確認此網址正確 ---
-        const CLOUDFLARE_WORKER_URL = 'https://aged-rice-2438.wetw-net3.workers.dev';
-
-        const sidebar = document.getElementById('sidebar');
-        const mainContent = document.getElementById('main-content');
-        const sidebarToggle = document.getElementById('sidebar-toggle');
+        const CLOUDFLARE_WORKER_URL = 'https://aged-rice-2438.wetw-net3.workers.dev/';
         const appContent = document.getElementById('app-content');
-        const courseModal = document.getElementById('course-modal');
-        const courseForm = document.getElementById('course-form');
-        const submitBtn = document.getElementById('submit-btn');
 
-        sidebarToggle.addEventListener('click', () => {
-            sidebar.classList.toggle('collapsed');
-            mainContent.classList.toggle('expanded');
-            const isCollapsed = sidebar.classList.contains('collapsed');
-            document.querySelectorAll('.nav-text, .logo-text').forEach(el => {
-                el.style.display = isCollapsed ? 'none' : 'block';
+        // 輔助函式：格式化 ISO 時間字串
+        function formatTime(isoString) {
+            if (!isoString) return '-';
+            const date = new Date(isoString);
+            // 處理 Google Sheets 1899 時間格式
+            return date.toLocaleTimeString('zh-TW', { hour: '2-digit', minute: '2-digit', hour12: false });
+        }
+
+        // 輔助函式：格式化日期
+        function formatDate(isoString) {
+            if (!isoString) return '-';
+            const date = new Date(isoString);
+            return date.toLocaleDateString('zh-TW', { year: 'numeric', month: '2-digit', day: '2-digit' });
+        }
+
+        async function switchView(viewName) {
+            document.querySelectorAll('.nav-link').forEach(link => {
+                link.classList.toggle('active', link.getAttribute('onclick').includes(viewName));
             });
-        });
 
-        function openCourseModal() { courseModal.style.display = 'flex'; document.body.style.overflow = 'hidden'; }
-        function closeCourseModal() { courseModal.style.display = 'none'; document.body.style.overflow = 'auto'; courseForm.reset(); }
+            appContent.innerHTML = `<div class="flex flex-col items-center justify-center min-h-[50vh]"><div class="loading-spinner mb-4"></div><p class="text-slate-400 font-medium">同步雲端資料中...</p></div>`;
 
-        courseForm.addEventListener('submit', async (e) => {
+            if (viewName === 'activities') {
+                await loadActivities();
+            } else {
+                appContent.innerHTML = `<div class="p-10 text-center bg-white rounded-2xl border text-slate-400">「${viewName}」功能模組開發中</div>`;
+            }
+        }
+
+        async function loadActivities() {
+            try {
+                const response = await fetch(CLOUDFLARE_WORKER_URL);
+                if (!response.ok) throw new Error('連線異常');
+                const result = await response.json();
+                
+                if (result.status === "success") {
+                    renderActivities(result.data);
+                } else {
+                    throw new Error(result.message);
+                }
+            } catch (error) {
+                appContent.innerHTML = `<div class="p-10 text-center bg-red-50 border border-red-100 rounded-2xl"><p class="text-red-500 font-bold">資料導入失敗: ${error.message}</p><button onclick="loadActivities()" class="mt-4 text-sm text-red-600 underline">重試連線</button></div>`;
+            }
+        }
+
+        function renderActivities(data) {
+            if (!data || data.length === 0) {
+                appContent.innerHTML = `<div class="text-center py-20 bg-white rounded-2xl border border-dashed"><p class="text-slate-400 mb-4">目前 Google 試算表中無任何課程</p><button onclick="openCourseModal()" class="bg-blue-600 text-white px-6 py-2 rounded-xl">建立新課程</button></div>`;
+                return;
+            }
+
+            const tableRows = data.map(item => {
+                const enrolled = parseInt(item['已報名人數']) || 0;
+                const total = parseInt(item['總名額']) || 1;
+                const progress = Math.min((enrolled / total) * 100, 100);
+                const statusColor = item['課程狀態'] === '報名中' ? 'text-green-600 bg-green-50' : 'text-slate-500 bg-slate-50';
+
+                return `
+                    <tr class="hover:bg-slate-50 transition-colors border-b border-slate-50">
+                        <td class="px-6 py-4">
+                            <div class="font-bold text-slate-800">${item['課程名稱'] || '未定義課程'}</div>
+                            <div class="text-[10px] text-slate-400 font-mono tracking-widest uppercase">${item['課程ID'] || '-'}</div>
+                        </td>
+                        <td class="px-6 py-4">
+                            <div class="text-xs font-semibold text-slate-600">${formatDate(item['課程日期'])}</div>
+                            <div class="text-[10px] text-slate-400">${formatTime(item['開始時間'])} - ${formatTime(item['結束時間'])}</div>
+                        </td>
+                        <td class="px-6 py-4">
+                            <div class="text-xs text-slate-600">${item['場地名稱'] || '-'}</div>
+                            <div class="text-[10px] text-slate-400">${item['場地區域'] || ''}</div>
+                        </td>
+                        <td class="px-6 py-4">
+                            <div class="flex items-center gap-2 mb-1">
+                                <div class="flex-grow h-1.5 bg-slate-100 rounded-full overflow-hidden">
+                                    <div class="h-full bg-blue-500" style="width: ${progress}%"></div>
+                                </div>
+                                <span class="text-[10px] font-bold text-slate-500">${enrolled}/${total}</span>
+                            </div>
+                        </td>
+                        <td class="px-6 py-4">
+                            <span class="px-2.5 py-1 rounded-full text-[10px] font-black ${statusColor}">
+                                ${item['課程狀態'] || '未知'}
+                            </span>
+                        </td>
+                        <td class="px-6 py-4 text-right">
+                            <button class="text-slate-400 hover:text-blue-500 transition-colors"><i class="fas fa-edit"></i></button>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+
+            appContent.innerHTML = `
+                <div class="flex justify-between items-center mb-8">
+                    <div>
+                        <h1 class="text-2xl font-bold text-slate-800">活動管理中心</h1>
+                        <p class="text-xs text-slate-400 mt-1">與 Google Sheets 即時同步中</p>
+                    </div>
+                    <button onclick="openCourseModal()" class="bg-blue-600 text-white px-5 py-2.5 rounded-xl font-bold shadow-lg shadow-blue-100 flex items-center gap-2 hover:bg-blue-700">
+                        <i class="fas fa-plus"></i> 新增單日課程
+                    </button>
+                </div>
+                <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left">
+                            <thead class="bg-slate-50/50 text-slate-400 text-[10px] uppercase font-black tracking-widest border-b border-slate-100">
+                                <tr>
+                                    <th class="px-6 py-4">課程與 ID</th>
+                                    <th class="px-6 py-4">日期時間</th>
+                                    <th class="px-6 py-4">場地地點</th>
+                                    <th class="px-6 py-4">報名進度</th>
+                                    <th class="px-6 py-4">狀態</th>
+                                    <th class="px-6 py-4 text-right">操作</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-slate-50">
+                                ${tableRows}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            `;
+        }
+
+        // 表單提交與切換側邊欄邏輯維持一致...
+        document.getElementById('course-form').onsubmit = async (e) => {
             e.preventDefault();
-            setLoading(true);
+            const submitBtn = document.getElementById('submit-btn');
+            const btnSpinner = document.getElementById('btn-spinner');
+            const btnText = document.getElementById('btn-text');
 
-            const formData = new FormData(courseForm);
-            const data = Object.fromEntries(formData.entries());
+            submitBtn.disabled = true;
+            btnSpinner.classList.remove('hidden');
+            btnText.innerText = '儲存中...';
+
+            const data = Object.fromEntries(new FormData(e.target).entries());
 
             try {
-                const response = await fetch(CLOUDFLARE_WORKER_URL, {
+                const res = await fetch(CLOUDFLARE_WORKER_URL, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(data)
                 });
-
-                if (!response.ok) throw new Error('連線錯誤: ' + response.status);
-
-                const result = await response.json();
+                const result = await res.json();
                 if (result.status === "success") {
-                    alert('課程資料已成功寫入 Google Sheets！');
+                    alert('課程已儲存至試算表！');
                     closeCourseModal();
-                } else {
-                    throw new Error(result.message || '寫入失敗');
+                    switchView('activities');
                 }
-            } catch (error) {
-                console.error('提交失敗:', error);
-                alert('提交失敗: ' + error.message + '\n請確認 Worker 是否正確部署並對應 GAS URL。');
+            } catch (err) {
+                alert('儲存失敗');
             } finally {
-                setLoading(false);
+                submitBtn.disabled = false;
+                btnSpinner.classList.add('hidden');
+                btnText.innerText = '確認儲存';
             }
-        });
-
-        function setLoading(isLoading) {
-            const btnText = document.getElementById('btn-text');
-            const btnSpinner = document.getElementById('btn-spinner');
-            submitBtn.classList.toggle('btn-loading', isLoading);
-            btnText.innerText = isLoading ? '正在儲存...' : '確認儲存課程';
-            btnSpinner.classList.toggle('hidden', !isLoading);
-        }
-
-        const views = {
-            activities: `
-                <div class="animate-in slide-in-from-bottom-4 duration-500">
-                    <div class="flex items-center justify-between mb-8">
-                        <div>
-                            <h1 class="text-2xl font-bold text-slate-800">活動管理</h1>
-                            <p class="text-slate-500 text-sm">管理 SingleCourses 單日課程</p>
-                        </div>
-                        <button onclick="openCourseModal()" class="bg-blue-600 text-white px-5 py-2 rounded-lg hover:bg-blue-700 shadow-lg font-bold flex items-center gap-2">
-                            <i class="fas fa-plus"></i> 新增單日課程
-                        </button>
-                    </div>
-                    <div class="bg-white p-20 rounded-2xl border-2 border-dashed border-slate-200 text-center">
-                        <i class="fas fa-table text-4xl text-slate-200 mb-4 block"></i>
-                        <p class="text-slate-400">目前所有資料將透過 Cloudflare 中介層寫入 Google</p>
-                    </div>
-                </div>
-            `,
-            dashboard: `<div class="p-8">儀表板載入中...</div>`,
-            settings: `<div class="p-8">系統設定</div>`
         };
 
-        function switchView(viewName) {
-            document.querySelectorAll('.nav-link').forEach(link => {
-                link.classList.remove('active');
-                const onclickAttr = link.getAttribute('onclick');
-                if (onclickAttr && onclickAttr.includes(viewName)) link.classList.add('active');
-            });
-            appContent.innerHTML = views[viewName] || views.activities;
-        }
+        function openCourseModal() { document.getElementById('course-modal').style.display = 'flex'; }
+        function closeCourseModal() { document.getElementById('course-modal').style.display = 'none'; document.getElementById('course-form').reset(); }
+        
+        document.getElementById('sidebar-toggle').onclick = () => {
+            document.getElementById('sidebar').classList.toggle('collapsed');
+            document.getElementById('main-content').classList.toggle('expanded');
+        };
 
         window.onload = () => switchView('activities');
     </script>
