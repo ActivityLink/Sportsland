@@ -22,7 +22,7 @@
         .flat-table th { background-color: #F8F9FA; color: #666; font-size: 0.75rem; padding: 16px 24px; border-bottom: 2px solid #EEE; text-align: left; font-weight: 800; text-transform: uppercase; }
         .flat-table td { padding: 20px 24px; border-bottom: 1px solid #F6F6F6; font-weight: 500; }
         .modal-overlay { background-color: rgba(0, 0, 0, 0.5); display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 1000; align-items: center; justify-content: center; }
-        .modal-content { background: white; width: 95%; max-width: 1350px; height: 95vh; display: flex; flex-direction: column; border-radius: 12px; overflow: hidden; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25); }
+        .modal-content { background: white; width: 95%; max-width: 1350px; height: 95vh; display: flex; flex-direction: column; border-radius: 12px; overflow: hidden; }
         .modal-body { overflow-y: auto; flex: 1; padding: 40px 60px; }
         label { display: block; font-size: 0.8rem; font-weight: 800; color: #111; margin-bottom: 0.6rem; }
         input, select, textarea { width: 100%; border: 1px solid #E2E8F0; border-radius: 6px; padding: 12px; font-size: 0.95rem; outline: none; }
@@ -48,10 +48,10 @@
     <main id="main-content" class="main-content">
         <nav class="sticky top-0 z-40 bg-white border-b border-slate-200 px-10 py-5 flex items-center justify-between">
             <div class="flex items-center gap-8">
-                <button onclick="sidebar.classList.toggle('collapsed'); mainContent.classList.toggle('expanded');" class="text-slate-400 hover:text-slate-600 bg-transparent border-none cursor-pointer"><i class="fas fa-bars text-xl"></i></button>
+                <button onclick="document.getElementById('sidebar').classList.toggle('collapsed'); document.getElementById('main-content').classList.toggle('expanded');" class="text-slate-400 hover:text-slate-600 bg-transparent border-none cursor-pointer"><i class="fas fa-bars text-xl"></i></button>
                 <h2 class="text-2xl font-black tracking-tight text-slate-800">所有活動課程管理</h2>
             </div>
-            <div id="sync-status" class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Active Connection</div>
+            <div id="sync-status" class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Connected</div>
         </nav>
         <div id="app-content"></div>
     </main>
@@ -66,26 +66,24 @@
             <div class="modal-body">
                 <form id="course-form">
                     <input type="hidden" name="courseId" id="form-courseId">
-                    <section>
-                        <h3><i class="fas fa-info-circle text-green-500"></i> 基本資訊</h3>
+                    <section class="mb-10 pb-10 border-b">
+                        <h3 class="text-lg font-black mb-6 text-green-600 underline decoration-4">基本資訊</h3>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div><label>課程名稱 *</label><input type="text" name="courseName" required></div>
                             <div><label>活動日期 *</label><input type="date" name="courseDate" required></div>
                         </div>
                     </section>
-                    <section>
-                        <h3><i class="fas fa-shopping-basket text-green-500"></i> 課程租用設備設定 (AN)</h3>
+                    <section class="mb-10 pb-10 border-b">
+                        <h3 class="text-lg font-black mb-6 text-green-600 underline decoration-4">課程租用設備設定 (AN)</h3>
                         <div id="equipment-checkboxes" class="grid grid-cols-2 md:grid-cols-4 gap-4">
-                            <!-- 由 JS 動態生成 -->
+                            <!-- JS 動態生成 -->
                         </div>
                     </section>
                     <section>
-                        <h3><i class="fas fa-align-left text-green-500"></i> 詳細介紹</h3>
+                        <h3 class="text-lg font-black mb-6 text-green-600 underline decoration-4">內容介紹與狀態</h3>
                         <div class="space-y-6">
                             <div><label>封面網址</label><input type="text" name="coverImage"></div>
-                            <div><label>亮點</label><input type="text" name="highlights"></div>
-                            <div><label>內容</label><textarea name="content" rows="6"></textarea></div>
-                            <div><label>注意事項</label><textarea name="notes" rows="3"></textarea></div>
+                            <div><label>課程介紹</label><textarea name="content" rows="6"></textarea></div>
                             <div><label>狀態</label><select name="status"><option value="報名中">報名中</option><option value="已額滿">已額滿</option><option value="草稿">草稿</option></select></div>
                         </div>
                     </section>
@@ -99,39 +97,36 @@
     </div>
 
     <script>
-        const CLOUDFLARE_URL = 'https://aged-rice-2438.wetw-net3.workers.dev/';
+        const API_URL = 'https://aged-rice-2438.wetw-net3.workers.dev/';
         let allCourses = [], equipList = [];
 
         async function init() {
             const app = document.getElementById('app-content');
-            app.innerHTML = `<div class="p-40 text-center"><div class="loading-spinner mx-auto mb-4"></div>數據加載中...</div>`;
+            app.innerHTML = `<div class="p-40 text-center flex flex-col items-center gap-4"><div class="loading-spinner"></div>同步資料庫中...</div>`;
             
             try {
-                // 1. 同步設備清單 (使用深度搜尋邏輯)
-                const confRes = await fetch(`${CLOUDFLARE_URL}?type=config`);
+                // 1. 同步設備清單
+                const confRes = await fetch(`${API_URL}?type=config&_t=${Date.now()}`);
                 const confData = await confRes.json();
-                const rawConfig = confData.data || confData.config || [];
-                const equipRow = rawConfig.find(i => {
-                    const t = (i.type || (Array.isArray(i) ? i[0] : '')).toString().toLowerCase().trim();
-                    return t === 'equipment_list' || t === 'equip';
-                });
+                const rows = confData.data || confData.config || [];
+                const equipRow = rows.find(r => (r.type === 'equipment_list' || (Array.isArray(r) && r[0] === 'equipment_list')));
                 if (equipRow) {
-                    const jsonStr = equipRow.options || (Array.isArray(equipRow) ? equipRow[2] : '');
-                    equipList = jsonStr ? JSON.parse(jsonStr) : [];
+                    const optionsStr = equipRow.options || (Array.isArray(equipRow) ? equipRow[2] : '');
+                    equipList = optionsStr ? JSON.parse(optionsStr) : [];
                 }
 
                 // 2. 同步課程
-                const res = await fetch(CLOUDFLARE_URL);
+                const res = await fetch(API_URL);
                 const courseResult = await res.json();
                 allCourses = courseResult.data || [];
                 renderList();
-            } catch (e) { console.error(e); }
+            } catch (e) { app.innerHTML = `<div class="p-20 text-center text-red-500 font-bold">連線失敗，請檢查後端部署。</div>`; }
         }
 
         function renderList() {
             const rows = allCourses.map(item => `
                 <tr class="hover:bg-slate-50 transition-colors">
-                    <td><div class="font-black text-slate-800">${item.courseName || '未命名'}</div><div class="text-[10px] text-slate-400 font-mono">${item.courseId}</div></td>
+                    <td><div class="font-black text-slate-800 text-base">${item.courseName || '未命名'}</div><div class="text-[10px] text-slate-400 font-mono font-bold">${item.courseId}</div></td>
                     <td><div class="text-sm font-bold text-slate-500">${item.courseDate ? item.courseDate.split('T')[0] : '-'}</div></td>
                     <td><span class="px-4 py-1.5 rounded-full text-[10px] font-black ${item.status === '報名中' ? 'bg-green-100 text-green-700' : 'bg-slate-100 text-slate-500'}">${item.status || '報名中'}</span></td>
                     <td class="text-right flex justify-end gap-3">
@@ -142,10 +137,10 @@
 
             document.getElementById('app-content').innerHTML = `
                 <div class="px-10 py-12 flex justify-between items-end border-b">
-                    <div><h1 class="text-3xl font-black text-slate-800">活動課程管理</h1></div>
-                    <button onclick="openCourseModal()" class="btn-line btn-line-green shadow-xl px-12 py-4 font-black">建立新課程</button>
+                    <div><h1 class="text-3xl font-black text-slate-800">課程管理總表</h1><p class="text-slate-400 text-[10px] font-bold mt-2 uppercase tracking-widest">Cloud Database Active</p></div>
+                    <button onclick="openCourseModal()" class="btn-line btn-line-green shadow-xl px-12 py-4 font-black">建立新活動內容</button>
                 </div>
-                <table class="flat-table"><thead><tr><th>標題 / ID</th><th>日期</th><th>狀態</th><th class="text-right">操作</th></tr></thead><tbody>${rows}</tbody></table>`;
+                <table class="flat-table"><thead><tr><th>課程名稱 / ID</th><th>活動日期</th><th>狀態</th><th class="text-right">系統管理</th></tr></thead><tbody>${rows}</tbody></table>`;
         }
 
         function openCourseModal() {
@@ -154,10 +149,10 @@
             
             const container = document.getElementById('equipment-checkboxes');
             container.innerHTML = equipList.map(eq => `
-                <label class="flex items-center gap-4 p-5 border-2 border-slate-50 rounded-xl cursor-pointer hover:border-green-100 transition-all">
+                <label class="flex items-center gap-4 p-5 border-2 border-slate-50 rounded-xl cursor-pointer hover:border-green-100 transition-all group">
                     <input type="checkbox" name="eq_check" value="${eq.name}" class="w-6 h-6 rounded accent-green-600">
-                    <div class="flex-1"><div class="text-xs font-black text-slate-800">${eq.name}</div><div class="text-[10px] text-blue-500 font-black">+$${eq.price}</div></div>
-                </label>`).join('') || '<p class="text-slate-300 text-xs italic">無可用設備，請至系統設定新增。</p>';
+                    <div class="flex-1"><div class="text-xs font-black text-slate-800">${eq.name}</div><div class="text-[10px] text-blue-500 font-bold">加購 $${eq.price}</div></div>
+                </label>`).join('') || '<p class="text-slate-300 text-xs italic py-4">無可用設備，請先至系統設定。 </p>';
 
             document.getElementById('course-modal').style.display = 'flex';
         }
@@ -169,7 +164,8 @@
             const form = document.getElementById('course-form');
             document.getElementById('form-courseId').value = item.courseId;
             
-            ["courseName", "courseDate", "coverImage", "highlights", "content", "status", "notes"].forEach(name => {
+            // 基礎資料填寫
+            ["courseName", "courseDate", "coverImage", "content", "status"].forEach(name => {
                 const input = form.querySelector(`[name="${name}"]`);
                 if (input && item[name]) {
                     let val = item[name];
@@ -178,6 +174,7 @@
                 }
             });
 
+            // 設備勾選回填 (AN 欄位)
             const selectedArr = (item.selectedEquipment || '').split(',').map(s => s.trim());
             form.querySelectorAll('input[name="eq_check"]').forEach(cb => cb.checked = selectedArr.includes(cb.value));
         }
@@ -190,16 +187,16 @@
             payload.selectedEquipment = checked.join(',');
 
             try {
-                const res = await fetch(CLOUDFLARE_URL, { method: 'POST', body: JSON.stringify(payload) });
+                const res = await fetch(API_URL, { method: 'POST', body: JSON.stringify(payload) });
                 if ((await res.json()).status === "success") { 
                     document.getElementById('course-modal').style.display = 'none'; 
                     init(); 
                 }
             } catch (e) { alert("同步失敗"); }
-            finally { btn.disabled = false; btn.innerText = "確認並同步雲端"; }
+            finally { btn.disabled = false; btn.innerText = "儲存並同步至雲端"; }
         }
 
-        function deleteCourse(id) { if(confirm('刪除？')) fetch(CLOUDFLARE_URL, { method: 'POST', body: JSON.stringify({ type: 'course_delete', courseId: id }) }).then(() => init()); }
+        function deleteCourse(id) { if(confirm('確定刪除？')) fetch(API_URL, { method: 'POST', body: JSON.stringify({ type: 'course_delete', courseId: id }) }).then(() => init()); }
 
         window.onload = init;
     </script>
