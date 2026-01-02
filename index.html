@@ -65,7 +65,7 @@
             color: white; 
         }
 
-        /* 頂部橫幅按鈕 */
+        /* 頂部橫幅按鈕 (Modal 內) */
         .type-banner-btn {
             flex: 1;
             padding: 16px;
@@ -105,7 +105,7 @@
             outline: none;
         }
 
-        /* 彈窗 */
+        /* 彈窗編輯區 */
         .modal-overlay { 
             background-color: rgba(0, 0, 0, 0.5); 
             display: none; 
@@ -125,12 +125,13 @@
             display: flex;
             flex-direction: column;
             border-radius: 8px;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.15);
         }
 
         .modal-body {
             overflow-y: auto;
             flex: 1;
-            padding: 40px 60px;
+            padding: 40px 60px; /* 平均拉開，不擠壓 */
         }
 
         section {
@@ -147,12 +148,25 @@
             gap: 12px; 
         }
 
-        /* UberEats 風格課程卡片 */
-        .course-card {
-            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        /* 扁平列表表格 */
+        .flat-table {
+            width: 100%;
+            border-collapse: collapse;
         }
-        .course-card:hover {
-            transform: translateY(-4px);
+        .flat-table th {
+            background-color: #F8F9FA;
+            color: #666666;
+            font-weight: 700;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            padding: 16px 24px;
+            border-bottom: 1px solid #EEEEEE;
+            text-align: left;
+        }
+        .flat-table td {
+            padding: 20px 24px;
+            border-bottom: 1px solid #F6F6F6;
+            vertical-align: middle;
         }
 
         .loading-spinner { 
@@ -171,6 +185,7 @@
             border-radius: 4px;
             font-weight: 700;
             transition: all 0.2s;
+            cursor: pointer;
         }
         .btn-line-green {
             background-color: var(--line-green);
@@ -182,6 +197,11 @@
         .btn-line-outline {
             border: 1px solid #DDDDDD;
             color: #666666;
+        }
+
+        /* 移除水平捲軸 */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
         }
     </style>
 </head>
@@ -239,7 +259,7 @@
         <div id="app-content"></div>
     </main>
 
-    <!-- 課程編輯彈窗 -->
+    <!-- 課程編輯彈窗 (維持分頁、無邊框設計) -->
     <div id="course-modal" class="modal-overlay">
         <div class="modal-content">
             <div class="flex bg-white border-b">
@@ -258,10 +278,29 @@
                     <section>
                         <h3>基本資訊設定</h3>
                         <div class="grid grid-cols-1 md:grid-cols-12 gap-x-8 gap-y-6">
-                            <div class="md:col-span-8"><label>課程標題 *</label><input type="text" name="courseName" required></div>
+                            <div class="md:col-span-8"><label>課程名稱 *</label><input type="text" name="courseName" required placeholder="請輸入課程標題"></div>
                             <div class="md:col-span-4"><label>運動類別</label><input type="text" name="category"></div>
                             <div class="md:col-span-4"><label>適齡分級</label><input type="text" name="ageGroup"></div>
                             <div class="md:col-span-4"><label>當前狀態</label><select name="status"><option value="報名中">報名中</option><option value="已額滿">已額滿</option><option value="已結束">已結束</option></select></div>
+                        </div>
+                    </section>
+                    
+                    <section>
+                        <h3>時間與地點安排</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-4 gap-x-8 gap-y-6">
+                            <div><label>活動日期 *</label><input type="date" name="courseDate" required></div>
+                            <div><label>開始時間</label><input type="time" name="startTime"></div>
+                            <div><label>結束時間</label><input type="time" name="endTime"></div>
+                            <div><label>場地名稱</label><input type="text" name="venueName"></div>
+                        </div>
+                    </section>
+
+                    <section>
+                        <h3>詳細介紹與媒體</h3>
+                        <div class="space-y-6">
+                            <div><label>封面圖片網址</label><input type="text" name="coverImage" placeholder="https://..."></div>
+                            <div><label>課程亮點描述</label><input type="text" name="highlights" placeholder="一句話描述亮點"></div>
+                            <div><label>完整課程內容</label><textarea name="content" rows="6"></textarea></div>
                         </div>
                     </section>
                 </form>
@@ -314,7 +353,7 @@
                 link.classList.toggle('active', link.getAttribute('onclick').includes(viewName));
             });
 
-            appContent.innerHTML = `<div class="flex flex-col items-center justify-center min-h-[50vh] text-slate-300"><div class="loading-spinner mb-4"></div><p class="font-bold">資料同步中</p></div>`;
+            appContent.innerHTML = `<div class="flex flex-col items-center justify-center min-h-[50vh] text-slate-300"><div class="loading-spinner mb-4"></div><p class="font-bold">資料傳輸中</p></div>`;
 
             if (viewName === 'activities') await loadActivities();
             else appContent.innerHTML = `<div class="p-20 text-center text-slate-400 font-bold">「${viewName}」功能開發中</div>`;
@@ -324,102 +363,102 @@
             try {
                 const response = await fetch(CLOUDFLARE_WORKER_URL);
                 const result = await response.json();
-                if (result.status === "success") renderGrid(result.data);
+                if (result.status === "success") renderAdminList(result.data);
                 else throw new Error(result.message);
             } catch (error) {
-                appContent.innerHTML = `<div class="p-20 text-center"><p class="text-red-400 font-bold">連線失敗: ${error.message}</p></div>`;
+                appContent.innerHTML = `<div class="p-20 text-center text-red-400 font-bold">連線失敗: ${error.message}</div>`;
             }
         }
 
-        function renderGrid(data) {
-            // 頂部 Banner 區
+        // 後台專用列表渲染 (扁平列表)
+        function renderAdminList(data) {
+            // 頂部導覽橫幅 (活動專區 / 會員區)
             const bannerArea = `
-                <div class="px-8 pt-10 flex gap-6 overflow-x-auto no-scrollbar">
-                    <div class="min-w-[320px] flex-1 bg-[#06C755] rounded-xl p-8 text-white relative overflow-hidden group cursor-pointer shadow-sm hover:shadow-md transition-shadow">
+                <div class="px-8 pt-8 flex gap-4 overflow-x-auto no-scrollbar">
+                    <div class="min-w-[300px] flex-1 bg-[#06C755] rounded-lg p-6 text-white relative overflow-hidden group cursor-pointer">
                         <div class="relative z-10">
-                            <h3 class="text-2xl font-black mb-2">活動專區</h3>
-                            <p class="text-white/80 text-sm">管理所有上架中的 LINE 活動課程</p>
+                            <h3 class="text-xl font-bold mb-1">活動專區</h3>
+                            <p class="text-white/80 text-xs">管理單日、梯次與營隊課程</p>
                         </div>
-                        <i class="fas fa-calendar-check absolute -right-4 -bottom-4 text-white/10 text-9xl transform -rotate-12 group-hover:scale-110 transition-transform"></i>
+                        <i class="fas fa-calendar-check absolute -right-4 -bottom-4 text-white/10 text-7xl transform -rotate-12"></i>
                     </div>
-                    <div class="min-w-[320px] flex-1 bg-slate-800 rounded-xl p-8 text-white relative overflow-hidden group cursor-pointer shadow-sm hover:shadow-md transition-shadow">
+                    <div class="min-w-[300px] flex-1 bg-slate-800 rounded-lg p-6 text-white relative overflow-hidden group cursor-pointer">
                         <div class="relative z-10">
-                            <h3 class="text-2xl font-black mb-2">會員區</h3>
-                            <p class="text-white/80 text-sm">查看會員資格與專屬優惠設定</p>
+                            <h3 class="text-xl font-bold mb-1">會員區</h3>
+                            <p class="text-white/80 text-xs">會員資格與專屬優惠管理</p>
                         </div>
-                        <i class="fas fa-user-shield absolute -right-4 -bottom-4 text-white/10 text-9xl transform -rotate-12 group-hover:scale-110 transition-transform"></i>
+                        <i class="fas fa-user-shield absolute -right-4 -bottom-4 text-white/10 text-7xl transform -rotate-12"></i>
                     </div>
                 </div>
             `;
 
             if (!data || data.length === 0) {
-                appContent.innerHTML = bannerArea + `<div class="text-center py-40"><p class="text-slate-400 font-bold mb-6">尚無課程，點擊右上方按鈕建立</p></div>`;
+                appContent.innerHTML = bannerArea + `<div class="text-center py-40 text-slate-400">尚無課程資料</div>`;
                 return;
             }
 
-            // 課程卡片區
-            const cards = data.map(item => {
+            const rows = data.map(item => {
                 const enrolled = parseInt(item['已報名人數']) || 0;
                 const total = parseInt(item['總名額']) || 1;
                 const progress = Math.min((enrolled / total) * 100, 100);
-                const cover = item['封面圖片'] || 'https://images.unsplash.com/photo-1546519638-68e109498ffc?w=800';
-
+                
                 return `
-                    <div class="course-card bg-white overflow-hidden flex flex-col cursor-pointer">
-                        <div class="relative aspect-[16/9] overflow-hidden rounded-xl bg-slate-100">
-                            <img src="${cover}" class="w-full h-full object-cover" alt="Course Cover">
-                            <div class="absolute top-3 right-3 px-3 py-1 bg-white/90 backdrop-blur rounded-full text-[10px] font-black text-slate-800 shadow-sm uppercase tracking-tighter">
-                                ${item['課程狀態'] || '發佈'}
-                            </div>
-                        </div>
-                        <div class="pt-5 pb-8 space-y-3">
-                            <div>
-                                <h3 class="text-lg font-black text-slate-800 leading-tight">${item['課程名稱'] || '未命名的活動'}</h3>
-                                <div class="flex items-center gap-2 mt-1 text-[10px] font-bold text-slate-400">
-                                    <span class="text-[#06C755]">${item['運動類別'] || '類別'}</span>
-                                    <span>•</span>
-                                    <span>${formatDate(item['課程日期'])}</span>
-                                </div>
-                            </div>
-                            <div class="text-xs text-slate-500 font-medium">
-                                <i class="fas fa-map-marker-alt mr-1"></i> ${item['場地名稱'] || '地點'}
-                            </div>
-                            <div class="space-y-1">
-                                <div class="flex justify-between text-[10px] font-black text-slate-400 uppercase tracking-widest">
-                                    <span>報名進度</span>
-                                    <span>${enrolled} / ${total}</span>
-                                </div>
-                                <div class="w-full h-1 bg-slate-100 rounded-full overflow-hidden">
+                    <tr>
+                        <td>
+                            <div class="font-bold text-slate-800">${item['課程名稱'] || '未命名的活動'}</div>
+                            <div class="text-[10px] text-slate-400 font-mono mt-1">${item['課程ID'] || '-'}</div>
+                        </td>
+                        <td>
+                            <div class="text-sm font-bold text-slate-600">${formatDate(item['課程日期'])}</div>
+                            <div class="text-[10px] text-slate-400">${formatTime(item['開始時間'])} ～ ${formatTime(item['結束時間'])}</div>
+                        </td>
+                        <td class="text-sm text-slate-500">${item['場地名稱'] || '-'}</td>
+                        <td class="w-48">
+                            <div class="flex items-center gap-3">
+                                <div class="flex-grow h-1.5 bg-slate-100 rounded-full overflow-hidden">
                                     <div class="h-full bg-[#06C755]" style="width: ${progress}%"></div>
                                 </div>
+                                <span class="text-[10px] font-bold text-slate-500">${enrolled}/${total}</span>
                             </div>
-                            <div class="pt-3 flex items-center justify-between border-t border-slate-50">
-                                <div class="flex flex-col">
-                                    <span class="text-[10px] text-slate-400 font-bold uppercase tracking-tighter">會員特惠</span>
-                                    <span class="text-xl font-black text-slate-800 font-mono">$${item['會員價'] || 0}</span>
-                                </div>
-                                <button class="btn-line-green px-6 py-2 rounded-lg font-black text-sm shadow-lg shadow-green-100 transition-all hover:scale-105">
-                                    立即預約
-                                </button>
-                            </div>
-                        </div>
-                    </div>
+                        </td>
+                        <td>
+                            <span class="px-3 py-1 rounded-full text-[10px] font-bold ${item['課程狀態'] === '報名中' ? 'bg-green-100 text-green-700' : 'bg-slate-100 text-slate-500'}">
+                                ${item['課程狀態'] || '草稿'}
+                            </span>
+                        </td>
+                        <td class="text-right">
+                            <button class="w-8 h-8 rounded-full hover:bg-slate-100 text-slate-400"><i class="fas fa-edit"></i></button>
+                        </td>
+                    </tr>
                 `;
             }).join('');
 
             appContent.innerHTML = `
                 ${bannerArea}
-                <div class="px-8 py-12">
-                    <div class="flex justify-between items-center mb-10">
-                        <h2 class="text-2xl font-black text-slate-800 tracking-tight">所有上架課程</h2>
-                        <button onclick="openCourseModal()" class="text-[#06C755] font-bold hover:underline">
-                            <i class="fas fa-plus-circle mr-1"></i> 建立新課程
-                        </button>
+                <div class="px-8 py-10 flex justify-between items-center">
+                    <div>
+                        <h1 class="text-2xl font-black text-slate-800">所有上架課程</h1>
+                        <p class="text-slate-400 text-xs mt-1">目前共有 ${data.length} 筆課程</p>
                     </div>
-                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-10 gap-y-16">
-                        ${cards}
-                    </div>
+                    <button onclick="openCourseModal()" class="btn-line btn-line-green shadow-xl shadow-green-100">
+                        建立新課程
+                    </button>
                 </div>
+                <table class="flat-table">
+                    <thead>
+                        <tr>
+                            <th>課程名稱 / ID</th>
+                            <th>日期與時間</th>
+                            <th>場地地點</th>
+                            <th>報名進度</th>
+                            <th>當前狀態</th>
+                            <th class="text-right">管理</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${rows}
+                    </tbody>
+                </table>
             `;
         }
 
@@ -433,7 +472,7 @@
 
             btn.disabled = true;
             spinner.classList.remove('hidden');
-            text.innerText = '儲存中';
+            text.innerText = '正在同步資料';
 
             const data = Object.fromEntries(new FormData(form).entries());
 
@@ -449,7 +488,7 @@
                     switchView('activities');
                 }
             } catch (err) {
-                alert('上傳失敗');
+                alert('連線失敗');
             } finally {
                 btn.disabled = false;
                 spinner.classList.add('hidden');
