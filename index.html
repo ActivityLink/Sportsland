@@ -13,46 +13,51 @@
             --line-green: #06C755;
             --line-green-dark: #05b34c;
             --sidebar-bg: #111111;
+            --body-bg: #FFFFFF; /* 改為純白，更接近 LINE OA */
         }
 
         body { 
             font-family: 'Inter', 'PingFang TC', 'Microsoft JhengHei', sans-serif; 
-            background-color: #F4F5F7; 
+            background-color: var(--body-bg); 
+            color: #333333;
         }
 
-        /* 側邊欄動畫與文字隱藏 */
+        /* 側邊欄：收合時完全隱藏文字 */
         .sidebar { 
-            transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1); 
-            width: 240px; 
+            transition: width 0.2s ease-in-out; 
+            width: 220px; 
             background-color: var(--sidebar-bg);
+            z-index: 50;
         }
         
         .sidebar.collapsed { 
-            width: 72px; 
+            width: 64px; 
         }
 
         .main-content { 
-            transition: margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1); 
-            margin-left: 240px; 
+            transition: margin-left 0.2s ease-in-out; 
+            margin-left: 220px; 
         }
         
         .main-content.expanded { 
-            margin-left: 72px; 
+            margin-left: 64px; 
         }
 
         .collapsed .nav-text, .collapsed .logo-text {
             display: none;
-            opacity: 0;
         }
 
         .nav-link {
-            transition: all 0.2s ease;
             color: #A0A0A0;
+            padding: 12px 20px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
         }
 
         .nav-link:hover {
             color: white;
-            background-color: rgba(255, 255, 255, 0.1);
+            background-color: rgba(255, 255, 255, 0.05);
         }
 
         .nav-link.active { 
@@ -60,40 +65,108 @@
             color: white; 
         }
 
-        /* 橫幅按鈕樣式 */
+        /* 橫幅按鈕：扁平化導航 */
         .type-banner-btn {
-            @apply flex-1 py-3 px-4 text-center font-bold text-sm transition-all border-b-4 border-transparent text-slate-400;
+            flex: 1;
+            padding: 16px;
+            text-align: center;
+            font-weight: 700;
+            font-size: 0.95rem;
+            border-bottom: 2px solid #EEEEEE;
+            color: #999999;
+            transition: all 0.2s;
         }
         .type-banner-btn.active {
-            @apply border-line-green text-slate-800 bg-green-50/50;
+            border-bottom: 3px solid var(--line-green);
             color: var(--line-green);
+            background-color: #FAFAFA;
         }
 
-        /* 表單樣式修正 */
+        /* 扁平化表單樣式 */
         label { 
             display: block; 
-            font-size: 0.75rem; 
+            font-size: 0.85rem; 
             font-weight: 700; 
-            color: #64748b; 
-            margin-bottom: 0.35rem; 
-            text-transform: uppercase;
-            letter-spacing: 0.025em;
+            color: #111111; 
+            margin-bottom: 0.75rem; 
         }
         
         input, select, textarea { 
             width: 100%; 
-            border: 1px solid #e2e8f0; 
-            border-radius: 0.5rem; 
-            padding: 0.65rem; 
-            font-size: 0.875rem; 
-            outline: none; 
-            background: #ffffff;
-            transition: all 0.2s;
+            border: 1px solid #DDDDDD; 
+            border-radius: 4px; 
+            padding: 12px; 
+            font-size: 0.95rem; 
+            background: #FFFFFF;
         }
         
         input:focus, select:focus, textarea:focus { 
             border-color: var(--line-green); 
-            box-shadow: 0 0 0 3px rgba(6, 199, 85, 0.1); 
+            outline: none;
+        }
+
+        /* 彈窗：仿照 LINE OA 全螢幕或大範圍扁平編輯區 */
+        .modal-overlay { 
+            background-color: rgba(0, 0, 0, 0.5); 
+            display: none; 
+            position: fixed; 
+            top: 0; left: 0; width: 100%; height: 100%; 
+            z-index: 1000; 
+            align-items: center; justify-content: center; 
+        }
+        
+        .modal-content { 
+            background: white; 
+            width: 100%;
+            height: 100%;
+            max-width: 1200px; /* 大尺寸展示 */
+            max-height: 95vh; 
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+            border-radius: 8px;
+        }
+
+        .modal-body {
+            overflow-y: auto;
+            flex: 1;
+            padding: 40px 60px; /* 增加留白，平均拉開 */
+        }
+
+        section {
+            margin-bottom: 60px; /* 區塊間距拉開 */
+        }
+
+        section h3 { 
+            font-size: 1.1rem;
+            font-weight: 800; 
+            color: #111111; 
+            margin-bottom: 24px; 
+            display: flex; 
+            align-items: center; 
+            gap: 12px; 
+        }
+
+        /* 表格扁平化：不要包框 */
+        .flat-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .flat-table th {
+            background-color: #F8F9FA;
+            color: #666666;
+            font-weight: 700;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            padding: 16px 24px;
+            border-bottom: 1px solid #EEEEEE;
+            text-align: left;
+        }
+        .flat-table td {
+            padding: 20px 24px;
+            border-bottom: 1px solid #F0F0F0;
+            vertical-align: middle;
         }
 
         .loading-spinner { 
@@ -106,77 +179,57 @@
 
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
-        .modal-overlay { 
-            background-color: rgba(0, 0, 0, 0.6); 
-            backdrop-filter: blur(8px); 
-            display: none; 
-            position: fixed; 
-            top: 0; left: 0; width: 100%; height: 100%; 
-            z-index: 1000; 
-            align-items: center; justify-content: center; 
+        /* 按鈕風格 */
+        .btn-line {
+            padding: 10px 32px;
+            border-radius: 4px;
+            font-weight: 700;
+            transition: all 0.2s;
         }
-        
-        .modal-content { 
-            background: white; 
-            width: 95%; max-width: 1000px; 
-            max-height: 90vh; 
-            overflow: hidden; /* 內部自帶捲軸 */
-            border-radius: 1rem; 
-            display: flex;
-            flex-direction: column;
+        .btn-line-green {
+            background-color: var(--line-green);
+            color: white;
         }
-
-        .modal-body {
-            overflow-y: auto;
-            flex: 1;
-            padding: 2rem;
+        .btn-line-green:hover {
+            background-color: var(--line-green-dark);
         }
-
-        section h3 { 
-            font-weight: 800; 
-            color: #1e293b; 
-            margin-bottom: 1.5rem; 
-            padding-bottom: 0.5rem; 
-            border-bottom: 2px solid #f1f5f9; 
-            display: flex; 
-            align-items: center; 
-            gap: 0.75rem; 
+        .btn-line-outline {
+            border: 1px solid #DDDDDD;
+            color: #666666;
         }
-
-        /* 捲軸美化 */
-        ::-webkit-scrollbar { width: 5px; }
-        ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        .btn-line-outline:hover {
+            background-color: #F8F9FA;
+        }
     </style>
 </head>
 <body class="overflow-x-hidden">
 
     <!-- 側邊欄 -->
-    <aside id="sidebar" class="sidebar fixed top-0 left-0 h-full text-white z-50 overflow-y-auto shadow-2xl">
-        <div class="p-6 flex items-center gap-4 mb-4">
-            <div class="w-8 h-8 bg-[#06C755] rounded-lg flex-shrink-0 flex items-center justify-center">
-                <i class="fas fa-comment-dots text-white"></i>
+    <aside id="sidebar" class="sidebar fixed top-0 left-0 h-full text-white z-50 overflow-y-auto">
+        <div class="p-6 flex items-center gap-4 mb-8">
+            <div class="w-8 h-8 bg-[#06C755] rounded-sm flex-shrink-0 flex items-center justify-center">
+                <i class="fas fa-link text-white text-xs"></i>
             </div>
             <span class="text-lg font-bold logo-text tracking-tight">ActivityLink</span>
         </div>
         
-        <nav class="px-3 space-y-1">
-            <a href="#" onclick="switchView('dashboard')" class="nav-link flex items-center gap-4 p-3 rounded-lg">
-                <i class="fas fa-th-large w-6 text-center text-lg"></i>
-                <span class="nav-text font-medium">儀表板</span>
+        <nav class="space-y-0">
+            <a href="#" onclick="switchView('dashboard')" class="nav-link">
+                <i class="fas fa-chart-bar w-6 text-center"></i>
+                <span class="nav-text">分析儀表板</span>
             </a>
-            <a href="#" onclick="switchView('activities')" class="nav-link active flex items-center gap-4 p-3 rounded-lg">
-                <i class="fas fa-calendar-alt w-6 text-center text-lg"></i>
-                <span class="nav-text font-medium">活動管理</span>
+            <a href="#" onclick="switchView('activities')" class="nav-link active">
+                <i class="fas fa-list-ul w-6 text-center"></i>
+                <span class="nav-text">內容管理</span>
             </a>
-            <a href="#" onclick="switchView('line-oa')" class="nav-link flex items-center gap-4 p-3 rounded-lg">
-                <i class="fab fa-line w-6 text-center text-xl"></i>
-                <span class="nav-text font-medium">LINE OA 設定</span>
+            <a href="#" onclick="switchView('line-oa')" class="nav-link">
+                <i class="fab fa-line w-6 text-center"></i>
+                <span class="nav-text">OA 帳號設定</span>
             </a>
-            <div class="pt-4 mt-4 border-t border-white/10">
-                <a href="#" onclick="switchView('settings')" class="nav-link flex items-center gap-4 p-3 rounded-lg">
-                    <i class="fas fa-user-cog w-6 text-center text-lg"></i>
-                    <span class="nav-text font-medium">系統設定</span>
+            <div class="mt-8 pt-8 border-t border-white/5">
+                <a href="#" onclick="switchView('settings')" class="nav-link">
+                    <i class="fas fa-cog w-6 text-center"></i>
+                    <span class="nav-text">權限與設定</span>
                 </a>
             </div>
         </nav>
@@ -184,125 +237,108 @@
 
     <!-- 主要內容區 -->
     <main id="main-content" class="main-content min-h-screen">
-        <nav class="sticky top-0 z-40 bg-white border-b border-slate-200 px-6 py-3 flex items-center justify-between shadow-sm">
-            <div class="flex items-center gap-4">
-                <button id="sidebar-toggle" class="p-2 hover:bg-slate-100 rounded-lg text-slate-400 transition-colors">
+        <nav class="sticky top-0 z-40 bg-white border-b border-slate-200 px-8 py-4 flex items-center justify-between">
+            <div class="flex items-center gap-6">
+                <button id="sidebar-toggle" class="text-slate-400 hover:text-slate-600 transition-colors">
                     <i class="fas fa-bars text-xl"></i>
                 </button>
-                <h2 id="page-title" class="text-slate-700 font-bold hidden sm:block">活動管理中心</h2>
+                <h2 id="page-title" class="text-xl font-bold text-slate-800 tracking-tight">內容管理</h2>
             </div>
-            <div class="flex items-center gap-4">
-                <div class="flex flex-col text-right">
-                    <span class="text-[10px] font-black text-[#06C755] uppercase tracking-tighter">Connected</span>
-                    <span class="text-[10px] text-slate-400">Sheet Sync Active</span>
+            <div class="flex items-center gap-6">
+                <div class="flex items-center gap-2">
+                    <div class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                    <span class="text-xs font-bold text-slate-500 uppercase tracking-widest">Live Sync</span>
                 </div>
-                <div class="w-10 h-10 bg-slate-100 rounded-full flex items-center justify-center text-slate-500 font-bold border-2 border-white shadow-sm">JD</div>
+                <div class="w-8 h-8 bg-slate-100 rounded-full flex items-center justify-center text-slate-400 font-bold border border-slate-200">A</div>
             </div>
         </nav>
 
-        <div class="p-8">
-            <div id="app-content" class="max-w-6xl mx-auto"></div>
+        <div class="p-0"> <!-- 內容區不包框，直接展開 -->
+            <div id="app-content"></div>
         </div>
     </main>
 
-    <!-- 課程新增彈窗 -->
+    <!-- 課程編輯彈窗：扁平大區域 -->
     <div id="course-modal" class="modal-overlay">
         <div class="modal-content">
-            <!-- 彈窗頂部 -->
-            <div class="bg-white border-b border-slate-100 px-8 py-5 flex items-center justify-between">
-                <div>
-                    <h2 class="text-xl font-black text-slate-800 tracking-tight">建立新課程</h2>
-                    <p class="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-0.5">Course Creation Wizard</p>
+            <!-- 橫幅切換：類 LINE OA 的 Top Navigation -->
+            <div class="flex bg-white">
+                <button onclick="setCourseType('single')" id="btn-type-single" class="type-banner-btn active">單日課程</button>
+                <button onclick="setCourseType('multi')" id="btn-type-multi" class="type-banner-btn">梯次課程</button>
+                <button onclick="setCourseType('camp')" id="btn-type-camp" class="type-banner-btn">營隊活動</button>
+                <button onclick="setCourseType('semester')" id="btn-type-semester" class="type-banner-btn">學期課後班</button>
+                <div class="flex items-center px-4">
+                    <button onclick="closeCourseModal()" class="text-slate-300 hover:text-slate-600"><i class="fas fa-times text-xl"></i></button>
                 </div>
-                <button onclick="closeCourseModal()" class="w-10 h-10 rounded-full hover:bg-slate-50 flex items-center justify-center text-slate-300 transition-colors">
-                    <i class="fas fa-times text-xl"></i>
-                </button>
-            </div>
-
-            <!-- 橫幅切換按鈕 -->
-            <div class="flex border-b border-slate-100 bg-slate-50/50">
-                <button onclick="setCourseType('single')" id="btn-type-single" class="type-banner-btn active">
-                    <i class="fas fa-calendar-day mb-1 block"></i> 單日課程
-                </button>
-                <button onclick="setCourseType('multi')" id="btn-type-multi" class="type-banner-btn">
-                    <i class="fas fa-layer-group mb-1 block"></i> 梯次課程
-                </button>
-                <button onclick="setCourseType('camp')" id="btn-type-camp" class="type-banner-btn">
-                    <i class="fas fa-campground mb-1 block"></i> 營隊活動
-                </button>
-                <button onclick="setCourseType('semester')" id="btn-type-semester" class="type-banner-btn">
-                    <i class="fas fa-school mb-1 block"></i> 學期課後班
-                </button>
             </div>
             
             <div class="modal-body">
-                <form id="course-form" class="space-y-12">
+                <form id="course-form">
                     <input type="hidden" name="courseType" id="courseTypeInput" value="single">
                     
-                    <!-- 1. 基本資訊 -->
-                    <section id="section-basic">
-                        <h3><i class="fas fa-info-circle text-[#06C755]"></i> 基本資訊設定</h3>
-                        <div class="grid grid-cols-1 md:grid-cols-6 gap-5">
-                            <div class="md:col-span-4"><label>課程名稱 *</label><input type="text" name="courseName" required placeholder="請輸入完整課程標題"></div>
-                            <div class="md:col-span-2"><label>運動類別</label><input type="text" name="category" placeholder="如：籃球、羽球"></div>
-                            <div class="md:col-span-2"><label>年齡分級</label><input type="text" name="ageGroup" placeholder="如：U12、成人"></div>
-                            <div class="md:col-span-2"><label>難度等級</label><select name="difficulty"><option value="初階">初階</option><option value="中階">中階</option><option value="高階">高階</option></select></div>
-                            <div class="md:col-span-2"><label>標籤分類</label><input type="text" name="tags" placeholder="多個標籤請用逗號隔開"></div>
+                    <section>
+                        <h3>基本資訊設定</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-12 gap-x-8 gap-y-6">
+                            <div class="md:col-span-8"><label>課程標題 *</label><input type="text" name="courseName" required placeholder="請輸入顯示在 LINE 上的標題"></div>
+                            <div class="md:col-span-4"><label>運動類別</label><input type="text" name="category" placeholder="例如：籃球"></div>
+                            <div class="md:col-span-4"><label>適齡分級</label><input type="text" name="ageGroup" placeholder="例如：國小低年級"></div>
+                            <div class="md:col-span-4"><label>難度等級</label><select name="difficulty"><option value="初階">初階</option><option value="中階">中階</option><option value="高階">高階</option></select></div>
+                            <div class="md:col-span-4"><label>搜尋標籤</label><input type="text" name="tags" placeholder="多標籤請用半形逗號分隔"></div>
                         </div>
                     </section>
 
-                    <!-- 2. 時間與地點 -->
-                    <section id="section-time">
-                        <h3><i class="fas fa-calendar-alt text-[#06C755]"></i> 時間與場地安排</h3>
-                        <div class="grid grid-cols-1 md:grid-cols-4 gap-5">
-                            <div><label>課程日期 *</label><input type="date" name="courseDate" required></div>
+                    <section>
+                        <h3>時間與場地安排</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-4 gap-x-8 gap-y-6">
+                            <div><label>活動日期 *</label><input type="date" name="courseDate" required></div>
                             <div><label>開始時間</label><input type="time" name="startTime"></div>
                             <div><label>結束時間</label><input type="time" name="endTime"></div>
-                            <div><label>課程時長 (分鐘)</label><input type="number" name="duration" value="60"></div>
-                            <div class="md:col-span-2"><label>報名期間 (起~迄)</label>
-                                <div class="flex gap-2">
+                            <div><label>時長 (分鐘)</label><input type="number" name="duration" value="60"></div>
+                            <div class="md:col-span-2"><label>報名期間</label>
+                                <div class="flex items-center gap-3">
                                     <input type="date" name="regStart" class="flex-1">
+                                    <span class="text-slate-400">～</span>
                                     <input type="date" name="regEnd" class="flex-1">
                                 </div>
                             </div>
-                            <div><label>教練姓名</label><input type="text" name="coachName"></div>
-                            <div><label>場地名稱</label><input type="text" name="venueName"></div>
+                            <div><label>負責教練</label><input type="text" name="coachName"></div>
+                            <div><label>活動地點</label><input type="text" name="venueName"></div>
                         </div>
                     </section>
 
-                    <!-- 3. 費用與名額 -->
-                    <section id="section-price">
-                        <h3><i class="fas fa-dollar-sign text-[#06C755]"></i> 費用與名額管理</h3>
-                        <div class="grid grid-cols-2 md:grid-cols-4 gap-5">
-                            <div><label>原價</label><input type="number" name="price" value="0"></div>
-                            <div><label>會員價</label><input type="number" name="memberPrice" value="0"></div>
-                            <div><label>總名額</label><input type="number" name="quota" value="20"></div>
-                            <div><label>最少開班</label><input type="number" name="minClass" value="3"></div>
+                    <section>
+                        <h3>費用與名額</h3>
+                        <div class="grid grid-cols-2 md:grid-cols-4 gap-x-8 gap-y-6">
+                            <div><label>定價 (原價)</label><input type="number" name="price" value="0"></div>
+                            <div><label>會員特惠價</label><input type="number" name="memberPrice" value="0"></div>
+                            <div><label>預計招募名額</label><input type="number" name="quota" value="20"></div>
+                            <div><label>最低開課門檻</label><input type="number" name="minClass" value="3"></div>
                             <div><label>早鳥優惠價</label><input type="number" name="earlyBirdPrice" value="0"></div>
-                            <div class="md:col-span-2"><label>早鳥截止日期</label><input type="date" name="earlyBirdEnd"></div>
-                            <div><label>狀態</label><select name="status"><option value="報名中">報名中</option><option value="已額滿">已額滿</option><option value="已結束">已結束</option></select></div>
+                            <div class="md:col-span-2"><label>早鳥截止日</label><input type="date" name="earlyBirdEnd"></div>
+                            <div><label>當前狀態</label><select name="status"><option value="報名中">報名中</option><option value="已額滿">已額滿</option><option value="已結束">已結束</option></select></div>
                         </div>
                     </section>
 
-                    <!-- 4. 詳細介紹 -->
-                    <section id="section-detail">
-                        <h3><i class="fas fa-align-left text-[#06C755]"></i> 課程詳細細節</h3>
-                        <div class="space-y-5">
-                            <div><label>封面圖片網址</label><input type="text" name="coverImage" placeholder="https://..."></div>
-                            <div><label>課程亮點 (簡述)</label><input type="text" name="highlights" placeholder="專業教練、含保險、器材免費借用"></div>
-                            <div><label>完整課程內容</label><textarea name="content" rows="4"></textarea></div>
-                            <div><label>注意事項</label><textarea name="notes" rows="2"></textarea></div>
-                            <div><label>適合對象</label><textarea name="targetAudience" rows="2"></textarea></div>
+                    <section>
+                        <h3>內容詳情與媒體</h3>
+                        <div class="space-y-6">
+                            <div><label>封面圖片網址 (建議 16:9)</label><input type="text" name="coverImage" placeholder="https://..."></div>
+                            <div><label>課程亮點敘述</label><input type="text" name="highlights" placeholder="簡短吸引人的文字"></div>
+                            <div><label>課程介紹內容</label><textarea name="content" rows="6" placeholder="詳細描述活動流程與特色"></textarea></div>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                <div><label>報名注意事項</label><textarea name="notes" rows="4"></textarea></div>
+                                <div><label>建議對象描述</label><textarea name="targetAudience" rows="4"></textarea></div>
+                            </div>
                         </div>
                     </section>
                 </form>
             </div>
 
-            <!-- 底部按鈕 -->
-            <div class="bg-white px-8 py-5 border-t border-slate-100 flex justify-end gap-3">
-                <button type="button" onclick="closeCourseModal()" class="px-8 py-2.5 rounded-full border border-slate-200 font-bold text-slate-400 hover:bg-slate-50 transition-all text-sm">取消</button>
-                <button type="button" onclick="submitCourseForm()" id="submit-btn" class="px-10 py-2.5 rounded-full bg-[#06C755] text-white font-black shadow-lg hover:bg-[#05b34c] transition-all flex items-center gap-2 text-sm">
-                    <span id="btn-text">確認建立課程</span>
+            <!-- 底部動作條 -->
+            <div class="px-8 py-6 border-t border-slate-100 flex justify-end gap-4 bg-white sticky bottom-0">
+                <button type="button" onclick="closeCourseModal()" class="btn-line btn-line-outline">取消</button>
+                <button type="button" onclick="submitCourseForm()" id="submit-btn" class="btn-line btn-line-green flex items-center gap-3">
+                    <span id="btn-text">儲存並發佈</span>
                     <div id="btn-spinner" class="hidden loading-spinner !w-4 !h-4 !border-white !border-t-transparent"></div>
                 </button>
             </div>
@@ -316,28 +352,17 @@
         const mainContent = document.getElementById('main-content');
         const sidebarToggle = document.getElementById('sidebar-toggle');
 
-        // 側邊欄控制
         sidebarToggle.onclick = () => {
             sidebar.classList.toggle('collapsed');
             mainContent.classList.toggle('expanded');
         };
 
-        // 課程類型切換
         function setCourseType(type) {
             document.getElementById('courseTypeInput').value = type;
-            
-            // 更新按鈕樣式
-            document.querySelectorAll('.type-banner-btn').forEach(btn => {
-                btn.classList.remove('active');
-            });
+            document.querySelectorAll('.type-banner-btn').forEach(btn => btn.classList.remove('active'));
             document.getElementById(`btn-type-${type}`).classList.add('active');
-
-            // 這裡可以根據 type 隱藏或顯示特定欄位
-            // 目前維持同一套 Single Course 欄位作為基礎，未來可根據需求客製
-            console.log("切換課程類型至:", type);
         }
 
-        // 輔助格式化
         function formatTime(iso) {
             if (!iso) return '-';
             const d = new Date(iso);
@@ -352,20 +377,19 @@
             return d.toLocaleDateString('zh-TW', { year: 'numeric', month: '2-digit', day: '2-digit' });
         }
 
-        // 視圖切換
         async function switchView(viewName) {
             document.querySelectorAll('.nav-link').forEach(link => {
                 link.classList.toggle('active', link.getAttribute('onclick').includes(viewName));
             });
 
             appContent.innerHTML = `
-                <div class="flex flex-col items-center justify-center min-h-[40vh] text-slate-400">
+                <div class="flex flex-col items-center justify-center min-h-[50vh] text-slate-300">
                     <div class="loading-spinner mb-4"></div>
-                    <p class="font-bold tracking-tight">正在同步 LINE 官方活動資料...</p>
+                    <p class="font-bold">資料同步中</p>
                 </div>`;
 
             if (viewName === 'activities') await loadActivities();
-            else appContent.innerHTML = `<div class="bg-white p-20 rounded-2xl border border-slate-200 text-center text-slate-400 font-bold">「${viewName}」功能開發中...</div>`;
+            else appContent.innerHTML = `<div class="p-20 text-center text-slate-400 font-bold">「${viewName}」區塊建設中</div>`;
         }
 
         async function loadActivities() {
@@ -375,13 +399,13 @@
                 if (result.status === "success") renderTable(result.data);
                 else throw new Error(result.message);
             } catch (error) {
-                appContent.innerHTML = `<div class="p-10 text-center bg-red-50 rounded-2xl border border-red-100"><p class="text-red-600 font-bold">連線失敗: ${error.message}</p></div>`;
+                appContent.innerHTML = `<div class="p-20 text-center"><p class="text-red-400 font-bold">連線失敗: ${error.message}</p></div>`;
             }
         }
 
         function renderTable(data) {
             if (!data || data.length === 0) {
-                appContent.innerHTML = `<div class="text-center py-20 bg-white rounded-2xl border border-dashed border-slate-300"><p class="text-slate-400 font-bold">目前無任何活動資料</p><button onclick="openCourseModal()" class="mt-4 px-10 py-3 bg-[#06C755] text-white rounded-full font-bold shadow-xl hover:bg-[#05b34c] transition-all">建立課程</button></div>`;
+                appContent.innerHTML = `<div class="text-center py-40 border-b border-dashed"><p class="text-slate-400 font-bold mb-6">目前尚無活動資料</p><button onclick="openCourseModal()" class="btn-line btn-line-green">建立課程</button></div>`;
                 return;
             }
 
@@ -391,83 +415,75 @@
                 const progress = Math.min((enrolled / total) * 100, 100);
                 
                 return `
-                    <tr class="hover:bg-slate-50 transition-colors border-b border-slate-100">
-                        <td class="px-6 py-5">
-                            <div class="font-black text-slate-700">${item['課程名稱'] || '未命名的活動'}</div>
-                            <div class="text-[10px] text-slate-400 font-mono tracking-tighter uppercase">${item['課程ID'] || '-'}</div>
+                    <tr class="hover:bg-slate-50 transition-colors">
+                        <td>
+                            <div class="font-bold text-slate-800 text-base">${item['課程名稱'] || '未命名的活動'}</div>
+                            <div class="text-[10px] text-slate-400 font-mono mt-1">${item['課程ID'] || '-'}</div>
                         </td>
-                        <td class="px-6 py-5">
-                            <div class="text-xs font-bold text-slate-600">${formatDate(item['課程日期'])}</div>
-                            <div class="text-[10px] text-slate-400 font-medium">${formatTime(item['開始時間'])} - ${formatTime(item['結束時間'])}</div>
+                        <td>
+                            <div class="text-sm font-bold text-slate-600">${formatDate(item['課程日期'])}</div>
+                            <div class="text-[10px] text-slate-400 font-medium mt-0.5">${formatTime(item['開始時間'])} ～ ${formatTime(item['結束時間'])}</div>
                         </td>
-                        <td class="px-6 py-5 text-xs text-slate-600 font-medium">${item['場地名稱'] || '-'}</td>
-                        <td class="px-6 py-5">
+                        <td class="text-sm text-slate-600">${item['場地名稱'] || '-'}</td>
+                        <td class="w-48">
                             <div class="flex items-center gap-3">
-                                <div class="flex-grow h-2 bg-slate-100 rounded-full overflow-hidden">
+                                <div class="flex-grow h-1.5 bg-slate-100 rounded-full overflow-hidden">
                                     <div class="h-full bg-[#06C755]" style="width: ${progress}%"></div>
                                 </div>
                                 <span class="text-[10px] font-black text-slate-500">${enrolled}/${total}</span>
                             </div>
                         </td>
-                        <td class="px-6 py-5">
+                        <td>
                             <span class="px-3 py-1 rounded-full text-[10px] font-black ${item['課程狀態'] === '報名中' ? 'bg-green-100 text-green-700' : 'bg-slate-100 text-slate-500'}">
                                 ${item['課程狀態'] || '草稿'}
                             </span>
                         </td>
-                        <td class="px-6 py-5 text-right">
-                            <button class="w-8 h-8 rounded-full hover:bg-slate-100 text-slate-400 transition-colors"><i class="fas fa-ellipsis-h"></i></button>
+                        <td class="text-right">
+                            <button class="w-10 h-10 rounded-full hover:bg-slate-100 text-slate-400"><i class="fas fa-edit"></i></button>
                         </td>
                     </tr>
                 `;
             }).join('');
 
             appContent.innerHTML = `
-                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-10">
+                <div class="px-8 py-10 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6">
                     <div>
-                        <h1 class="text-2xl font-black text-slate-800 tracking-tight">活動清單</h1>
-                        <p class="text-slate-400 text-sm font-medium tracking-tight">與 Google Sheets 即時同步中</p>
+                        <h1 class="text-3xl font-black text-slate-800">所有活動</h1>
+                        <p class="text-slate-400 text-sm mt-1 font-medium">總計載入 ${data.length} 筆課程</p>
                     </div>
-                    <button onclick="openCourseModal()" class="w-full sm:w-auto px-10 py-3 rounded-full bg-[#06C755] text-white font-black shadow-xl flex items-center justify-center gap-2 hover:bg-[#05b34c] transition-all">
-                        <i class="fas fa-plus"></i> 建立新課程
+                    <button onclick="openCourseModal()" class="btn-line btn-line-green text-lg px-12">
+                        建立新課程
                     </button>
                 </div>
-                <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
-                    <div class="overflow-x-auto">
-                        <table class="w-full text-left">
-                            <thead class="bg-slate-50/80 text-slate-400 text-[10px] uppercase font-black tracking-widest border-b border-slate-100">
-                                <tr>
-                                    <th class="px-6 py-4">課程與 ID</th>
-                                    <th class="px-6 py-4">日期時間</th>
-                                    <th class="px-6 py-4">場地</th>
-                                    <th class="px-6 py-4">報名進度</th>
-                                    <th class="px-6 py-4">狀態</th>
-                                    <th class="px-6 py-4 text-right">管理</th>
-                                </tr>
-                            </thead>
-                            <tbody class="divide-y divide-slate-50">
-                                ${rows}
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
+                <table class="flat-table">
+                    <thead>
+                        <tr>
+                            <th>活動內容</th>
+                            <th>日期時間</th>
+                            <th>地點</th>
+                            <th>報名進度</th>
+                            <th>狀態</th>
+                            <th class="text-right">操作</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${rows}
+                    </tbody>
+                </table>
             `;
         }
 
-        // 表單提交
         async function submitCourseForm() {
             const form = document.getElementById('course-form');
             const btn = document.getElementById('submit-btn');
             const spinner = document.getElementById('btn-spinner');
             const text = document.getElementById('btn-text');
 
-            if (!form.checkValidity()) {
-                form.reportValidity();
-                return;
-            }
+            if (!form.checkValidity()) { form.reportValidity(); return; }
 
             btn.disabled = true;
             spinner.classList.remove('hidden');
-            text.innerText = '正在寫入 Sheet...';
+            text.innerText = '正在處理';
 
             const data = Object.fromEntries(new FormData(form).entries());
 
@@ -479,30 +495,20 @@
                 });
                 const result = await res.json();
                 if (result.status === "success") {
-                    alert('課程建立成功！');
                     closeCourseModal();
                     switchView('activities');
                 }
             } catch (err) {
-                alert('提交失敗，請檢查網路設定');
+                alert('伺服器無回應');
             } finally {
                 btn.disabled = false;
                 spinner.classList.add('hidden');
-                text.innerText = '確認建立課程';
+                text.innerText = '儲存並發佈';
             }
         }
 
-        function openCourseModal() { 
-            document.getElementById('course-modal').style.display = 'flex'; 
-            document.body.style.overflow = 'hidden'; 
-        }
-        
-        function closeCourseModal() { 
-            document.getElementById('course-modal').style.display = 'none'; 
-            document.body.style.overflow = 'auto'; 
-            document.getElementById('course-form').reset(); 
-            setCourseType('single'); // 重置類型
-        }
+        function openCourseModal() { document.getElementById('course-modal').style.display = 'flex'; document.body.style.overflow = 'hidden'; }
+        function closeCourseModal() { document.getElementById('course-modal').style.display = 'none'; document.body.style.overflow = 'auto'; document.getElementById('course-form').reset(); setCourseType('single'); }
 
         window.onload = () => switchView('activities');
     </script>
