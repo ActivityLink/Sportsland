@@ -53,6 +53,7 @@
             display: flex;
             align-items: center;
             gap: 16px;
+            cursor: pointer;
         }
 
         .nav-link:hover {
@@ -63,23 +64,6 @@
         .nav-link.active { 
             background-color: var(--line-green); 
             color: white; 
-        }
-
-        /* 頂部橫幅按鈕 (Modal 內) */
-        .type-banner-btn {
-            flex: 1;
-            padding: 16px;
-            text-align: center;
-            font-weight: 700;
-            font-size: 0.95rem;
-            border-bottom: 2px solid #EEEEEE;
-            color: #999999;
-            transition: all 0.2s;
-        }
-        .type-banner-btn.active {
-            border-bottom: 3px solid var(--line-green);
-            color: var(--line-green);
-            background-color: #FAFAFA;
         }
 
         /* 扁平化表單樣式 */
@@ -100,52 +84,9 @@
             background: #FFFFFF;
         }
         
-        input:focus, select:focus, textarea:focus { 
+        input:focus { 
             border-color: var(--line-green); 
             outline: none;
-        }
-
-        /* 彈窗編輯區 */
-        .modal-overlay { 
-            background-color: rgba(0, 0, 0, 0.5); 
-            display: none; 
-            position: fixed; 
-            top: 0; left: 0; width: 100%; height: 100%; 
-            z-index: 1000; 
-            align-items: center; justify-content: center; 
-        }
-        
-        .modal-content { 
-            background: white; 
-            width: 100%;
-            height: 100%;
-            max-width: 1200px;
-            max-height: 95vh; 
-            overflow: hidden;
-            display: flex;
-            flex-direction: column;
-            border-radius: 8px;
-            box-shadow: 0 20px 50px rgba(0,0,0,0.15);
-        }
-
-        .modal-body {
-            overflow-y: auto;
-            flex: 1;
-            padding: 40px 60px; /* 平均拉開，不擠壓 */
-        }
-
-        section {
-            margin-bottom: 60px;
-        }
-
-        section h3 { 
-            font-size: 1.1rem;
-            font-weight: 800; 
-            color: #111111; 
-            margin-bottom: 24px; 
-            display: flex; 
-            align-items: center; 
-            gap: 12px; 
         }
 
         /* 扁平列表表格 */
@@ -158,7 +99,6 @@
             color: #666666;
             font-weight: 700;
             font-size: 0.75rem;
-            text-transform: uppercase;
             padding: 16px 24px;
             border-bottom: 1px solid #EEEEEE;
             text-align: left;
@@ -166,18 +106,7 @@
         .flat-table td {
             padding: 20px 24px;
             border-bottom: 1px solid #F6F6F6;
-            vertical-align: middle;
         }
-
-        .loading-spinner { 
-            border: 3px solid #f3f3f3; 
-            border-top: 3px solid var(--line-green); 
-            border-radius: 50%; 
-            width: 24px; height: 24px; 
-            animation: spin 1s linear infinite; 
-        }
-
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
         /* 按鈕風格 */
         .btn-line {
@@ -186,6 +115,9 @@
             font-weight: 700;
             transition: all 0.2s;
             cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
         }
         .btn-line-green {
             background-color: var(--line-green);
@@ -199,10 +131,14 @@
             color: #666666;
         }
 
-        /* 移除水平捲軸 */
-        .no-scrollbar::-webkit-scrollbar {
-            display: none;
+        .loading-spinner { 
+            border: 3px solid #f3f3f3; 
+            border-top: 3px solid var(--line-green); 
+            border-radius: 50%; 
+            width: 24px; height: 24px; 
+            animation: spin 1s linear infinite; 
         }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
     </style>
 </head>
 <body class="overflow-x-hidden">
@@ -210,29 +146,29 @@
     <!-- 側邊欄 -->
     <aside id="sidebar" class="sidebar fixed top-0 left-0 h-full text-white z-50 overflow-y-auto">
         <div class="p-6 flex items-center gap-4 mb-8">
-            <div class="w-8 h-8 bg-[#06C755] rounded-sm flex-shrink-0 flex items-center justify-center">
+            <div class="w-8 h-8 bg-[#06C755] rounded-sm flex items-center justify-center">
                 <i class="fas fa-link text-white text-xs"></i>
             </div>
             <span class="text-lg font-bold logo-text tracking-tight">ActivityLink</span>
         </div>
         
         <nav class="space-y-0">
-            <a href="#" onclick="switchView('dashboard')" class="nav-link">
+            <a onclick="switchView('dashboard')" class="nav-link">
                 <i class="fas fa-chart-bar w-6 text-center"></i>
                 <span class="nav-text">分析儀表板</span>
             </a>
-            <a href="#" onclick="switchView('activities')" class="nav-link active">
+            <a onclick="switchView('activities')" class="nav-link">
                 <i class="fas fa-list-ul w-6 text-center"></i>
                 <span class="nav-text">內容管理</span>
             </a>
-            <a href="#" onclick="switchView('line-oa')" class="nav-link">
+            <a onclick="switchView('line-oa')" class="nav-link">
                 <i class="fab fa-line w-6 text-center"></i>
                 <span class="nav-text">OA 帳號設定</span>
             </a>
             <div class="mt-8 pt-8 border-t border-white/5">
-                <a href="#" onclick="switchView('settings')" class="nav-link">
+                <a onclick="switchView('settings')" class="nav-link active">
                     <i class="fas fa-cog w-6 text-center"></i>
-                    <span class="nav-text">權限與設定</span>
+                    <span class="nav-text">系統設定</span>
                 </a>
             </div>
         </nav>
@@ -240,266 +176,252 @@
 
     <!-- 主要內容區 -->
     <main id="main-content" class="main-content min-h-screen">
-        <nav class="sticky top-0 z-40 bg-white border-b border-slate-200 px-8 py-4 flex items-center justify-between">
+        <nav class="sticky top-0 z-40 bg-white border-b border-slate-200 px-8 py-4 flex items-center justify-between shadow-sm">
             <div class="flex items-center gap-6">
                 <button id="sidebar-toggle" class="text-slate-400 hover:text-slate-600 transition-colors">
                     <i class="fas fa-bars text-xl"></i>
                 </button>
-                <h2 id="page-title" class="text-xl font-bold text-slate-800 tracking-tight">內容管理</h2>
+                <h2 id="page-title" class="text-xl font-bold text-slate-800 tracking-tight">系統設定</h2>
             </div>
-            <div class="flex items-center gap-6">
-                <div class="flex items-center gap-2">
-                    <div class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-                    <span class="text-xs font-bold text-slate-500 uppercase tracking-widest">Live Sync</span>
+            <div class="flex items-center gap-4">
+                <div class="flex flex-col text-right">
+                    <span class="text-[10px] font-bold text-green-500 uppercase tracking-tighter">Live Connection</span>
+                    <span class="text-[10px] text-slate-400">Database Active</span>
                 </div>
                 <div class="w-8 h-8 bg-slate-100 rounded-full flex items-center justify-center text-slate-400 font-bold border border-slate-200">A</div>
             </div>
         </nav>
 
-        <div id="app-content"></div>
-    </main>
-
-    <!-- 課程編輯彈窗 (維持分頁、無邊框設計) -->
-    <div id="course-modal" class="modal-overlay">
-        <div class="modal-content">
-            <div class="flex bg-white border-b">
-                <button onclick="setCourseType('single')" id="btn-type-single" class="type-banner-btn active">單日課程</button>
-                <button onclick="setCourseType('multi')" id="btn-type-multi" class="type-banner-btn">梯次課程</button>
-                <button onclick="setCourseType('camp')" id="btn-type-camp" class="type-banner-btn">營隊活動</button>
-                <button onclick="setCourseType('semester')" id="btn-type-semester" class="type-banner-btn">學期課後班</button>
-                <div class="flex items-center px-4">
-                    <button onclick="closeCourseModal()" class="text-slate-300 hover:text-slate-600"><i class="fas fa-times text-xl"></i></button>
-                </div>
-            </div>
-            
-            <div class="modal-body">
-                <form id="course-form">
-                    <input type="hidden" name="courseType" id="courseTypeInput" value="single">
-                    <section>
-                        <h3>基本資訊設定</h3>
-                        <div class="grid grid-cols-1 md:grid-cols-12 gap-x-8 gap-y-6">
-                            <div class="md:col-span-8"><label>課程名稱 *</label><input type="text" name="courseName" required placeholder="請輸入課程標題"></div>
-                            <div class="md:col-span-4"><label>運動類別</label><input type="text" name="category"></div>
-                            <div class="md:col-span-4"><label>適齡分級</label><input type="text" name="ageGroup"></div>
-                            <div class="md:col-span-4"><label>當前狀態</label><select name="status"><option value="報名中">報名中</option><option value="已額滿">已額滿</option><option value="已結束">已結束</option></select></div>
-                        </div>
-                    </section>
-                    
-                    <section>
-                        <h3>時間與地點安排</h3>
-                        <div class="grid grid-cols-1 md:grid-cols-4 gap-x-8 gap-y-6">
-                            <div><label>活動日期 *</label><input type="date" name="courseDate" required></div>
-                            <div><label>開始時間</label><input type="time" name="startTime"></div>
-                            <div><label>結束時間</label><input type="time" name="endTime"></div>
-                            <div><label>場地名稱</label><input type="text" name="venueName"></div>
-                        </div>
-                    </section>
-
-                    <section>
-                        <h3>詳細介紹與媒體</h3>
-                        <div class="space-y-6">
-                            <div><label>封面圖片網址</label><input type="text" name="coverImage" placeholder="https://..."></div>
-                            <div><label>課程亮點描述</label><input type="text" name="highlights" placeholder="一句話描述亮點"></div>
-                            <div><label>完整課程內容</label><textarea name="content" rows="6"></textarea></div>
-                        </div>
-                    </section>
-                </form>
-            </div>
-
-            <div class="px-8 py-6 border-t flex justify-end gap-4 bg-white sticky bottom-0">
-                <button type="button" onclick="closeCourseModal()" class="btn-line btn-line-outline">取消</button>
-                <button type="button" onclick="submitCourseForm()" id="submit-btn" class="btn-line btn-line-green flex items-center gap-3">
-                    <span id="btn-text">儲存並發佈</span>
-                    <div id="btn-spinner" class="hidden loading-spinner !w-4 !h-4 !border-white !border-t-transparent"></div>
-                </button>
-            </div>
+        <div id="app-content">
+            <!-- 動態內容將插入於此 -->
         </div>
-    </div>
+    </main>
 
     <script>
         const CLOUDFLARE_WORKER_URL = 'https://aged-rice-2438.wetw-net3.workers.dev/';
         const appContent = document.getElementById('app-content');
         const sidebar = document.getElementById('sidebar');
         const mainContent = document.getElementById('main-content');
-        const sidebarToggle = document.getElementById('sidebar-toggle');
+        let configData = []; 
 
-        sidebarToggle.onclick = () => {
+        // 側邊欄收合邏輯
+        document.getElementById('sidebar-toggle').onclick = () => {
             sidebar.classList.toggle('collapsed');
             mainContent.classList.toggle('expanded');
         };
 
-        function setCourseType(type) {
-            document.getElementById('courseTypeInput').value = type;
-            document.querySelectorAll('.type-banner-btn').forEach(btn => btn.classList.remove('active'));
-            document.getElementById(`btn-type-${type}`).classList.add('active');
-        }
-
-        function formatTime(iso) {
-            if (!iso) return '-';
-            const d = new Date(iso);
-            return d.getHours() === 0 && d.getMinutes() === 0 && iso.includes('1899') 
-                ? iso.split('T')[1].substring(0, 5) 
-                : d.toLocaleTimeString('zh-TW', { hour: '2-digit', minute: '2-digit', hour12: false });
-        }
-
-        function formatDate(iso) {
-            if (!iso) return '-';
-            const d = new Date(iso);
-            return d.toLocaleDateString('zh-TW', { year: 'numeric', month: '2-digit', day: '2-digit' });
-        }
-
+        // 核心視圖切換
         async function switchView(viewName) {
-            document.querySelectorAll('.nav-link').forEach(link => {
-                link.classList.toggle('active', link.getAttribute('onclick').includes(viewName));
-            });
+            const links = document.querySelectorAll('.nav-link');
+            links.forEach(l => l.classList.remove('active'));
+            const activeLink = Array.from(links).find(l => l.getAttribute('onclick').includes(viewName));
+            if (activeLink) activeLink.classList.add('active');
 
-            appContent.innerHTML = `<div class="flex flex-col items-center justify-center min-h-[50vh] text-slate-300"><div class="loading-spinner mb-4"></div><p class="font-bold">資料傳輸中</p></div>`;
+            // 更改頁面標題
+            const titleMap = {
+                'dashboard': '分析儀表板',
+                'activities': '內容管理',
+                'line-oa': 'OA 帳號設定',
+                'settings': '系統設定'
+            };
+            document.getElementById('page-title').innerText = titleMap[viewName] || 'ActivityLink';
 
-            if (viewName === 'activities') await loadActivities();
-            else appContent.innerHTML = `<div class="p-20 text-center text-slate-400 font-bold">「${viewName}」功能開發中</div>`;
+            appContent.innerHTML = `<div class="flex flex-col items-center justify-center min-h-[60vh] text-slate-300">
+                <div class="loading-spinner mb-4"></div><p class="font-bold">正在讀取雲端數據...</p></div>`;
+
+            if (viewName === 'settings') {
+                await loadSettings();
+            } else if (viewName === 'activities') {
+                await loadActivities();
+            } else {
+                appContent.innerHTML = `<div class="p-20 text-center text-slate-400 font-bold">「${viewName}」功能開發中</div>`;
+            }
         }
+
+        // --- 系統設定 (Setup) 邏輯 ---
+
+        async function loadSettings() {
+            try {
+                // 確保 type=config 能正確請求 setup 工作表
+                const response = await fetch(`${CLOUDFLARE_WORKER_URL}?type=config`);
+                const result = await response.json();
+                
+                // 相容不同後端回傳格式 (config 或 setup)
+                configData = result.config || result.setup || [];
+                renderSettingsUI();
+            } catch (e) {
+                appContent.innerHTML = `<div class="p-20 text-center text-red-500 font-bold">無法讀取系統設定，請檢查網路連線或試算表狀態。</div>`;
+            }
+        }
+
+        function renderSettingsUI() {
+            appContent.innerHTML = `
+                <div class="px-10 py-10 max-w-full">
+                    <div class="flex justify-between items-end mb-10 pb-6 border-b">
+                        <div>
+                            <h1 class="text-3xl font-black text-slate-800">報名參數管理 (Setup)</h1>
+                            <p class="text-slate-400 text-sm mt-2 font-medium">在此定義預約彈窗中顯示的下拉選單欄位，數據將即時同步至 LINE 前端。</p>
+                        </div>
+                        <button onclick="addConfigField()" class="btn-line btn-line-green shadow-xl shadow-green-100">
+                            <i class="fas fa-plus"></i> 新增參數欄位
+                        </button>
+                    </div>
+
+                    <div class="space-y-2" id="config-list-container">
+                        ${configData.length === 0 ? `
+                            <div class="py-32 text-center">
+                                <i class="fas fa-sliders-h text-slate-100 text-6xl mb-4 block"></i>
+                                <p class="text-slate-300 font-bold">目前無現有參數資料</p>
+                            </div>
+                        ` : configData.map((item, index) => `
+                            <div class="flex items-center gap-10 p-8 hover:bg-slate-50 transition-colors border-b border-slate-50 group">
+                                <div class="flex-1 grid grid-cols-1 md:grid-cols-2 gap-10">
+                                    <div>
+                                        <label class="uppercase tracking-widest text-[10px] text-slate-400 mb-2">參數名稱 (例如: 午餐選擇)</label>
+                                        <input type="text" value="${item.name || ''}" 
+                                               class="border-transparent hover:border-slate-200 focus:border-line-green transition-all px-0 py-2 text-xl font-bold bg-transparent"
+                                               oninput="updateLocalConfig(${index}, 'name', this.value)" 
+                                               placeholder="點擊輸入欄位名稱">
+                                    </div>
+                                    <div>
+                                        <label class="uppercase tracking-widest text-[10px] text-slate-400 mb-2">可選項 (請用半形逗號分隔)</label>
+                                        <input type="text" value="${item.options || ''}" 
+                                               class="border-transparent hover:border-slate-200 focus:border-line-green transition-all px-0 py-2 text-lg text-slate-600 bg-transparent"
+                                               oninput="updateLocalConfig(${index}, 'options', this.value)" 
+                                               placeholder="例如: 葷食, 素食, 自備">
+                                    </div>
+                                </div>
+                                <button onclick="deleteConfigField(${index})" class="text-slate-200 group-hover:text-red-400 transition-colors p-4">
+                                    <i class="fas fa-trash-alt text-xl"></i>
+                                </button>
+                            </div>
+                        `).join('')}
+                    </div>
+
+                    <div class="mt-20 pt-10 flex items-center justify-between">
+                        <div class="flex items-center gap-3 text-slate-400">
+                            <i class="fas fa-info-circle"></i>
+                            <span class="text-xs font-medium text-slate-400">變更後請務必點擊「儲存」以同步至雲端。</span>
+                        </div>
+                        <button onclick="saveSettingsToCloud()" id="save-btn" class="btn-line btn-line-green px-20 py-5 text-xl shadow-2xl shadow-green-100">
+                            儲存所有設定
+                        </button>
+                    </div>
+                </div>
+            `;
+        }
+
+        function addConfigField() {
+            configData.push({ name: '', options: '' });
+            renderSettingsUI();
+        }
+
+        function updateLocalConfig(index, key, value) {
+            configData[index][key] = value;
+        }
+
+        function deleteConfigField(index) {
+            configData.splice(index, 1);
+            renderSettingsUI();
+        }
+
+        async function saveSettingsToCloud() {
+            const btn = document.getElementById('save-btn');
+            btn.disabled = true;
+            btn.innerHTML = `<div class="loading-spinner !w-4 !h-4 !border-white mr-2"></div> 儲存中...`;
+
+            try {
+                const response = await fetch(CLOUDFLARE_WORKER_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        type: 'config_update', 
+                        data: configData
+                    })
+                });
+                const result = await response.json();
+                if (result.status === "success") {
+                    alert('系統設定已成功同步！');
+                } else {
+                    throw new Error(result.message);
+                }
+            } catch (e) {
+                alert('儲存失敗：' + e.message);
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = `儲存所有設定`;
+            }
+        }
+
+        // --- 內容管理 (Activities) 邏輯 ---
 
         async function loadActivities() {
             try {
                 const response = await fetch(CLOUDFLARE_WORKER_URL);
                 const result = await response.json();
-                if (result.status === "success") renderAdminList(result.data);
+                if (result.status === "success") renderActivityList(result.data);
                 else throw new Error(result.message);
             } catch (error) {
-                appContent.innerHTML = `<div class="p-20 text-center text-red-400 font-bold">連線失敗: ${error.message}</div>`;
+                appContent.innerHTML = `<div class="p-20 text-center text-red-500 font-bold">課程資料讀取失敗</div>`;
             }
         }
 
-        // 後台專用列表渲染 (扁平列表)
-        function renderAdminList(data) {
-            // 頂部導覽橫幅 (活動專區 / 會員區)
-            const bannerArea = `
-                <div class="px-8 pt-8 flex gap-4 overflow-x-auto no-scrollbar">
-                    <div class="min-w-[300px] flex-1 bg-[#06C755] rounded-lg p-6 text-white relative overflow-hidden group cursor-pointer">
-                        <div class="relative z-10">
-                            <h3 class="text-xl font-bold mb-1">活動專區</h3>
-                            <p class="text-white/80 text-xs">管理單日、梯次與營隊課程</p>
-                        </div>
-                        <i class="fas fa-calendar-check absolute -right-4 -bottom-4 text-white/10 text-7xl transform -rotate-12"></i>
-                    </div>
-                    <div class="min-w-[300px] flex-1 bg-slate-800 rounded-lg p-6 text-white relative overflow-hidden group cursor-pointer">
-                        <div class="relative z-10">
-                            <h3 class="text-xl font-bold mb-1">會員區</h3>
-                            <p class="text-white/80 text-xs">會員資格與專屬優惠管理</p>
-                        </div>
-                        <i class="fas fa-user-shield absolute -right-4 -bottom-4 text-white/10 text-7xl transform -rotate-12"></i>
-                    </div>
-                </div>
-            `;
-
-            if (!data || data.length === 0) {
-                appContent.innerHTML = bannerArea + `<div class="text-center py-40 text-slate-400">尚無課程資料</div>`;
-                return;
-            }
-
-            const rows = data.map(item => {
-                const enrolled = parseInt(item['已報名人數']) || 0;
-                const total = parseInt(item['總名額']) || 1;
-                const progress = Math.min((enrolled / total) * 100, 100);
-                
-                return `
-                    <tr>
-                        <td>
-                            <div class="font-bold text-slate-800">${item['課程名稱'] || '未命名的活動'}</div>
-                            <div class="text-[10px] text-slate-400 font-mono mt-1">${item['課程ID'] || '-'}</div>
-                        </td>
-                        <td>
-                            <div class="text-sm font-bold text-slate-600">${formatDate(item['課程日期'])}</div>
-                            <div class="text-[10px] text-slate-400">${formatTime(item['開始時間'])} ～ ${formatTime(item['結束時間'])}</div>
-                        </td>
-                        <td class="text-sm text-slate-500">${item['場地名稱'] || '-'}</td>
-                        <td class="w-48">
-                            <div class="flex items-center gap-3">
-                                <div class="flex-grow h-1.5 bg-slate-100 rounded-full overflow-hidden">
-                                    <div class="h-full bg-[#06C755]" style="width: ${progress}%"></div>
-                                </div>
-                                <span class="text-[10px] font-bold text-slate-500">${enrolled}/${total}</span>
+        function renderActivityList(data) {
+            const rows = data.map(item => `
+                <tr class="hover:bg-slate-50 transition-colors">
+                    <td>
+                        <div class="font-bold text-slate-800 text-base">${item['課程名稱'] || '未命名的活動'}</div>
+                        <div class="text-[10px] text-slate-400 font-mono tracking-widest mt-1 uppercase">${item['課程ID'] || '-'}</div>
+                    </td>
+                    <td>
+                        <div class="text-sm font-bold text-slate-600">${item['課程日期'] ? new Date(item['課程日期']).toLocaleDateString() : '-'}</div>
+                    </td>
+                    <td class="text-sm text-slate-500 font-medium">${item['場地名稱'] || '-'}</td>
+                    <td class="w-48">
+                        <div class="flex items-center gap-3">
+                            <div class="flex-grow h-1.5 bg-slate-100 rounded-full overflow-hidden">
+                                <div class="h-full bg-line-green" style="width: ${(item['已報名人數']/item['總名額'])*100}%"></div>
                             </div>
-                        </td>
-                        <td>
-                            <span class="px-3 py-1 rounded-full text-[10px] font-bold ${item['課程狀態'] === '報名中' ? 'bg-green-100 text-green-700' : 'bg-slate-100 text-slate-500'}">
-                                ${item['課程狀態'] || '草稿'}
-                            </span>
-                        </td>
-                        <td class="text-right">
-                            <button class="w-8 h-8 rounded-full hover:bg-slate-100 text-slate-400"><i class="fas fa-edit"></i></button>
-                        </td>
-                    </tr>
-                `;
-            }).join('');
+                            <span class="text-[10px] font-black text-slate-500">${item['已報名人數'] || 0}/${item['總名額'] || 0}</span>
+                        </div>
+                    </td>
+                    <td>
+                        <span class="px-3 py-1 rounded-full text-[10px] font-black ${item['課程狀態'] === '報名中' ? 'bg-green-100 text-green-700' : 'bg-slate-100 text-slate-500'}">
+                            ${item['課程狀態'] || '草稿'}
+                        </span>
+                    </td>
+                    <td class="text-right">
+                        <button class="w-10 h-10 rounded-full hover:bg-slate-100 text-slate-300 hover:text-blue-500 transition-all"><i class="fas fa-edit"></i></button>
+                    </td>
+                </tr>
+            `).join('');
 
             appContent.innerHTML = `
-                ${bannerArea}
-                <div class="px-8 py-10 flex justify-between items-center">
+                <div class="px-8 py-10 flex justify-between items-center border-b">
                     <div>
-                        <h1 class="text-2xl font-black text-slate-800">所有上架課程</h1>
-                        <p class="text-slate-400 text-xs mt-1">目前共有 ${data.length} 筆課程</p>
+                        <h1 class="text-2xl font-black text-slate-800">所有活動清單</h1>
+                        <p class="text-slate-400 text-xs mt-1 font-medium tracking-tight">目前雲端共有 ${data.length} 筆課程</p>
                     </div>
-                    <button onclick="openCourseModal()" class="btn-line btn-line-green shadow-xl shadow-green-100">
-                        建立新課程
-                    </button>
+                    <button class="btn-line btn-line-green shadow-xl shadow-green-100 px-10 py-3">建立新課程</button>
                 </div>
                 <table class="flat-table">
                     <thead>
                         <tr>
-                            <th>課程名稱 / ID</th>
-                            <th>日期與時間</th>
-                            <th>場地地點</th>
+                            <th>課程標題 / ID</th>
+                            <th>日期</th>
+                            <th>場地</th>
                             <th>報名進度</th>
-                            <th>當前狀態</th>
+                            <th>狀態</th>
                             <th class="text-right">管理</th>
                         </tr>
                     </thead>
-                    <tbody>
-                        ${rows}
-                    </tbody>
+                    <tbody>${rows}</tbody>
                 </table>
             `;
         }
 
-        async function submitCourseForm() {
-            const form = document.getElementById('course-form');
-            const btn = document.getElementById('submit-btn');
-            const spinner = document.getElementById('btn-spinner');
-            const text = document.getElementById('btn-text');
-
-            if (!form.checkValidity()) { form.reportValidity(); return; }
-
-            btn.disabled = true;
-            spinner.classList.remove('hidden');
-            text.innerText = '正在同步資料';
-
-            const data = Object.fromEntries(new FormData(form).entries());
-
-            try {
-                const res = await fetch(CLOUDFLARE_WORKER_URL, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(data)
-                });
-                const result = await res.json();
-                if (result.status === "success") {
-                    closeCourseModal();
-                    switchView('activities');
-                }
-            } catch (err) {
-                alert('連線失敗');
-            } finally {
-                btn.disabled = false;
-                spinner.classList.add('hidden');
-                text.innerText = '儲存並發佈';
-            }
-        }
-
-        function openCourseModal() { document.getElementById('course-modal').style.display = 'flex'; document.body.style.overflow = 'hidden'; }
-        function closeCourseModal() { document.getElementById('course-modal').style.display = 'none'; document.body.style.overflow = 'auto'; }
-
-        window.onload = () => switchView('activities');
+        // 預設載入系統設定頁面
+        window.onload = () => switchView('settings');
     </script>
 </body>
 </html>
