@@ -3,49 +3,38 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ActivityLink - 系統參數設定</title>
+    <title>ActivityLink - 系統參數管理</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;900&display=swap');
         :root { --line-green: #06C755; --sidebar-bg: #111111; }
         body { font-family: 'Inter', 'PingFang TC', sans-serif; background-color: #F8FAFC; color: #333; }
-        
         .sidebar { transition: width 0.2s; width: 240px; background-color: var(--sidebar-bg); position: fixed; height: 100%; z-index: 50; }
         .sidebar.collapsed { width: 64px; }
         .main-content { transition: margin-left 0.2s; margin-left: 240px; min-height: 100vh; }
         .main-content.expanded { margin-left: 64px; }
         .collapsed .nav-text, .collapsed .logo-text { display: none; }
-        
         .nav-link { color: #A0A0A0; padding: 14px 24px; display: flex; align-items: center; gap: 16px; cursor: pointer; transition: 0.2s; text-decoration: none; }
         .nav-link:hover { color: white; background-color: rgba(255, 255, 255, 0.05); }
         .nav-link.active { background-color: var(--line-green); color: white; }
-        
         label { display: block; font-size: 0.75rem; font-weight: 800; color: #64748B; margin-bottom: 0.5rem; text-transform: uppercase; }
         input { width: 100%; border: 1px solid #E2E8F0; border-radius: 8px; padding: 12px; font-size: 0.95rem; outline: none; transition: all 0.2s; }
         input:focus { border-color: var(--line-green); box-shadow: 0 0 0 3px rgba(6, 199, 85, 0.1); }
-        
         .card { background: white; border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); padding: 32px; margin-bottom: 32px; border: 1px solid #F1F5F9; }
         .btn-line { padding: 12px 36px; border-radius: 8px; font-weight: 800; cursor: pointer; display: inline-flex; align-items: center; gap: 10px; transition: 0.2s; border: none; }
         .btn-line-green { background-color: var(--line-green); color: white; }
         .btn-line-green:hover { background-color: #05b34c; transform: translateY(-1px); }
-        
-        .loading-spinner { border: 3px solid #f3f3f3; border-top: 3px solid var(--line-green); border-radius: 50%; width: 24px; height: 24px; animation: spin 1s linear infinite; display: inline-block; vertical-align: middle; }
+        .loading-spinner { border: 3px solid #f3f3f3; border-top: 3px solid var(--line-green); border-radius: 50%; width: 24px; height: 24px; animation: spin 1s linear infinite; display: inline-block; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        
-        .status-badge { font-size: 10px; font-weight: 900; padding: 4px 10px; border-radius: 20px; text-transform: uppercase; border: 1px solid currentColor; }
-        .status-syncing { color: #94A3B8; }
-        .status-active { color: #10B981; background-color: #ECFDF5; }
-        .status-error { color: #EF4444; background-color: #FEF2F2; }
+        .status-badge { font-size: 10px; font-weight: 900; padding: 4px 12px; border-radius: 20px; text-transform: uppercase; border: 1px solid currentColor; }
     </style>
 </head>
 <body>
 
     <aside id="sidebar" class="sidebar">
         <div class="p-8 flex items-center gap-4 mb-6">
-            <div class="w-10 h-10 bg-[#06C755] rounded-lg flex items-center justify-center shadow-lg">
-                <i class="fas fa-link text-white text-lg"></i>
-            </div>
+            <div class="w-10 h-10 bg-[#06C755] rounded-lg flex items-center justify-center shadow-lg"><i class="fas fa-link text-white text-lg"></i></div>
             <span class="text-xl font-black logo-text text-white tracking-tighter">ActivityLink</span>
         </div>
         <nav>
@@ -57,168 +46,110 @@
     <main id="main-content" class="main-content">
         <nav class="sticky top-0 z-40 bg-white/80 backdrop-blur-md border-b border-slate-200 px-10 py-5 flex items-center justify-between shadow-sm">
             <div class="flex items-center gap-8">
-                <button id="toggle-btn" class="text-slate-400 hover:text-slate-600 bg-transparent border-none cursor-pointer"><i class="fas fa-bars text-xl"></i></button>
-                <h2 class="text-2xl font-black tracking-tight text-slate-800">系統參數設定</h2>
+                <button onclick="document.getElementById('sidebar').classList.toggle('collapsed'); document.getElementById('main-content').classList.toggle('expanded');" class="text-slate-400 hover:text-slate-600 bg-transparent border-none cursor-pointer"><i class="fas fa-bars text-xl"></i></button>
+                <h2 class="text-2xl font-black tracking-tight text-slate-800">系統參數管理</h2>
             </div>
-            <div class="flex items-center gap-3">
-                <span id="sync-status" class="status-badge status-syncing">偵測中...</span>
-                <div class="w-8 h-8 bg-slate-100 rounded-full flex items-center justify-center font-bold border text-slate-400 text-xs shadow-inner">AD</div>
-            </div>
+            <div id="sync-status" class="status-badge text-slate-400">連線中...</div>
         </nav>
 
         <div class="px-10 py-10 max-w-5xl mx-auto">
-            <!-- 偵錯資訊顯示區 -->
-            <div id="debug-info" class="hidden mb-6 p-4 bg-slate-800 text-green-400 font-mono text-xs rounded-lg overflow-x-auto">
-                <p class="mb-2 text-white font-bold border-b border-slate-600 pb-1">系統診斷數據：</p>
-                <pre id="debug-text"></pre>
-            </div>
-
             <!-- 1. 匯款資訊 -->
             <div class="card">
-                <h3 class="text-lg font-black mb-8 flex items-center gap-3 text-slate-800">
-                    <i class="fas fa-university text-blue-500"></i> 1. 官方匯款帳戶設定 (JSON)
-                </h3>
+                <h3 class="text-lg font-black mb-8 flex items-center gap-3"><i class="fas fa-university text-blue-500"></i> 1. 官方匯款帳戶設定 (JSON)</h3>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                    <div><label>銀行名稱</label><input type="text" id="bank-name" placeholder="請輸入銀行名稱"></div>
-                    <div><label>銀行代碼</label><input type="text" id="bank-code" placeholder="請輸入代碼"></div>
-                    <div><label>受款戶名</label><input type="text" id="bank-acc-name" placeholder="請輸入戶名"></div>
-                    <div><label>轉帳帳號</label><input type="text" id="bank-acc-num" placeholder="請輸入完整帳號"></div>
+                    <div><label>銀行名稱</label><input type="text" id="bank-name"></div>
+                    <div><label>銀行代碼</label><input type="text" id="bank-code"></div>
+                    <div><label>受款人戶名</label><input type="text" id="bank-acc-name"></div>
+                    <div><label>轉帳帳號</label><input type="text" id="bank-acc-num"></div>
                 </div>
             </div>
 
             <!-- 2. 租借設備 -->
             <div class="card">
                 <div class="flex justify-between items-center mb-8">
-                    <h3 class="text-lg font-black flex items-center gap-3 text-slate-800">
-                        <i class="fas fa-tools text-orange-500"></i> 2. 租借設備清單設定 (JSON Array)
-                    </h3>
-                    <button onclick="addEqItem()" class="text-xs bg-slate-100 hover:bg-slate-200 px-4 py-2 rounded-lg font-bold text-slate-600 transition-colors">
-                        <i class="fas fa-plus mr-1"></i> 新增設備項目
-                    </button>
+                    <h3 class="text-lg font-black flex items-center gap-3"><i class="fas fa-tools text-orange-500"></i> 2. 租借設備清單 (JSON Array)</h3>
+                    <button onclick="addEqItem()" class="text-xs bg-slate-100 hover:bg-slate-200 px-4 py-2 rounded-lg font-bold text-slate-600"><i class="fas fa-plus mr-1"></i> 新增項目</button>
                 </div>
                 <div id="eq-container" class="space-y-4">
-                    <div class="text-center py-10 text-slate-300 font-bold italic">載入雲端數據中...</div>
+                    <!-- JS 動態生成 -->
                 </div>
             </div>
 
             <div class="flex justify-end gap-4 mt-10">
-                <button onclick="saveAllJSON()" id="save-btn" class="btn-line btn-line-green px-24 py-5 shadow-2xl shadow-green-100 text-lg font-black tracking-widest">
-                    確認儲存並更新雲端參數
+                <button onclick="saveAllSettings()" id="save-btn" class="btn-line btn-line-green px-24 py-5 shadow-2xl font-black text-lg">
+                    儲存並更新雲端試算表
                 </button>
             </div>
         </div>
     </main>
 
     <script>
-        const CLOUDFLARE_URL = 'https://aged-rice-2438.wetw-net3.workers.dev/';
-        const sidebar = document.getElementById('sidebar');
-        const mainContent = document.getElementById('main-content');
-        const syncStatus = document.getElementById('sync-status');
-        
+        const API_URL = 'https://aged-rice-2438.wetw-net3.workers.dev/';
         let eqList = [];
 
-        document.getElementById('toggle-btn').onclick = () => {
-            sidebar.classList.toggle('collapsed');
-            mainContent.classList.toggle('expanded');
-        };
-
         async function loadConfig() {
-            syncStatus.innerText = "正在連線...";
-            syncStatus.className = "status-badge status-syncing";
-
+            const status = document.getElementById('sync-status');
             try {
-                const res = await fetch(`${CLOUDFLARE_URL}?type=config&_t=${Date.now()}`);
-                if (!res.ok) throw new Error(`HTTP Error: ${res.status}`);
-                
+                const res = await fetch(`${API_URL}?type=config&_t=${Date.now()}`);
                 const result = await res.json();
-                console.log("Response JSON:", result);
+                console.log("Cloud Config:", result);
 
-                // 顯示偵錯資訊，讓您能看到回傳了什麼
-                document.getElementById('debug-info').classList.remove('hidden');
-                document.getElementById('debug-text').innerText = JSON.stringify(result, null, 2);
+                // 容錯邏輯：相容 data 或 config 屬性
+                const rows = result.data || result.config || [];
 
-                if (result.status !== "success") throw new Error("後端回傳失敗狀態");
-
-                // 核心修正：採用「深度搜尋」不論是 result.data 還是 result.config
-                const rawData = result.data || result.config || [];
-                
-                // 1. 搜尋匯款資訊行 (Remittance)
-                const bankRow = rawData.find(i => {
-                    const cell0 = (i.type || (Array.isArray(i) ? i[0] : '')).toString().toLowerCase().trim();
-                    return cell0 === 'remittance' || cell0 === 'remit' || cell0 === '匯款資訊';
-                });
-
+                // 1. 抓取匯款資訊
+                const bankRow = rows.find(r => (r.type === 'remittance' || (Array.isArray(r) && r[0] === 'remittance')));
                 if (bankRow) {
-                    const jsonStr = bankRow.options || (Array.isArray(bankRow) ? bankRow[2] : '');
-                    if (jsonStr) {
+                    const optionsStr = bankRow.options || (Array.isArray(bankRow) ? bankRow[2] : '');
+                    if (optionsStr) {
                         try {
-                            const bank = JSON.parse(jsonStr);
+                            const bank = JSON.parse(optionsStr);
                             document.getElementById('bank-name').value = bank.bankName || "";
                             document.getElementById('bank-code').value = bank.bankCode || "";
                             document.getElementById('bank-acc-name').value = bank.accountName || "";
                             document.getElementById('bank-acc-num').value = bank.accountNumber || "";
-                        } catch (e) { console.error("Bank JSON fail"); }
+                        } catch(e) {}
                     }
                 }
 
-                // 2. 搜尋設備清單行 (Equipment List)
-                const equipRow = rawData.find(i => {
-                    const cell0 = (i.type || (Array.isArray(i) ? i[0] : '')).toString().toLowerCase().trim();
-                    return cell0 === 'equipment_list' || cell0 === 'equip' || cell0 === '租借清單';
-                });
-
-                eqList = [];
+                // 2. 抓取設備清單
+                const equipRow = rows.find(r => (r.type === 'equipment_list' || (Array.isArray(r) && r[0] === 'equipment_list')));
                 if (equipRow) {
-                    const jsonStr = equipRow.options || (Array.isArray(equipRow) ? equipRow[2] : '');
-                    if (jsonStr) {
-                        try { eqList = JSON.parse(jsonStr); } catch (e) { console.error("Equip JSON fail"); }
-                    }
+                    const optionsStr = equipRow.options || (Array.isArray(equipRow) ? equipRow[2] : '');
+                    eqList = optionsStr ? JSON.parse(optionsStr) : [];
                 }
                 renderEq();
 
-                syncStatus.innerText = "資料庫連線正常";
-                syncStatus.className = "status-badge status-active";
-            } catch (e) { 
-                console.error("Load fail:", e);
-                syncStatus.innerText = "連線失敗"; 
-                syncStatus.className = "status-badge status-error";
+                status.innerText = "連線正常";
+                status.classList.replace('text-slate-400', 'text-green-500');
+            } catch (e) {
+                status.innerText = "連線失敗";
+                status.classList.replace('text-slate-400', 'text-red-500');
             }
         }
 
         function renderEq() {
             const container = document.getElementById('eq-container');
-            if (!eqList || eqList.length === 0) {
-                container.innerHTML = '<div class="text-center py-10 text-slate-300 font-bold italic">目前尚無租借設備</div>';
+            if (eqList.length === 0) {
+                container.innerHTML = '<p class="text-center py-10 text-slate-300 italic">目前無設備資料</p>';
                 return;
             }
             container.innerHTML = eqList.map((eq, i) => `
-                <div class="flex gap-6 items-center p-6 bg-slate-50/50 rounded-xl border border-slate-100 group transition-all hover:bg-slate-50">
-                    <div class="flex-1">
-                        <label class="text-[9px] font-black uppercase text-slate-400">設備名稱</label>
-                        <input type="text" value="${eq.name || ''}" oninput="eqList[${i}].name=this.value" class="bg-white">
-                    </div>
-                    <div class="w-40">
-                        <label class="text-[9px] font-black uppercase text-slate-400">費用</label>
-                        <input type="number" value="${eq.price || 0}" oninput="eqList[${i}].price=this.value" class="bg-white">
-                    </div>
+                <div class="flex gap-6 items-center p-6 bg-slate-50/50 rounded-xl border border-slate-100 group hover:border-slate-200 transition-all">
+                    <div class="flex-1"><label class="text-[9px]">設備名稱</label><input type="text" value="${eq.name || ''}" oninput="eqList[${i}].name=this.value" class="bg-white"></div>
+                    <div class="w-32"><label class="text-[9px]">租用費用</label><input type="number" value="${eq.price || 0}" oninput="eqList[${i}].price=this.value" class="bg-white"></div>
                     <button onclick="eqList.splice(${i},1);renderEq()" class="mt-4 p-4 text-slate-300 hover:text-red-500 bg-transparent border-none cursor-pointer"><i class="fas fa-trash-alt text-lg"></i></button>
                 </div>
             `).join('');
         }
 
-        function addEqItem() { 
-            if (!Array.isArray(eqList)) eqList = [];
-            eqList.push({ name: '', price: 0 }); 
-            renderEq(); 
-        }
+        function addEqItem() { eqList.push({ name: '', price: 0 }); renderEq(); }
 
-        async function saveAllJSON() {
+        async function saveAllSettings() {
             const btn = document.getElementById('save-btn');
-            const originalText = btn.innerText;
-            btn.disabled = true; 
-            btn.innerHTML = `<div class="loading-spinner mr-2"></div> 同步寫入中...`;
+            btn.disabled = true; btn.innerHTML = `<div class="loading-spinner mr-2"></div> 資料同步中...`;
             
-            const bankInfo = {
+            const bankData = {
                 bankName: document.getElementById('bank-name').value,
                 bankCode: document.getElementById('bank-code').value,
                 accountName: document.getElementById('bank-acc-name').value,
@@ -226,22 +157,19 @@
             };
 
             const payload = [
-                { type: 'remittance', name: 'Global', options: JSON.stringify(bankInfo) },
+                { type: 'remittance', name: 'Global', options: JSON.stringify(bankData) },
                 { type: 'equipment_list', name: 'Global', options: JSON.stringify(eqList) }
             ];
 
             try {
-                const res = await fetch(CLOUDFLARE_URL, { 
+                const res = await fetch(API_URL, { 
                     method: 'POST', 
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ type: 'config_update', data: payload }) 
                 });
-                if ((await res.json()).status === "success") { 
-                    alert("✅ 系統參數已同步成功！"); 
-                    loadConfig(); 
-                }
-            } catch (e) { alert("❌ 儲存失敗"); } 
-            finally { btn.disabled = false; btn.innerText = originalText; }
+                if ((await res.json()).status === "success") { alert("✅ 設定已更新！"); loadConfig(); }
+            } catch (e) { alert("❌ 儲存失敗"); }
+            finally { btn.disabled = false; btn.innerText = "儲存並更新試算表"; }
         }
 
         window.onload = loadConfig;
