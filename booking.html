@@ -8,283 +8,143 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&display=swap');
-        :root { --line-green: #06C755; --line-blue: #007AFF; }
-        body { font-family: 'Noto Sans TC', sans-serif; background-color: #FFFFFF; color: #000; }
-        .no-scrollbar::-webkit-scrollbar { display: none; }
-        
-        /* 彈窗基礎樣式 */
+        :root { --line-green: #06C755; }
+        body { font-family: 'Noto Sans TC', sans-serif; background-color: #FFF; color: #000; }
         .modal-overlay { background-color: rgba(0, 0, 0, 0.7); display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 1000; align-items: flex-end; }
-        .modal-content { background: white; width: 100%; border-radius: 24px 24px 0 0; padding: 24px; max-height: 90vh; overflow-y: auto; animation: slideUp 0.3s ease-out; }
+        .modal-content { background: white; width: 100%; border-radius: 24px 24px 0 0; padding: 24px; max-height: 95vh; overflow-y: auto; animation: slideUp 0.3s ease-out; }
         @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
-
-        .btn-green { background-color: var(--line-green); color: white; padding: 14px; border-radius: 12px; font-weight: 900; }
-        .btn-outline { border: 2px solid #EEE; color: #000; padding: 14px; border-radius: 12px; font-weight: 700; }
-        
-        .skeleton { background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%); background-size: 1000px 100%; animation: shimmer 2s infinite linear; }
-        @keyframes shimmer { 0% { background-position: -1000px 0; } 100% { background-position: 1000px 0; } }
+        .btn-green { background-color: var(--line-green); color: white; padding: 16px; border-radius: 12px; font-weight: 900; }
+        input, select, textarea { width: 100%; background: #F8F9FA; border: 2px solid #F1F3F5; padding: 14px; border-radius: 12px; font-weight: 700; outline: none; }
+        input:focus { border-color: var(--line-green); background: white; }
     </style>
 </head>
 <body class="pb-28">
 
-    <!-- 頂部導航 -->
     <header class="sticky top-0 z-50 bg-white px-5 py-4 flex items-center justify-between border-b-2">
-        <div class="flex items-center gap-2">
-            <div class="w-9 h-9 bg-[#06C755] rounded-lg flex items-center justify-center"><i class="fas fa-comment-dots text-white text-lg"></i></div>
-            <h1 class="text-2xl font-black">ActivityLink</h1>
-        </div>
-        <button class="text-black text-xl"><i class="fas fa-user"></i></button>
+        <div class="flex items-center gap-2"><div class="w-9 h-9 bg-[#06C755] rounded-lg flex items-center justify-center"><i class="fas fa-comment-dots text-white text-lg"></i></div><h1 class="text-2xl font-black">ActivityLink</h1></div>
+        <button class="text-black text-xl"><i class="fas fa-user-circle"></i></button>
     </header>
 
-    <!-- Banner -->
-    <div class="w-full"><img src="https://aiwe.cc/wp-content/uploads/2025/12/3486bc19dc6317e16bf4f1449ec52ae4.jpg" class="w-full h-auto block" alt="Banner"></div>
+    <div class="w-full"><img src="https://aiwe.cc/wp-content/uploads/2025/12/3486bc19dc6317e16bf4f1449ec52ae4.jpg" class="w-full h-auto" alt="Banner"></div>
 
-    <!-- 藍色 BAR -->
     <div class="w-full bg-blue-600 flex divide-x divide-blue-500 shadow-md">
-        <button class="flex-1 py-4 text-white font-bold text-lg">活動專區</button>
-        <button class="flex-1 py-4 text-white font-bold text-lg">會員專區</button>
+        <button class="flex-1 py-4 text-white font-bold">活動專區</button>
+        <button class="flex-1 py-4 text-white font-bold">會員專區</button>
     </div>
 
-    <!-- 課程清單 -->
     <main class="px-5 mt-8">
-        <h3 class="text-2xl font-black mb-8">推薦熱門課程</h3>
-        <div id="course-container" class="grid grid-cols-1 gap-y-12">
-            <div class="space-y-4"><div class="aspect-[16/9] skeleton rounded-3xl"></div><div class="h-8 skeleton rounded w-3/4"></div></div>
-        </div>
+        <h3 class="text-2xl font-black mb-8">精選活動</h3>
+        <div id="course-container" class="space-y-12"></div>
     </main>
 
     <!-- 1. 詳細說明 Modal -->
     <div id="details-modal" class="modal-overlay">
         <div class="modal-content">
-            <div class="flex justify-between items-center mb-6">
-                <h4 id="details-title" class="text-2xl font-black">課程詳細說明</h4>
-                <button onclick="closeModal('details-modal')"><i class="fas fa-times text-gray-300 text-3xl"></i></button>
-            </div>
-            <div id="details-body" class="space-y-6 pb-10">
-                <!-- 由 JS 插入內容 -->
-            </div>
+            <div class="flex justify-between items-center mb-6"><h4 id="det-title" class="text-2xl font-black">課程說明</h4><button onclick="closeMod('details-modal')"><i class="fas fa-times text-gray-300 text-3xl"></i></button></div>
+            <div id="det-body" class="space-y-6 pb-10"></div>
         </div>
     </div>
 
-    <!-- 2. 立即預約表單 Modal -->
+    <!-- 2. 預約表單 Modal -->
     <div id="booking-modal" class="modal-overlay">
         <div class="modal-content">
-            <div class="flex justify-between items-center mb-6">
-                <h4 class="text-2xl font-black">填寫預約資料</h4>
-                <button onclick="closeModal('booking-modal')"><i class="fas fa-times text-gray-300 text-3xl"></i></button>
-            </div>
-            <form id="booking-form" class="space-y-6 pb-10">
-                <div>
-                    <label class="block font-black text-lg mb-2">預約人姓名 *</label>
-                    <input type="text" id="user-name" required class="w-full bg-gray-50 border-2 border-gray-100 p-4 rounded-xl font-bold" placeholder="請輸入姓名">
-                </div>
-                <div>
-                    <label class="block font-black text-lg mb-2">聯絡電話 *</label>
-                    <input type="tel" id="user-phone" required class="w-full bg-gray-50 border-2 border-gray-100 p-4 rounded-xl font-bold" placeholder="請輸入手機號碼">
+            <div class="flex justify-between items-center mb-6"><h4 class="text-2xl font-black">填寫報名表</h4><button onclick="closeMod('booking-modal')"><i class="fas fa-times text-gray-300 text-3xl"></i></button></div>
+            <form id="book-form" class="space-y-6 pb-12">
+                <div><label class="block font-black mb-2">姓名 *</label><input type="text" id="u-name" required></div>
+                <div><label class="block font-black mb-2">電話 *</label><input type="tel" id="u-phone" required></div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div><label class="block font-black mb-2">性別</label><select id="u-gender"><option value="男">男</option><option value="女">女</option></select></div>
+                    <div><label class="block font-black mb-2">出生日期</label><input type="date" id="u-birth"></div>
                 </div>
                 
-                <div id="equipment-selection">
-                    <label class="block font-black text-lg mb-2">租借設備選擇</label>
-                    <div id="equipment-list" class="grid grid-cols-1 gap-3">
-                        <!-- 由 JS 載入系統設定的設備 -->
-                    </div>
-                </div>
+                <div id="extra-params" class="space-y-6"></div> <!-- 由系統設定動態產生 -->
 
-                <div class="bg-blue-50 p-5 rounded-2xl border-2 border-blue-100">
-                    <div class="flex justify-between items-center mb-2">
-                        <span class="font-bold text-blue-800 text-lg">預定課程</span>
-                        <span id="booking-course-name" class="font-black">載入中...</span>
-                    </div>
-                    <div class="flex justify-between items-center">
-                        <span class="font-bold text-blue-800 text-lg">結帳總額</span>
-                        <span id="booking-total-price" class="font-black text-2xl text-[#06C755] font-mono">$0</span>
-                    </div>
+                <div class="bg-blue-50 p-6 rounded-2xl border-2 border-blue-100">
+                    <div class="flex justify-between mb-2"><span class="font-bold text-blue-800">活動項目</span><span id="b-c-name" class="font-black text-right"></span></div>
+                    <div class="flex justify-between items-center"><span class="font-bold text-blue-800 text-lg">結帳總額</span><span id="b-total" class="font-black text-3xl text-[#06C755] font-mono">$0</span></div>
                 </div>
-
-                <button type="submit" class="w-full btn-green shadow-xl shadow-green-100 text-xl py-5">
-                    確認送出並完成預約
-                </button>
+                <button type="submit" id="sub-btn" class="w-full btn-green shadow-xl text-xl py-5">確認送出並預約</button>
             </form>
         </div>
     </div>
 
-    <!-- 底部導覽 -->
-    <footer class="fixed bottom-0 left-0 w-full bg-white border-t-2 px-6 py-4 flex justify-between z-50">
-        <button class="text-[#06C755] flex flex-col items-center"><i class="fas fa-home text-2xl"></i><span class="text-xs font-bold">首頁</span></button>
-        <button class="text-black flex flex-col items-center"><i class="fas fa-compass text-2xl"></i><span class="text-xs font-bold">探索</span></button>
-        <button class="text-black flex flex-col items-center"><i class="fas fa-clipboard-list text-2xl"></i><span class="text-xs font-bold">預約</span></button>
-    </footer>
-
     <script>
-        const CLOUDFLARE_WORKER_URL = 'https://aged-rice-2438.wetw-net3.workers.dev/';
-        let allCourses = [];
-        let allEquipment = [];
-        let currentCourse = null;
+        const CLOUDFLARE_URL = 'https://aged-rice-2438.wetw-net3.workers.dev/';
+        let allCourses = [], setupConfig = [], currentCourse = null;
 
         async function init() {
-            try {
-                // 1. 同時獲取課程與系統設定
-                const [courseRes, configRes] = await Promise.all([
-                    fetch(CLOUDFLARE_WORKER_URL),
-                    fetch(CLOUDFLARE_WORKER_URL + '?type=config')
-                ]);
-                
-                const courseResult = await courseRes.json();
-                const configResult = await configRes.json();
-                
-                allCourses = courseResult.data || [];
-                allEquipment = (configResult.config || []).filter(i => i.type === 'equipment');
-                
-                renderCourses();
-            } catch (e) {
-                document.getElementById('course-container').innerHTML = '<p class="text-center font-bold">載入失敗，請檢查網路。</p>';
-            }
+            const [cRes, sRes] = await Promise.all([fetch(CLOUDFLARE_URL), fetch(CLOUDFURL + '?type=config')]);
+            allCourses = (await cRes.json()).data || [];
+            setupConfig = (await sRes.json()).config || [];
+            render();
         }
 
-        function renderCourses() {
-            const container = document.getElementById('course-container');
-            if (allCourses.length === 0) {
-                container.innerHTML = '<p class="text-center font-black py-20 text-xl">目前沒有課程</p>';
-                return;
-            }
-
-            container.innerHTML = allCourses.map(item => {
-                const enrolled = parseInt(item['已報名人數']) || 0;
-                const total = parseInt(item['總名額']) || 1;
-                const progress = Math.min((enrolled / total) * 100, 100);
-                
-                return `
+        function render() {
+            document.getElementById('course-container').innerHTML = allCourses.map(c => `
                 <div class="course-card">
-                    <div class="relative aspect-[16/9] rounded-3xl overflow-hidden shadow-lg mb-5">
-                        <img src="${item['封面圖片'] || 'https://images.unsplash.com/photo-1546519638-68e109498ffc?w=800'}" class="w-full h-full object-cover">
-                        <div class="absolute top-4 left-4 px-4 py-1.5 bg-black text-white text-xs font-black rounded-lg">${item['運動類別'] || '熱門'}</div>
+                    <div class="aspect-[16/9] rounded-3xl overflow-hidden shadow-lg mb-5"><img src="${c['封面圖片']}" class="w-full h-full object-cover"></div>
+                    <h4 class="text-xl font-black mb-2">${c['課程名稱']}</h4>
+                    <div class="flex justify-between items-center mb-6">
+                        <span class="font-bold text-gray-600"><i class="far fa-calendar-alt text-[#06C755] mr-1"></i>${c['課程日期']}</span>
+                        <span class="text-[#06C755] font-black text-2xl font-mono">$${c['會員價']}</span>
                     </div>
-                    <div class="space-y-4">
-                        <div class="flex justify-between items-start">
-                            <h4 class="text-xl font-black text-black">${item['課程名稱']}</h4>
-                            <div class="text-right">
-                                <div class="text-[#06C755] font-black text-2xl font-mono leading-none">$${item['會員價'] || 0}</div>
-                                <div class="text-[10px] font-black mt-1 uppercase">Member Only</div>
-                            </div>
-                        </div>
-                        <div class="flex flex-col gap-1 text-base font-bold">
-                            <span><i class="far fa-calendar-alt text-[#06C755] w-6"></i> ${item['課程日期']}</span>
-                            <span><i class="fas fa-map-marker-alt text-[#06C755] w-6"></i> ${item['場地名稱'] || '活動場地'}</span>
-                        </div>
-                        
-                        <!-- 雙按鈕 -->
-                        <div class="grid grid-cols-2 gap-4 pt-2">
-                            <button onclick="openDetails('${item['課程ID']}')" class="btn-outline">詳細說明</button>
-                            <button onclick="openBooking('${item['課程ID']}')" class="btn-green shadow-lg shadow-green-100">立即預約</button>
-                        </div>
+                    <div class="grid grid-cols-2 gap-4">
+                        <button onclick="showDet('${c['課程ID']}')" class="border-2 border-gray-100 py-3 rounded-xl font-bold">詳細說明</button>
+                        <button onclick="showBook('${c['課程ID']}')" class="btn-green shadow-lg">立即預約</button>
                     </div>
-                </div>`;
-            }).join('');
+                </div>`).join('');
         }
 
-        // 開啟詳細說明
-        function openDetails(courseId) {
-            const course = allCourses.find(c => c['課程ID'] === courseId);
-            if (!course) return;
-
-            document.getElementById('details-title').innerText = course['課程名稱'];
-            document.getElementById('details-body').innerHTML = `
-                <div class="space-y-8">
-                    <div>
-                        <h5 class="text-lg font-black border-l-4 border-[#06C755] pl-3 mb-3">課程亮點</h5>
-                        <p class="text-gray-700 leading-relaxed font-bold">${course['課程亮點'] || '無資料'}</p>
-                    </div>
-                    <div>
-                        <h5 class="text-lg font-black border-l-4 border-[#06C755] pl-3 mb-3">詳細內容</h5>
-                        <p class="text-gray-700 leading-relaxed font-bold whitespace-pre-line">${course['課程內容'] || '無資料'}</p>
-                    </div>
-                    <div>
-                        <h5 class="text-lg font-black border-l-4 border-[#06C755] pl-3 mb-3">注意事項</h5>
-                        <p class="text-gray-700 leading-relaxed font-bold">${course['注意事項'] || '請準時出席並穿著合適運動服裝。'}</p>
-                    </div>
-                </div>
-            `;
+        function showDet(id) {
+            const c = allCourses.find(x => x['課程ID'] === id);
+            document.getElementById('det-title').innerText = c['課程名稱'];
+            document.getElementById('det-body').innerHTML = `
+                <div class="p-4 bg-green-50 rounded-xl font-bold text-green-700 mb-6">${c['課程亮點']}</div>
+                <div class="space-y-4 font-bold text-gray-700 leading-relaxed">${c['課程內容']}</div>
+                <div class="mt-10 pt-6 border-t font-bold text-red-500">注意事項：<br>${c['注意事項']}</div>`;
             document.getElementById('details-modal').style.display = 'flex';
-            document.body.style.overflow = 'hidden';
         }
 
-        // 開啟預約表單
-        function openBooking(courseId) {
-            currentCourse = allCourses.find(c => c['課程ID'] === courseId);
-            if (!currentCourse) return;
-
-            document.getElementById('booking-course-name').innerText = currentCourse['課程名稱'];
-            calculateTotal();
-
-            // 生成設備選單
-            const eqList = document.getElementById('equipment-list');
-            if (allEquipment.length === 0) {
-                eqList.innerHTML = '<p class="text-gray-400 text-sm italic">本課程無提供額外租借設備</p>';
-            } else {
-                eqList.innerHTML = allEquipment.map((eq, idx) => `
-                    <label class="flex items-center justify-between p-4 bg-gray-50 border-2 border-transparent rounded-xl cursor-pointer peer-checked:border-green-500 hover:border-gray-200 transition-all">
-                        <div class="flex items-center gap-3">
-                            <input type="checkbox" class="w-6 h-6 rounded-md accent-green-600" onchange="calculateTotal()" name="eq" value="${eq.options}" data-name="${eq.name}">
-                            <span class="font-bold text-lg">${eq.name}</span>
-                        </div>
-                        <span class="font-black text-blue-600">+$${eq.options}</span>
-                    </label>
-                `).join('');
-            }
-
+        function showBook(id) {
+            currentCourse = allCourses.find(x => x['課程ID'] === id);
+            document.getElementById('b-c-name').innerText = currentCourse['課程名稱'];
+            document.getElementById('b-total').innerText = '$' + currentCourse['會員價'];
+            
+            // 產生動態選單 (來自 Setup)
+            document.getElementById('extra-params').innerHTML = setupConfig.map(p => `
+                <div><label class="block font-black mb-2">${p.name}</label>
+                <select name="p_${p.name}">${p.options.split(',').map(o => `<option value="${o.trim()}">${o.trim()}</option>`).join('')}</select></div>`).join('');
+            
             document.getElementById('booking-modal').style.display = 'flex';
-            document.body.style.overflow = 'hidden';
         }
 
-        // 計算總額
-        function calculateTotal() {
-            let total = parseInt(currentCourse['會員價']) || 0;
-            const checks = document.querySelectorAll('input[name="eq"]:checked');
-            checks.forEach(c => total += parseInt(c.value));
-            document.getElementById('booking-total-price').innerText = '$' + total;
-        }
-
-        // 提交預約
-        document.getElementById('booking-form').onsubmit = async (e) => {
+        document.getElementById('book-form').onsubmit = async (e) => {
             e.preventDefault();
-            const btn = e.target.querySelector('button[type="submit"]');
-            btn.disabled = true;
-            btn.innerText = '正在提交預約...';
-
-            const selectedEq = Array.from(document.querySelectorAll('input[name="eq"]:checked')).map(c => c.getAttribute('data-name'));
+            const btn = document.getElementById('sub-btn');
+            btn.disabled = true; btn.innerText = '預約處理中...';
+            
+            const params = {};
+            document.querySelectorAll('#extra-params select').forEach(s => params[s.name] = s.value);
 
             const payload = {
                 type: 'booking_submit',
                 courseId: currentCourse['課程ID'],
                 courseName: currentCourse['課程名稱'],
-                userName: document.getElementById('user-name').value,
-                userPhone: document.getElementById('user-phone').value,
-                totalPrice: document.getElementById('booking-total-price').innerText,
-                equipment: selectedEq.join(',')
+                name: document.getElementById('u-name').value,
+                phone: document.getElementById('u-phone').value,
+                gender: document.getElementById('u-gender').value,
+                birth: document.getElementById('u-birth').value,
+                params: params,
+                total: document.getElementById('b-total').innerText
             };
 
-            try {
-                // 這裡會將預約資料送往 Cloudflare / GAS
-                const res = await fetch(CLOUDFLARE_WORKER_URL, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
-                });
-                
-                alert('🎉 預約完成！\n我們將會盡快與您聯絡確認細節。');
-                closeModal('booking-modal');
-                location.reload();
-            } catch (err) {
-                alert('預約提交失敗，請稍後再試。');
-                btn.disabled = false;
-                btn.innerText = '確認送出並完成預約';
-            }
+            await fetch(CLOUDFURL, { method: 'POST', body: JSON.stringify(payload) });
+            alert('🎉 預約成功！我們將盡快與您聯繫。');
+            location.reload();
         };
 
-        function closeModal(id) {
-            document.getElementById(id).style.display = 'none';
-            document.body.style.overflow = 'auto';
-        }
-
+        function closeMod(id) { document.getElementById(id).style.display = 'none'; }
+        const CLOUDFURL = CLOUDFLARE_URL;
         window.onload = init;
     </script>
 </body>
