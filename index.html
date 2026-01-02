@@ -14,28 +14,11 @@
             background-color: #f8fafc;
         }
 
-        .sidebar {
-            transition: all 0.3s ease;
-            width: 260px;
-        }
-
-        .sidebar.collapsed {
-            width: 80px;
-        }
-
-        .main-content {
-            transition: all 0.3s ease;
-            margin-left: 260px;
-        }
-
-        .main-content.expanded {
-            margin-left: 80px;
-        }
-
-        .nav-link.active {
-            background-color: #3b82f6;
-            color: white;
-        }
+        .sidebar { transition: all 0.3s ease; width: 260px; }
+        .sidebar.collapsed { width: 80px; }
+        .main-content { transition: all 0.3s ease; margin-left: 260px; }
+        .main-content.expanded { margin-left: 80px; }
+        .nav-link.active { background-color: #3b82f6; color: white; }
 
         .loading-spinner {
             border: 3px solid #f3f3f3;
@@ -46,24 +29,24 @@
             animation: spin 1s linear infinite;
         }
 
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
-        /* 自定義捲軸 */
-        ::-webkit-scrollbar {
-            width: 6px;
+        /* Modal Styles */
+        .modal-overlay {
+            background-color: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(4px);
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            z-index: 1000;
+            align-items: center; justify-content: center;
         }
-        ::-webkit-scrollbar-track {
-            background: #f1f1f1;
-        }
-        ::-webkit-scrollbar-thumb {
-            background: #cbd5e1;
-            border-radius: 10px;
-        }
-        ::-webkit-scrollbar-thumb:hover {
-            background: #94a3b8;
+        .modal-content {
+            background: white;
+            width: 90%; max-width: 900px;
+            max-height: 90vh;
+            overflow-y: auto;
+            border-radius: 1.5rem;
         }
     </style>
 </head>
@@ -79,7 +62,7 @@
         </div>
 
         <nav class="mt-6 px-4 space-y-2">
-            <a href="#" onclick="switchView('dashboard')" class="nav-link active flex items-center gap-4 p-3 rounded-xl transition-all hover:bg-slate-800">
+            <a href="#" onclick="switchView('dashboard')" class="nav-link flex items-center gap-4 p-3 rounded-xl transition-all hover:bg-slate-800">
                 <i class="fas fa-chart-pie w-5 text-center"></i>
                 <span class="nav-text">儀表板</span>
             </a>
@@ -96,174 +79,372 @@
                 <span class="nav-text">用戶分析</span>
             </a>
             <div class="pt-4 mt-4 border-t border-slate-800">
-                <!-- 修正：原本這裡沒有 onclick 導致 switchView 報錯 -->
                 <a href="#" onclick="switchView('settings')" class="nav-link flex items-center gap-4 p-3 rounded-xl transition-all hover:bg-slate-800">
                     <i class="fas fa-cog w-5 text-center text-slate-400"></i>
                     <span class="nav-text text-slate-400">系統設定</span>
                 </a>
             </div>
         </nav>
-
-        <!-- 側邊欄底部狀態 -->
-        <div class="absolute bottom-0 left-0 w-full p-6 bg-slate-900/50 backdrop-blur-sm border-t border-slate-800">
-            <div class="flex items-center gap-3">
-                <div class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-                <span class="text-xs text-slate-400">API 服務連線正常</span>
-            </div>
-        </div>
     </aside>
 
     <!-- 主要內容區 -->
     <main id="main-content" class="main-content min-h-screen">
-        
-        <!-- 頂部導航 -->
         <nav id="topnav" class="sticky top-0 z-40 bg-white/80 backdrop-blur-md border-b border-slate-200 px-6 py-3 flex items-center justify-between">
             <div class="flex items-center gap-4">
-                <button id="sidebar-toggle" class="p-2 hover:bg-slate-100 rounded-lg text-slate-500 transition-colors">
+                <button id="sidebar-toggle" class="p-2 hover:bg-slate-100 rounded-lg text-slate-500">
                     <i class="fas fa-bars text-lg"></i>
                 </button>
-                <div class="hidden md:flex items-center bg-slate-100 rounded-full px-4 py-1.5 gap-2 text-slate-400 focus-within:ring-2 focus-within:ring-blue-100 transition-all">
-                    <i class="fas fa-search text-sm"></i>
-                    <input type="text" placeholder="搜尋活動或用戶..." class="bg-transparent outline-none text-sm text-slate-600 w-48">
+                <div class="text-slate-700 font-semibold hidden md:block">
+                    單日課程管理 <span class="text-slate-400 font-normal mx-2">/</span> <span class="text-sm font-normal text-slate-500">SingleCourses</span>
                 </div>
             </div>
-
             <div class="flex items-center gap-4">
-                <button class="relative p-2 text-slate-500 hover:bg-slate-100 rounded-lg">
-                    <i class="far fa-bell text-lg"></i>
-                    <span class="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full border-2 border-white"></span>
-                </button>
-                <div class="h-8 w-px bg-slate-200 mx-2"></div>
-                <div class="flex items-center gap-3 cursor-pointer group">
-                    <div class="text-right hidden sm:block">
-                        <p class="text-sm font-semibold text-slate-700">管理員帳號</p>
-                        <p class="text-[10px] text-slate-400">LINE Developer Admin</p>
-                    </div>
-                    <div class="w-10 h-10 bg-gradient-to-tr from-blue-500 to-indigo-600 rounded-full flex items-center justify-center text-white font-bold shadow-md shadow-blue-100">
-                        JD
-                    </div>
-                    <i class="fas fa-chevron-down text-xs text-slate-400 group-hover:translate-y-0.5 transition-transform"></i>
+                <div class="text-right hidden sm:block">
+                    <p class="text-sm font-semibold text-slate-700">管理員</p>
                 </div>
+                <div class="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center text-white font-bold">JD</div>
             </div>
         </nav>
 
-        <!-- 內容視圖區 -->
         <div class="p-6">
-            <div id="app-content">
-                <!-- 預設載入狀態 -->
-                <div class="flex flex-col items-center justify-center min-h-[60vh] text-slate-400">
-                    <div class="loading-spinner mb-4"></div>
-                    <p>正在同步數據...</p>
-                </div>
-            </div>
+            <div id="app-content"></div>
         </div>
     </main>
 
-    <!-- JavaScript 邏輯 -->
+    <!-- 新增課程 Modal -->
+    <div id="course-modal" class="modal-overlay">
+        <div class="modal-content shadow-2xl animate-in zoom-in-95 duration-200">
+            <div class="sticky top-0 bg-white border-b px-8 py-4 flex items-center justify-between z-10">
+                <div>
+                    <h2 class="text-xl font-bold text-slate-800">新增單日課程</h2>
+                    <p class="text-xs text-slate-500">Sheet: SingleCourses | ID: 16NKF...o9_D4w</p>
+                </div>
+                <button onclick="closeCourseModal()" class="w-10 h-10 rounded-full hover:bg-slate-100 flex items-center justify-center text-slate-400">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <form id="course-form" class="p-8 space-y-10">
+                <!-- 1. 基本資訊 -->
+                <section>
+                    <h3 class="flex items-center gap-2 font-bold text-slate-800 mb-4 pb-2 border-b border-slate-100">
+                        <i class="fas fa-info-circle text-blue-500"></i> 基本資訊
+                    </h3>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div class="md:col-span-2">
+                            <label class="block text-sm font-medium text-slate-600 mb-1">課程名稱 *</label>
+                            <input type="text" name="courseName" required class="w-full border border-slate-200 rounded-lg p-2.5 focus:ring-2 focus:ring-blue-500 outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-slate-600 mb-1">運動類別</label>
+                            <select name="category" class="w-full border border-slate-200 rounded-lg p-2.5">
+                                <option value="籃球">籃球</option>
+                                <option value="羽球">羽球</option>
+                                <option value="足球">足球</option>
+                                <option value="網球">網球</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-slate-600 mb-1">年齡分級</label>
+                            <input type="text" name="ageGroup" placeholder="例如：U12" class="w-full border border-slate-200 rounded-lg p-2.5">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-slate-600 mb-1">難度等級</label>
+                            <select name="difficulty" class="w-full border border-slate-200 rounded-lg p-2.5">
+                                <option value="初階">初階</option>
+                                <option value="中階">中階</option>
+                                <option value="高階">高階</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-slate-600 mb-1">標籤分類</label>
+                            <input type="text" name="tags" placeholder="標籤以逗號隔開" class="w-full border border-slate-200 rounded-lg p-2.5">
+                        </div>
+                    </div>
+                </section>
+
+                <!-- 2. 時間與地點 -->
+                <section>
+                    <h3 class="flex items-center gap-2 font-bold text-slate-800 mb-4 pb-2 border-b border-slate-100">
+                        <i class="fas fa-clock text-blue-500"></i> 時間與場地
+                    </h3>
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+                        <div class="md:col-span-2">
+                            <label class="block text-sm font-medium text-slate-600 mb-1">開放報名日 ~ 截止報名日</label>
+                            <div class="flex items-center gap-2">
+                                <input type="date" name="regStart" class="w-full border border-slate-200 rounded-lg p-2.5">
+                                <span>-</span>
+                                <input type="date" name="regEnd" class="w-full border border-slate-200 rounded-lg p-2.5">
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-slate-600 mb-1">課程日期 *</label>
+                            <input type="date" name="courseDate" required class="w-full border border-slate-200 rounded-lg p-2.5">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-slate-600 mb-1">時長 (分鐘)</label>
+                            <input type="number" name="duration" value="60" class="w-full border border-slate-200 rounded-lg p-2.5">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-slate-600 mb-1">開始時間</label>
+                            <input type="time" name="startTime" class="w-full border border-slate-200 rounded-lg p-2.5">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-slate-600 mb-1">結束時間</label>
+                            <input type="time" name="endTime" class="w-full border border-slate-200 rounded-lg p-2.5">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-slate-600 mb-1">教練姓名 (ID)</label>
+                            <input type="text" name="coachInfo" placeholder="姓名 (ID)" class="w-full border border-slate-200 rounded-lg p-2.5">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-slate-600 mb-1">場地名稱 (區域)</label>
+                            <input type="text" name="venueInfo" placeholder="場地 (區域)" class="w-full border border-slate-200 rounded-lg p-2.5">
+                        </div>
+                    </div>
+                </section>
+
+                <!-- 3. 價格與名額 -->
+                <section>
+                    <h3 class="flex items-center gap-2 font-bold text-slate-800 mb-4 pb-2 border-b border-slate-100">
+                        <i class="fas fa-dollar-sign text-blue-500"></i> 價格與名額
+                    </h3>
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
+                        <div>
+                            <label class="block text-sm font-medium text-slate-600 mb-1">原價</label>
+                            <input type="number" name="price" placeholder="0" class="w-full border border-slate-200 rounded-lg p-2.5">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-slate-600 mb-1">早鳥價 (截止日)</label>
+                            <div class="flex flex-col gap-1">
+                                <input type="number" name="earlyBirdPrice" placeholder="早鳥價" class="w-full border border-slate-200 rounded-lg p-2.5">
+                                <input type="date" name="earlyBirdEnd" class="text-xs border border-slate-200 rounded-lg p-1.5">
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-slate-600 mb-1">會員價 / 親友價</label>
+                            <div class="flex gap-1">
+                                <input type="number" name="memberPrice" placeholder="會員" class="w-1/2 border border-slate-200 rounded-lg p-2.5 text-sm">
+                                <input type="number" name="friendPrice" placeholder="親友" class="w-1/2 border border-slate-200 rounded-lg p-2.5 text-sm">
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-slate-600 mb-1">名額 (總額/最少)</label>
+                            <div class="flex gap-1">
+                                <input type="number" name="quota" placeholder="總名額" class="w-1/2 border border-slate-200 rounded-lg p-2.5 text-sm">
+                                <input type="number" name="minClass" placeholder="最少" class="w-1/2 border border-slate-200 rounded-lg p-2.5 text-sm">
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- 4. 詳細資料 -->
+                <section>
+                    <h3 class="flex items-center gap-2 font-bold text-slate-800 mb-4 pb-2 border-b border-slate-100">
+                        <i class="fas fa-file-alt text-blue-500"></i> 詳細內容與多媒體
+                    </h3>
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-slate-600 mb-1">封面圖片網址 (URL)</label>
+                            <input type="text" name="coverImage" placeholder="https://..." class="w-full border border-slate-200 rounded-lg p-2.5">
+                        </div>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <label class="block text-sm font-medium text-slate-600 mb-1">課程亮點</label>
+                                <textarea name="highlights" rows="3" class="w-full border border-slate-200 rounded-lg p-2.5 text-sm"></textarea>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-slate-600 mb-1">適合對象</label>
+                                <textarea name="suitableFor" rows="3" class="w-full border border-slate-200 rounded-lg p-2.5 text-sm"></textarea>
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-slate-600 mb-1">課程內容</label>
+                            <textarea name="content" rows="4" class="w-full border border-slate-200 rounded-lg p-2.5 text-sm"></textarea>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-slate-600 mb-1">注意事項</label>
+                            <textarea name="notes" rows="2" class="w-full border border-slate-200 rounded-lg p-2.5 text-sm"></textarea>
+                        </div>
+                        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-slate-600 mb-1">性別限制</label>
+                                <select name="genderLimit" class="w-full border border-slate-200 rounded-lg p-2.5">
+                                    <option value="無">無</option>
+                                    <option value="限男性">限男性</option>
+                                    <option value="限女性">限女性</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-slate-600 mb-1">課程狀態</label>
+                                <select name="status" class="w-full border border-slate-200 rounded-lg p-2.5">
+                                    <option value="草稿">草稿</option>
+                                    <option value="發佈">發佈</option>
+                                    <option value="隱藏">隱藏</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-slate-600 mb-1">排序權重</label>
+                                <input type="number" name="weight" value="0" class="w-full border border-slate-200 rounded-lg p-2.5">
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <div class="sticky bottom-0 bg-white pt-6 pb-2 border-t flex justify-end gap-3">
+                    <button type="button" onclick="closeCourseModal()" class="px-6 py-2.5 rounded-xl border border-slate-200 text-slate-500 hover:bg-slate-50 transition-all font-medium">取消</button>
+                    <button type="submit" class="px-8 py-2.5 rounded-xl bg-blue-600 text-white hover:bg-blue-700 shadow-lg shadow-blue-100 transition-all font-bold">確認儲存課程</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <script>
         const sidebar = document.getElementById('sidebar');
         const mainContent = document.getElementById('main-content');
         const sidebarToggle = document.getElementById('sidebar-toggle');
         const appContent = document.getElementById('app-content');
+        const courseModal = document.getElementById('course-modal');
+        const courseForm = document.getElementById('course-form');
 
-        // 側邊欄切換邏輯
+        // 常數：Google Sheet 資訊
+        const SPREADSHEET_ID = '16NKFioe-lrYmpFv20tYEg6p6uo9_D4wSsS2YoiUWKko';
+        const SHEET_NAME = 'SingleCourses';
+
+        // 側邊欄切換
         sidebarToggle.addEventListener('click', () => {
             sidebar.classList.toggle('collapsed');
             mainContent.classList.toggle('expanded');
-            
             const isCollapsed = sidebar.classList.contains('collapsed');
             document.querySelectorAll('.nav-text, .logo-text').forEach(el => {
                 el.style.display = isCollapsed ? 'none' : 'block';
             });
         });
 
-        // 視圖內容定義
+        // 彈窗控制
+        function openCourseModal() {
+            courseModal.style.display = 'flex';
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeCourseModal() {
+            courseModal.style.display = 'none';
+            document.body.style.overflow = 'auto';
+            courseForm.reset();
+        }
+
+        // 表單提交處理
+        courseForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const formData = new FormData(courseForm);
+            const data = Object.fromEntries(formData.entries());
+            
+            console.log('準備提交課程數據至 SingleCourses:', data);
+            
+            /* 提示：這裡您可以串接 Google Apps Script
+            google.script.run.withSuccessHandler(() => {
+                alert('課程已成功儲存至 Google Sheet！');
+                closeCourseModal();
+                switchView('activities');
+            }).addNewCourse(data);
+            */
+            
+            alert('課程已暫存 (模擬成功)！\n詳細資訊已輸出至 Console。\n目標 Sheet: ' + SHEET_NAME);
+            closeCourseModal();
+        });
+
         const views = {
             dashboard: `
                 <div class="animate-in fade-in duration-500">
-                    <div class="flex items-center justify-between mb-8">
-                        <div>
-                            <h1 class="text-2xl font-bold text-slate-800">數據概覽</h1>
-                            <p class="text-slate-500">歡迎回來，這是您目前的 LINE 活動表現指標。</p>
-                        </div>
-                        <button class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2">
-                            <i class="fas fa-plus text-sm"></i> 建立新活動
-                        </button>
-                    </div>
-
-                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-                        ${generateStatCard('總點擊數', '42,904', 'fa-mouse-pointer', 'text-blue-600', '+12.5%')}
-                        ${generateStatCard('進行中活動', '8', 'fa-calendar-check', 'text-green-600', '0')}
-                        ${generateStatCard('LINE 累計用戶', '1,280', 'fa-user-plus', 'text-indigo-600', '+5.2%')}
-                        ${generateStatCard('平均點擊率', '18.4%', 'fa-percent', 'text-orange-600', '-2.1%')}
-                    </div>
-
-                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                        <div class="lg:col-span-2 bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
-                            <div class="flex items-center justify-between mb-6">
-                                <h3 class="font-bold text-slate-700">近 7 日點擊走勢</h3>
-                                <select class="bg-slate-50 border-none outline-none text-xs text-slate-500 px-2 py-1 rounded">
-                                    <option>過去 7 天</option>
-                                    <option>過去 30 天</option>
-                                </select>
-                            </div>
-                            <div class="h-64 flex items-end justify-between gap-2">
-                                ${[40, 60, 45, 90, 70, 85, 100].map(h => `
-                                    <div class="flex-1 bg-blue-100 hover:bg-blue-500 transition-all rounded-t-lg group relative cursor-pointer" style="height: ${h}%">
-                                        <div class="absolute -top-8 left-1/2 -translate-x-1/2 bg-slate-800 text-white text-[10px] px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">${h * 10} 點擊</div>
-                                    </div>
-                                `).join('')}
-                            </div>
-                            <div class="flex justify-between mt-4 text-[10px] text-slate-400 uppercase font-medium">
-                                <span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span><span>Sun</span>
-                            </div>
-                        </div>
-                        
-                        <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
-                            <h3 class="font-bold text-slate-700 mb-6">LINE 外掛狀態</h3>
-                            <div class="space-y-6">
-                                ${generateLineStatusItem('訊息推送介面', '正常連線', 'bg-green-500')}
-                                ${generateLineStatusItem('LIFF 網頁嵌入', '正常連線', 'bg-green-500')}
-                                ${generateLineStatusItem('用戶驗證模組', '更新中', 'bg-blue-500')}
-                                ${generateLineStatusItem('資料庫同步', '延遲 2ms', 'bg-yellow-500')}
-                            </div>
-                        </div>
+                    <h1 class="text-2xl font-bold text-slate-800 mb-6">數據概覽</h1>
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+                        ${generateStatCard('今日報名數', '24', 'fa-user-edit', 'text-blue-500', '+5')}
+                        ${generateStatCard('總課程數', '156', 'fa-book', 'text-indigo-500', '0')}
+                        ${generateStatCard('場地使用率', '82%', 'fa-map-marker-alt', 'text-green-500', '+2%')}
+                        ${generateStatCard('待處理候補', '12', 'fa-clock', 'text-orange-500', '-3')}
                     </div>
                 </div>
             `,
             activities: `
                 <div class="animate-in slide-in-from-bottom-4 duration-500">
                     <div class="flex items-center justify-between mb-8">
-                        <h1 class="text-2xl font-bold text-slate-800">活動管理清單</h1>
+                        <div>
+                            <h1 class="text-2xl font-bold text-slate-800">單日課程管理</h1>
+                            <p class="text-slate-500 text-sm">管理 SingleCourses 表格中的所有課程資料</p>
+                        </div>
+                        <div class="flex gap-2">
+                            <button class="bg-slate-100 text-slate-600 px-4 py-2 rounded-lg hover:bg-slate-200 transition-colors flex items-center gap-2 text-sm font-medium">
+                                <i class="fas fa-file-export"></i> 匯出 CSV
+                            </button>
+                            <button onclick="openCourseModal()" class="bg-blue-600 text-white px-5 py-2 rounded-lg hover:bg-blue-700 shadow-lg shadow-blue-100 transition-all flex items-center gap-2 font-bold">
+                                <i class="fas fa-plus"></i> 新增單日課程
+                            </button>
+                        </div>
                     </div>
+
+                    <!-- 快速過濾 -->
+                    <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 mb-6 flex flex-wrap gap-4 items-center">
+                        <select class="border border-slate-200 rounded-lg px-3 py-1.5 text-sm outline-none focus:ring-2 focus:ring-blue-100">
+                            <option>所有運動類別</option>
+                            <option>籃球</option>
+                            <option>羽球</option>
+                        </select>
+                        <select class="border border-slate-200 rounded-lg px-3 py-1.5 text-sm outline-none focus:ring-2 focus:ring-blue-100">
+                            <option>所有狀態</option>
+                            <option>發佈中</option>
+                            <option>草稿</option>
+                        </select>
+                        <div class="flex-grow"></div>
+                        <div class="relative w-64">
+                            <i class="fas fa-search absolute left-3 top-2.5 text-slate-400 text-xs"></i>
+                            <input type="text" placeholder="搜尋課程名稱或教練..." class="w-full pl-9 pr-4 py-2 border border-slate-200 rounded-lg text-sm">
+                        </div>
+                    </div>
+
                     <div class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
                         <table class="w-full text-left">
-                            <thead class="bg-slate-50 text-slate-500 text-sm uppercase">
+                            <thead class="bg-slate-50 text-slate-500 text-xs uppercase tracking-wider">
                                 <tr>
-                                    <th class="px-6 py-4 font-semibold">活動名稱</th>
-                                    <th class="px-6 py-4 font-semibold">狀態</th>
-                                    <th class="px-6 py-4 font-semibold">點擊數</th>
-                                    <th class="px-6 py-4 font-semibold">建立日期</th>
-                                    <th class="px-6 py-4 font-semibold">操作</th>
+                                    <th class="px-6 py-4 font-bold">課程資訊 / 日期</th>
+                                    <th class="px-6 py-4 font-bold">場地 & 教練</th>
+                                    <th class="px-6 py-4 font-bold">名額狀態</th>
+                                    <th class="px-6 py-4 font-bold">價格 (原/會)</th>
+                                    <th class="px-6 py-4 font-bold text-right">操作</th>
                                 </tr>
                             </thead>
-                            <tbody class="divide-y divide-slate-100">
-                                ${[1, 2, 3, 4, 5].map(i => `
-                                    <tr class="hover:bg-slate-50 transition-colors">
-                                        <td class="px-6 py-4">
-                                            <div class="font-medium text-slate-700">2026 春季促銷活動 - 領券專用 ${i}</div>
-                                            <div class="text-xs text-slate-400">ID: act_20260${i}</div>
-                                        </td>
-                                        <td class="px-6 py-4">
-                                            <span class="px-2 py-1 bg-green-100 text-green-600 text-[10px] font-bold rounded-full">進行中</span>
-                                        </td>
-                                        <td class="px-6 py-4 font-mono text-sm">1,20${i}</td>
-                                        <td class="px-6 py-4 text-sm text-slate-500">2026-01-0${i}</td>
-                                        <td class="px-6 py-4">
-                                            <div class="flex items-center gap-2">
-                                                <button class="p-2 hover:bg-blue-50 text-blue-500 rounded-lg"><i class="fas fa-edit"></i></button>
-                                                <button class="p-2 hover:bg-red-50 text-red-500 rounded-lg"><i class="fas fa-trash"></i></button>
+                            <tbody class="divide-y divide-slate-100 text-sm">
+                                ${[1, 2, 3].map(i => `
+                                    <tr class="hover:bg-slate-50/50 transition-colors">
+                                        <td class="px-6 py-5">
+                                            <div class="flex items-center gap-3">
+                                                <div class="w-10 h-10 bg-slate-100 rounded-lg overflow-hidden flex-shrink-0 flex items-center justify-center">
+                                                    <i class="fas fa-image text-slate-300"></i>
+                                                </div>
+                                                <div>
+                                                    <div class="font-bold text-slate-700">台北週末籃球菁英班 ${i}</div>
+                                                    <div class="text-xs text-blue-500 mt-0.5"><i class="far fa-calendar-alt mr-1"></i> 2026-03-15 (日)</div>
+                                                </div>
                                             </div>
+                                        </td>
+                                        <td class="px-6 py-5">
+                                            <div class="text-slate-600 font-medium">中正運動中心 (A區)</div>
+                                            <div class="text-xs text-slate-400 mt-1"><i class="fas fa-user-tie mr-1"></i> 王大明 教練</div>
+                                        </td>
+                                        <td class="px-6 py-5">
+                                            <div class="flex items-center gap-2 mb-1">
+                                                <div class="w-24 h-1.5 bg-slate-100 rounded-full overflow-hidden">
+                                                    <div class="bg-green-500 h-full" style="width: 70%"></div>
+                                                </div>
+                                                <span class="text-[10px] font-bold text-slate-500">14/20</span>
+                                            </div>
+                                            <span class="text-[10px] bg-green-100 text-green-600 px-1.5 py-0.5 rounded font-bold uppercase tracking-tight">報名中</span>
+                                        </td>
+                                        <td class="px-6 py-5">
+                                            <div class="font-mono">$800 / <span class="text-blue-600 font-bold">$650</span></div>
+                                        </td>
+                                        <td class="px-6 py-5 text-right">
+                                            <button class="p-2 hover:bg-blue-50 text-blue-500 rounded-lg transition-colors"><i class="fas fa-edit"></i></button>
+                                            <button class="p-2 hover:bg-slate-50 text-slate-400 rounded-lg transition-colors"><i class="fas fa-ellipsis-v"></i></button>
                                         </td>
                                     </tr>
                                 `).join('')}
@@ -272,127 +453,39 @@
                     </div>
                 </div>
             `,
-            'line-settings': `
-                <div class="max-w-4xl mx-auto py-8">
-                    <div class="bg-white rounded-2xl p-8 shadow-sm border border-slate-100">
-                        <div class="flex items-center gap-4 mb-8">
-                            <div class="w-12 h-12 bg-green-100 text-green-600 rounded-xl flex items-center justify-center text-2xl">
-                                <i class="fab fa-line"></i>
-                            </div>
-                            <div>
-                                <h2 class="text-xl font-bold text-slate-800">LINE Channel 設定</h2>
-                                <p class="text-sm text-slate-500">管理您 LINE 官方帳號與外掛的對接金鑰。</p>
-                            </div>
-                        </div>
-                        <div class="space-y-6">
-                            <div>
-                                <label class="block text-sm font-medium text-slate-700 mb-2">Channel ID</label>
-                                <input type="text" value="1657890XXX" readonly class="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-2 text-slate-500 outline-none">
-                            </div>
-                            <div>
-                                <label class="block text-sm font-medium text-slate-700 mb-2">Channel Secret</label>
-                                <div class="relative">
-                                    <input type="password" value="••••••••••••••••" readonly class="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-2 text-slate-500 outline-none">
-                                    <button class="absolute right-3 top-2 text-blue-500 text-xs hover:underline">顯示</button>
-                                </div>
-                            </div>
-                            <div class="p-4 bg-yellow-50 rounded-xl border border-yellow-100 flex gap-4">
-                                <i class="fas fa-exclamation-triangle text-yellow-500 mt-1"></i>
-                                <div class="text-xs text-yellow-700 leading-relaxed">
-                                    請確保 Webhook URL 指向正確的後端地址：<br>
-                                    <span class="font-mono bg-white/50 px-1">https://api.activitylink.tw/line/webhook</span>
-                                </div>
-                            </div>
-                            <div class="pt-4 flex justify-end">
-                                <button class="bg-slate-800 text-white px-6 py-2 rounded-lg hover:bg-slate-900 transition-all">儲存並測試連線</button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            `,
-            analytics: `
-                <div class="flex items-center justify-center min-h-[50vh] text-slate-400 italic">
-                    <div class="text-center">
-                        <i class="fas fa-tools text-4xl mb-4 block text-slate-200"></i>
-                        用戶分析模組正在開發中...
-                    </div>
-                </div>
-            `,
-            settings: `
-                <div class="max-w-4xl mx-auto py-8">
-                    <div class="bg-white rounded-2xl p-8 shadow-sm border border-slate-100">
-                        <h2 class="text-xl font-bold text-slate-800 mb-6">系統設定</h2>
-                        <p class="text-slate-500">這裡可以調整系統全域參數。</p>
-                    </div>
-                </div>
-            `
+            'line-settings': `<div class="p-8 text-center text-slate-400">LINE 設定開發中</div>`,
+            analytics: `<div class="p-8 text-center text-slate-400">數據分析開發中</div>`,
+            settings: `<div class="p-8 text-center text-slate-400">系統設定開發中</div>`
         };
 
-        // 輔助函式：產生數據卡片
         function generateStatCard(title, value, icon, iconColor, trend) {
-            const isTrendPositive = trend.startsWith('+');
-            const trendColor = trend === '0' ? 'text-slate-400' : (isTrendPositive ? 'text-green-500' : 'text-red-500');
-            const trendIcon = isTrendPositive ? 'fa-arrow-up' : (trend === '0' ? '' : 'fa-arrow-down');
-
             return `
-                <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 hover:shadow-md transition-shadow">
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
                     <div class="flex items-center justify-between mb-4">
-                        <div class="w-10 h-10 bg-slate-50 rounded-lg flex items-center justify-center ${iconColor}">
-                            <i class="fas ${icon}"></i>
-                        </div>
-                        <span class="text-[10px] font-bold ${trendColor} bg-slate-50 px-2 py-1 rounded-full">
-                            ${trendIcon ? `<i class="fas ${trendIcon} mr-1"></i>` : ''} ${trend}
+                        <div class="w-10 h-10 bg-slate-50 rounded-lg flex items-center justify-center ${iconColor}"><i class="fas ${icon}"></i></div>
+                        <span class="text-xs font-bold ${trend.startsWith('+') ? 'text-green-500' : (trend === '0' ? 'text-slate-400' : 'text-red-500')}">
+                            ${trend}
                         </span>
                     </div>
-                    <p class="text-slate-400 text-xs mb-1">${title}</p>
+                    <p class="text-slate-400 text-xs">${title}</p>
                     <h2 class="text-2xl font-bold text-slate-800">${value}</h2>
                 </div>
             `;
         }
 
-        // 輔助函式：產生 LINE 狀態列
-        function generateLineStatusItem(name, status, dotColor) {
-            return `
-                <div class="flex items-center justify-between p-3 rounded-xl hover:bg-slate-50 transition-colors">
-                    <div class="flex items-center gap-3">
-                        <div class="w-2 h-2 ${dotColor} rounded-full"></div>
-                        <span class="text-sm font-medium text-slate-600">${name}</span>
-                    </div>
-                    <span class="text-xs text-slate-400">${status}</span>
-                </div>
-            `;
-        }
-
-        // 切換視圖主函式
         function switchView(viewName) {
-            // 更新 Nav Active 狀態
             document.querySelectorAll('.nav-link').forEach(link => {
                 link.classList.remove('active');
-                
-                // 修正：檢查 onclick 屬性是否存在，避免 null 錯誤
                 const onclickAttr = link.getAttribute('onclick');
-                if (onclickAttr && onclickAttr.includes(viewName)) {
-                    link.classList.add('active');
-                }
+                if (onclickAttr && onclickAttr.includes(viewName)) link.classList.add('active');
             });
-
-            // 模擬載入效果
-            appContent.innerHTML = `
-                <div class="flex flex-col items-center justify-center min-h-[60vh] text-slate-400">
-                    <div class="loading-spinner mb-4"></div>
-                    <p>載入中...</p>
-                </div>
-            `;
-
+            appContent.innerHTML = `<div class="flex flex-col items-center justify-center min-h-[50vh]"><div class="loading-spinner mb-4"></div><p class="text-slate-400">讀取中...</p></div>`;
             setTimeout(() => {
-                appContent.innerHTML = views[viewName] || `<div class="p-8 text-center text-slate-400">找不到此頁面內容</div>`;
+                appContent.innerHTML = views[viewName] || views.dashboard;
             }, 300);
         }
 
-        // 初始載入
-        window.onload = () => {
-            switchView('dashboard');
-        };
+        window.onload = () => switchView('activities');
     </script>
 </body>
 </html>
