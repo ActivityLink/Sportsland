@@ -7,22 +7,21 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700;900&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&display=swap');
         
         :root {
             --line-green: #06C755;
-            --line-blue: #007AFF; /* 藍色背景色 */
+            --line-blue: #007AFF; 
         }
 
         body { 
             font-family: 'Noto Sans TC', sans-serif; 
             background-color: #FFFFFF;
-            color: #111111;
+            color: #000000; /* 全局使用純黑 */
         }
 
         .no-scrollbar::-webkit-scrollbar { display: none; }
 
-        /* UberEats 卡片陰影與動畫 */
         .course-card {
             transition: transform 0.2s ease;
         }
@@ -30,95 +29,95 @@
             transform: scale(0.98);
         }
 
-        /* 骨架屏動畫 */
+        /* 骨架屏 */
         @keyframes shimmer {
             0% { background-position: -1000px 0; }
             100% { background-position: 1000px 0; }
         }
         .skeleton {
-            background: linear-gradient(90deg, #f0f0f0 25%, #f8f8f8 50%, #f0f0f0 75%);
+            background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
             background-size: 1000px 100%;
             animation: shimmer 2s infinite linear;
         }
     </style>
 </head>
-<body class="pb-24">
+<body class="pb-28">
 
     <!-- 頂部導航 -->
-    <header class="sticky top-0 z-50 bg-white/90 backdrop-blur-md px-5 py-3 flex items-center justify-between border-b border-gray-100">
+    <header class="sticky top-0 z-50 bg-white px-5 py-4 flex items-center justify-between border-b-2 border-gray-100">
         <div class="flex items-center gap-2">
-            <div class="w-8 h-8 bg-[#06C755] rounded-lg flex items-center justify-center">
-                <i class="fas fa-comment-dots text-white text-xs"></i>
+            <div class="w-9 h-9 bg-[#06C755] rounded-lg flex items-center justify-center">
+                <i class="fas fa-comment-dots text-white text-lg"></i>
             </div>
-            <h1 class="text-xl font-black tracking-tighter">ActivityLink</h1>
+            <h1 class="text-2xl font-black tracking-tighter">ActivityLink</h1>
         </div>
-        <div class="flex items-center gap-4">
-            <button class="text-gray-400"><i class="fas fa-search"></i></button>
-            <button class="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-gray-400">
-                <i class="fas fa-user text-sm"></i>
+        <div class="flex items-center gap-5">
+            <button class="text-black text-xl"><i class="fas fa-search"></i></button>
+            <button class="w-10 h-10 rounded-full bg-black flex items-center justify-center text-white">
+                <i class="fas fa-user"></i>
             </button>
         </div>
     </header>
 
     <!-- 主 Banner (等比縮放) -->
-    <div class="w-full overflow-hidden">
+    <div class="w-full">
         <img src="https://aiwe.cc/wp-content/uploads/2025/12/3486bc19dc6317e16bf4f1449ec52ae4.jpg" 
              class="w-full h-auto block" 
              alt="ActivityLink Banner">
     </div>
 
-    <!-- 功能快速選單 (Banner 下方，左右各一，藍色背景) -->
-    <div class="px-5 py-4 grid grid-cols-2 gap-3">
-        <button class="flex items-center justify-center gap-3 bg-blue-600 h-16 rounded-xl text-white shadow-md active:bg-blue-700 transition-colors">
+    <!-- 功能快速選單 (單一藍色 BAR 條) -->
+    <div class="w-full bg-blue-600 flex divide-x divide-blue-500 shadow-md">
+        <button class="flex-1 py-4 flex items-center justify-center gap-3 text-white active:bg-blue-700 transition-colors">
             <i class="fas fa-calendar-star text-lg"></i>
-            <span class="font-bold">活動專區</span>
+            <span class="font-bold text-lg">活動專區</span>
         </button>
-        <button class="flex items-center justify-center gap-3 bg-blue-600 h-16 rounded-xl text-white shadow-md active:bg-blue-700 transition-colors">
+        <button class="flex-1 py-4 flex items-center justify-center gap-3 text-white active:bg-blue-700 transition-colors">
             <i class="fas fa-id-card text-lg"></i>
-            <span class="font-bold">會員專區</span>
+            <span class="font-bold text-lg">會員專區</span>
         </button>
     </div>
 
-    <!-- 課程清單區 (UberEats Style) -->
-    <main class="px-5 mt-4">
-        <div class="flex items-center justify-between mb-6">
-            <h3 class="text-lg font-black tracking-tight">推薦熱門課程</h3>
-            <span class="text-xs font-bold text-gray-400 uppercase tracking-widest">查看全部</span>
+    <!-- 課程清單區 -->
+    <main class="px-5 mt-8">
+        <div class="flex items-center justify-between mb-8">
+            <h3 class="text-2xl font-black tracking-tight">推薦熱門課程</h3>
+            <span class="text-sm font-bold text-blue-600">查看全部</span>
         </div>
 
         <!-- 課程容器 -->
-        <div id="course-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-y-10 gap-x-8">
-            <!-- 初始骨架屏 -->
-            <div class="space-y-4 skeleton-wrapper">
+        <div id="course-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-y-12 gap-x-8">
+            <!-- 初始載入骨架 -->
+            <div class="space-y-4">
                 <div class="aspect-[16/9] skeleton rounded-2xl"></div>
-                <div class="h-6 skeleton rounded w-3/4"></div>
-                <div class="h-4 skeleton rounded w-1/2"></div>
+                <div class="h-8 skeleton rounded w-3/4"></div>
+                <div class="h-6 skeleton rounded w-1/2"></div>
             </div>
-            <div class="space-y-4 skeleton-wrapper">
+            <div class="space-y-4">
                 <div class="aspect-[16/9] skeleton rounded-2xl"></div>
-                <div class="h-6 skeleton rounded w-3/4"></div>
-                <div class="h-4 skeleton rounded w-1/2"></div>
+                <div class="h-8 skeleton rounded w-3/4"></div>
+                <div class="h-6 skeleton rounded w-1/2"></div>
             </div>
         </div>
     </main>
 
-    <!-- 底部固定導覽 (LINE OA 風格) -->
-    <footer class="fixed bottom-0 left-0 w-full bg-white border-t border-gray-100 px-6 py-3 flex justify-between items-center z-50">
+    <!-- 底部導覽 (提高文字與圖示對比) -->
+    <footer class="fixed bottom-0 left-0 w-full bg-white border-t-2 border-gray-100 px-6 py-4 flex justify-between items-center z-50">
         <button class="flex flex-col items-center gap-1 text-[#06C755]">
-            <i class="fas fa-home text-lg"></i>
-            <span class="text-[10px] font-bold">首頁</span>
+            <i class="fas fa-home text-2xl"></i>
+            <span class="text-xs font-bold">首頁</span>
         </button>
-        <button class="flex flex-col items-center gap-1 text-gray-300">
-            <i class="fas fa-compass text-lg"></i>
-            <span class="text-[10px] font-bold">探索活動</span>
+        <button class="flex flex-col items-center gap-1 text-black">
+            <i class="fas fa-compass text-2xl"></i>
+            <span class="text-xs font-bold">探索</span>
         </button>
-        <button class="flex flex-col items-center gap-1 text-gray-300">
-            <i class="fas fa-clipboard-list text-lg"></i>
-            <span class="text-[10px] font-bold">我的預約</span>
+        <button class="flex flex-col items-center gap-1 text-black">
+            <i class="fas fa-clipboard-list text-2xl"></i>
+            <span class="text-xs font-bold">預約</span>
         </button>
-        <button class="flex flex-col items-center gap-1 text-gray-300">
-            <i class="fas fa-user-circle text-lg"></i>
-            <span class="text-[10px] font-bold">個人帳號</span>
+        <button class="flex flex-col items-center gap-1 text-black">
+            <i class="fas fa-user-circle text-2xl"></i>
+            <span class="text-xs font-bold">帳號</span>
         </button>
     </footer>
 
@@ -136,13 +135,13 @@
                     throw new Error(result.message);
                 }
             } catch (error) {
-                container.innerHTML = `<div class="col-span-full py-20 text-center text-gray-400">無法載入課程，請稍後再試。</div>`;
+                container.innerHTML = `<div class="col-span-full py-20 text-center text-black font-bold">無法載入課程，請檢查連線。</div>`;
             }
         }
 
         function renderCourses(data) {
             if (!data || data.length === 0) {
-                container.innerHTML = `<div class="col-span-full py-20 text-center text-gray-400 font-bold">目前沒有開放中的課程。</div>`;
+                container.innerHTML = `<div class="col-span-full py-20 text-center text-black font-black text-xl">目前沒有開放中的課程</div>`;
                 return;
             }
 
@@ -152,55 +151,54 @@
                 const progress = Math.min((enrolled / total) * 100, 100);
                 const cover = item['封面圖片'] || 'https://images.unsplash.com/photo-1546519638-68e109498ffc?w=800';
                 
-                // 格式化日期 (處理 GAS 傳來的日期)
                 const dateObj = new Date(item['課程日期']);
                 const formattedDate = isNaN(dateObj) ? item['課程日期'] : dateObj.toLocaleDateString('zh-TW', { month: 'short', day: 'numeric', weekday: 'short' });
 
                 return `
                     <div class="course-card group">
                         <!-- 圖片區 -->
-                        <div class="relative aspect-[16/9] rounded-2xl overflow-hidden mb-4 shadow-sm bg-gray-100">
+                        <div class="relative aspect-[16/9] rounded-3xl overflow-hidden mb-5 shadow-lg bg-gray-100 border border-gray-100">
                             <img src="${cover}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" alt="${item['課程名稱']}">
-                            <div class="absolute top-3 left-3 px-3 py-1 bg-black/60 backdrop-blur-md text-white text-[10px] font-black rounded-full uppercase">
+                            <div class="absolute top-4 left-4 px-4 py-1.5 bg-black text-white text-xs font-black rounded-lg uppercase tracking-tight">
                                 ${item['運動類別'] || '運動'}
                             </div>
                             ${item['課程狀態'] === '已額滿' ? `
-                                <div class="absolute inset-0 bg-black/40 flex items-center justify-center">
-                                    <span class="px-4 py-2 bg-white text-black font-black rounded-lg text-sm">已額滿</span>
+                                <div class="absolute inset-0 bg-black/60 flex items-center justify-center">
+                                    <span class="px-6 py-3 bg-white text-black font-black rounded-xl text-lg shadow-xl">已額滿</span>
                                 </div>
                             ` : ''}
                         </div>
 
                         <!-- 內容區 -->
-                        <div class="px-1 space-y-2">
-                            <div class="flex justify-between items-start gap-2">
-                                <h4 class="text-lg font-black leading-tight text-gray-900">${item['課程名稱']}</h4>
+                        <div class="px-1 space-y-4">
+                            <div class="flex justify-between items-start gap-4">
+                                <h4 class="text-xl font-black leading-tight text-black">${item['課程名稱']}</h4>
                                 <div class="flex flex-col items-end flex-shrink-0">
-                                    <span class="text-[#06C755] font-black text-xl font-mono leading-none">$${item['會員價'] || 0}</span>
-                                    <span class="text-[9px] text-gray-400 font-bold uppercase tracking-tighter mt-1">Special Offer</span>
+                                    <span class="text-[#06C755] font-black text-2xl font-mono leading-none">$${item['會員價'] || 0}</span>
+                                    <span class="text-[10px] text-black font-black uppercase tracking-widest mt-1">特惠價格</span>
                                 </div>
                             </div>
                             
-                            <div class="flex items-center gap-3 text-xs text-gray-500 font-bold">
-                                <span class="flex items-center gap-1.5"><i class="far fa-calendar-alt text-[#06C755]"></i> ${formattedDate}</span>
-                                <span class="flex items-center gap-1.5"><i class="fas fa-map-marker-alt text-[#06C755]"></i> ${item['場地名稱'] || '地點'}</span>
+                            <div class="flex flex-col gap-2">
+                                <span class="flex items-center gap-2 text-base font-bold text-black"><i class="far fa-calendar-alt text-[#06C755] w-5"></i> ${formattedDate}</span>
+                                <span class="flex items-center gap-2 text-base font-bold text-black"><i class="fas fa-map-marker-alt text-[#06C755] w-5"></i> ${item['場地名稱'] || '活動地點'}</span>
                             </div>
 
                             <!-- 報名進度條 -->
                             <div class="pt-2">
-                                <div class="flex justify-between text-[10px] font-black text-gray-400 mb-1.5 tracking-tighter uppercase">
-                                    <span>熱烈報名中</span>
-                                    <span>${enrolled} / ${total}</span>
+                                <div class="flex justify-between text-sm font-black text-black mb-2 uppercase">
+                                    <span>報名狀態</span>
+                                    <span>${enrolled} / ${total} 人</span>
                                 </div>
-                                <div class="h-2 w-full bg-gray-100 rounded-full overflow-hidden">
+                                <div class="h-3 w-full bg-gray-100 rounded-full overflow-hidden border border-gray-100">
                                     <div class="h-full bg-[#06C755]" style="width: ${progress}%"></div>
                                 </div>
                             </div>
 
                             <!-- 預約按鈕 -->
-                            <div class="pt-3">
-                                <button onclick="handleBooking('${item['課程ID']}')" class="w-full py-3 bg-[#06C755] text-white font-black rounded-xl shadow-lg shadow-green-100 active:scale-95 transition-transform">
-                                    立即預約課程
+                            <div class="pt-4">
+                                <button onclick="handleBooking('${item['課程ID']}')" class="w-full py-4 bg-[#06C755] text-white font-black text-lg rounded-2xl shadow-xl shadow-green-100 active:scale-95 transition-transform">
+                                    立即預約
                                 </button>
                             </div>
                         </div>
@@ -210,7 +208,6 @@
         }
 
         function handleBooking(courseId) {
-            // 對接 LINE LIFF 或訊息流程
             console.log('Booking Course ID:', courseId);
             if (typeof liff !== 'undefined' && liff.isInClient()) {
                 liff.sendMessages([{
@@ -220,7 +217,7 @@
                     liff.closeWindow();
                 });
             } else {
-                alert('預約成功！課程 ID: ' + courseId + '\n接下來將跳轉至 LINE 結帳流程。');
+                alert('預約成功！\n課程代碼：' + courseId + '\n將為您轉接客服專員。');
             }
         }
 
