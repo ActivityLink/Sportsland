@@ -3,46 +3,35 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ActivityLink - 管理後台 (數據導入修正版)</title>
+    <title>ActivityLink - 課程內容管理</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;900&display=swap');
         :root { --line-green: #06C755; --sidebar-bg: #111111; }
         body { font-family: 'Inter', 'PingFang TC', sans-serif; background-color: #FFF; color: #333; }
-        
         .sidebar { transition: width 0.2s; width: 240px; background-color: var(--sidebar-bg); position: fixed; height: 100%; z-index: 50; }
         .sidebar.collapsed { width: 64px; }
         .main-content { transition: margin-left 0.2s; margin-left: 240px; min-height: 100vh; }
         .main-content.expanded { margin-left: 64px; }
         .collapsed .nav-text, .collapsed .logo-text { display: none; }
-        
         .nav-link { color: #A0A0A0; padding: 14px 24px; display: flex; align-items: center; gap: 16px; cursor: pointer; transition: 0.2s; }
         .nav-link:hover { color: white; background-color: rgba(255, 255, 255, 0.05); }
         .nav-link.active { background-color: var(--line-green); color: white; }
-        
         .flat-table { width: 100%; border-collapse: collapse; }
         .flat-table th { background-color: #F8F9FA; color: #666; font-size: 0.75rem; padding: 16px 24px; border-bottom: 2px solid #EEE; text-align: left; font-weight: 800; text-transform: uppercase; }
         .flat-table td { padding: 20px 24px; border-bottom: 1px solid #F6F6F6; font-weight: 500; }
-
         .modal-overlay { background-color: rgba(0, 0, 0, 0.5); display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 1000; align-items: center; justify-content: center; }
         .modal-content { background: white; width: 95%; max-width: 1350px; height: 95vh; display: flex; flex-direction: column; border-radius: 12px; overflow: hidden; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25); }
         .modal-body { overflow-y: auto; flex: 1; padding: 40px 60px; }
-        
         .type-banner-btn { flex: 1; padding: 18px; text-align: center; font-weight: 800; border-bottom: 2px solid #EEE; color: #999; cursor: pointer; }
         .type-banner-btn.active { border-bottom: 4px solid var(--line-green); color: var(--line-green); background-color: #FAFAFA; }
-
-        label { display: block; font-size: 0.75rem; font-weight: 800; color: #111; margin-bottom: 0.5rem; }
-        input, select, textarea { width: 100%; border: 1px solid #E2E8F0; border-radius: 6px; padding: 10px; font-size: 0.9rem; outline: none; }
-        input:focus, select:focus, textarea:focus { border-color: var(--line-green); }
-        
+        label { display: block; font-size: 0.8rem; font-weight: 800; color: #111; margin-bottom: 0.6rem; }
+        input, select, textarea { width: 100%; border: 1px solid #E2E8F0; border-radius: 6px; padding: 12px; font-size: 0.95rem; outline: none; }
         .btn-line { padding: 12px 36px; border-radius: 6px; font-weight: 800; cursor: pointer; display: inline-flex; align-items: center; gap: 10px; transition: 0.2s; border: none; }
         .btn-line-green { background-color: var(--line-green); color: white; }
-        .btn-line-outline { border: 1px solid #E2E8F0; color: #64748b; background: white; }
-
         section { margin-bottom: 45px; }
         section h3 { font-size: 1.1rem; font-weight: 900; color: #111; margin-bottom: 20px; border-bottom: 2px solid #F1F5F9; padding-bottom: 10px; display: flex; align-items: center; gap: 12px; }
-
         .loading-spinner { border: 3px solid #f3f3f3; border-top: 3px solid var(--line-green); border-radius: 50%; width: 28px; height: 28px; animation: spin 1s linear infinite; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
     </style>
@@ -51,36 +40,22 @@
 
     <aside id="sidebar" class="sidebar">
         <div class="p-8 flex items-center gap-4 mb-6">
-            <div class="w-10 h-10 bg-[#06C755] rounded-lg flex items-center justify-center shadow-lg">
-                <i class="fas fa-link text-white text-lg"></i>
-            </div>
+            <div class="w-10 h-10 bg-[#06C755] rounded-lg flex items-center justify-center shadow-lg"><i class="fas fa-link text-white text-lg"></i></div>
             <span class="text-xl font-black logo-text text-white tracking-tighter">ActivityLink</span>
         </div>
         <nav>
-            <div onclick="switchView('activities')" id="nav-activities" class="nav-link active">
-                <i class="fas fa-list-ul w-6 text-center text-lg"></i>
-                <span class="nav-text font-bold">課程內容管理</span>
-            </div>
-            <div onclick="switchView('settings')" id="nav-settings" class="nav-link">
-                <i class="fas fa-cog w-6 text-center text-lg"></i>
-                <span class="nav-text font-bold">系統參數設定</span>
-            </div>
+            <div onclick="location.reload()" class="nav-link active"><i class="fas fa-list-ul w-6 text-center text-lg"></i><span class="nav-text font-bold">課程內容管理</span></div>
+            <a href="sys.html" class="nav-link"><i class="fas fa-cog w-6 text-center text-lg"></i><span class="nav-text font-bold">系統參數設定</span></a>
         </nav>
     </aside>
 
     <main id="main-content" class="main-content">
-        <nav class="sticky top-0 z-40 bg-white border-b border-slate-200 px-10 py-5 flex items-center justify-between">
+        <nav class="sticky top-0 z-40 bg-white border-b border-slate-200 px-10 py-5 flex items-center justify-between shadow-sm">
             <div class="flex items-center gap-8">
-                <button id="sidebar-toggle" onclick="toggleSidebar()" class="text-slate-400 hover:text-slate-600 bg-transparent border-none cursor-pointer"><i class="fas fa-bars text-xl"></i></button>
-                <h2 id="page-title" class="text-2xl font-black tracking-tight text-slate-800">課程內容管理</h2>
+                <button onclick="sidebar.classList.toggle('collapsed'); mainContent.classList.toggle('expanded');" class="text-slate-400 hover:text-slate-600 bg-transparent border-none cursor-pointer"><i class="fas fa-bars text-xl"></i></button>
+                <h2 class="text-2xl font-black tracking-tight text-slate-800">所有活動課程管理</h2>
             </div>
-            <div class="flex items-center gap-5">
-                <div class="flex flex-col text-right">
-                    <span class="text-[10px] font-black text-green-500 uppercase tracking-widest">Database Syncing</span>
-                    <span id="sync-status" class="text-[10px] text-slate-400 font-bold italic">Checking Cloud...</span>
-                </div>
-                <div class="w-10 h-10 bg-slate-100 rounded-full flex items-center justify-center font-black border text-slate-400 text-xs shadow-inner">AD</div>
-            </div>
+            <div id="sync-status" class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Active Connection</div>
         </nav>
         <div id="app-content"></div>
     </main>
@@ -99,319 +74,135 @@
                 <form id="course-form">
                     <input type="hidden" name="courseId" id="form-courseId">
                     <input type="hidden" name="courseType" id="form-courseType" value="single">
-
                     <section>
-                        <h3><i class="fas fa-info-circle text-green-500"></i> 1. 基本與分類資訊</h3>
+                        <h3><i class="fas fa-info-circle text-green-500"></i> 核心資訊與日期</h3>
                         <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
                             <div class="md:col-span-2"><label>課程名稱 *</label><input type="text" name="courseName" required></div>
-                            <div><label>運動類別</label><input type="text" name="category" placeholder="羽球、體操..."></div>
-                            <div><label>年齡分級</label><input type="text" name="ageGroup" placeholder="4-6歲、成人..."></div>
+                            <div><label>運動類別</label><input type="text" name="category"></div>
+                            <div><label>活動日期 *</label><input type="date" name="courseDate" required></div>
                         </div>
                     </section>
-
                     <section>
-                        <h3><i class="fas fa-calendar-alt text-green-500"></i> 2. 報名與活動時間</h3>
-                        <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
-                            <div><label>課程活動日期 *</label><input type="date" name="courseDate" required></div>
-                            <div><label>開始時間</label><input type="time" name="startTime"></div>
-                            <div><label>結束時間</label><input type="time" name="endTime"></div>
-                            <div><label>時長(分鐘)</label><input type="number" name="duration"></div>
-                        </div>
-                    </section>
-
-                    <section>
-                        <h3><i class="fas fa-money-check-alt text-green-500"></i> 4. 費用設定與名額</h3>
-                        <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
-                            <div><label>原價</label><input type="number" name="price" value="0"></div>
-                            <div><label>會員特惠價 *</label><input type="number" name="memberPrice" value="0" required></div>
-                            <div><label>總名額</label><input type="number" name="quota" value="20"></div>
-                            <div><label>課程狀態</label><select name="status"><option value="報名中">報名中</option><option value="已額滿">已額滿</option><option value="草稿">草稿</option></select></div>
-                        </div>
-                    </section>
-
-                    <!-- 租借設備區域 (AN 欄位) -->
-                    <section id="rental-section">
-                        <h3><i class="fas fa-shopping-basket text-green-500"></i> 6. 課程租用設備設定 (AN)</h3>
-                        <div class="bg-blue-50/50 p-4 rounded-lg border border-blue-100 mb-5 flex justify-between items-center">
-                            <p class="text-blue-800 text-[11px] font-bold">勾選預約時要顯示的租借設備項目（數據來自「系統參數設定」之 JSON）。</p>
-                        </div>
+                        <h3><i class="fas fa-shopping-basket text-green-500"></i> 課程租用設備設定 (AN)</h3>
+                        <p class="text-slate-400 text-[10px] font-bold mb-4 italic">※ 參數數據同步自「系統參數設定」頁面</p>
                         <div id="equipment-checkboxes" class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
                             <!-- JS 動態生成 -->
                         </div>
                     </section>
-
                     <section>
-                        <h3><i class="fas fa-images text-green-500"></i> 7. 視覺與詳細內容介紹</h3>
+                        <h3><i class="fas fa-align-left text-green-500"></i> 詳細介紹內容</h3>
                         <div class="space-y-6">
-                            <div><label>封面圖片網址 (AD)</label><input type="text" name="coverImage" placeholder="https://..."></div>
-                            <div><label>課程亮點短語 (AF)</label><input type="text" name="highlights"></div>
-                            <div><label>完整介紹內容 (AG)</label><textarea name="content" rows="6"></textarea></div>
-                            <div><label>報名注意事項 (AH)</label><textarea name="notes" rows="3"></textarea></div>
+                            <div><label>封面網址 (AD)</label><input type="text" name="coverImage"></div>
+                            <div><label>課程亮點 (AF)</label><input type="text" name="highlights"></div>
+                            <div><label>完整介紹 (AG)</label><textarea name="content" rows="6"></textarea></div>
+                            <div><label>課程狀態 (AJ)</label><select name="status"><option value="報名中">報名中</option><option value="已額滿">已額滿</option><option value="草稿">草稿</option></select></div>
                         </div>
                     </section>
                 </form>
             </div>
             <div class="px-10 py-8 border-t flex justify-end gap-5 bg-white sticky bottom-0 z-10 shadow-2xl">
                 <button type="button" onclick="closeCourseModal()" class="btn-line btn-line-outline">取消編輯</button>
-                <button type="button" onclick="submitCourseForm()" id="submit-btn" class="btn-line btn-line-green px-16 shadow-xl">確認並同步雲端</button>
+                <button type="button" onclick="submitCourseForm()" id="submit-btn" class="btn-line btn-line-green px-16 shadow-xl">儲存並同步至雲端</button>
             </div>
         </div>
     </div>
 
     <script>
         const CLOUDFLARE_URL = 'https://aged-rice-2438.wetw-net3.workers.dev/';
-        const appContent = document.getElementById('app-content');
-        const sidebar = document.getElementById('sidebar');
-        const mainContent = document.getElementById('main-content');
-        const syncStatus = document.getElementById('sync-status');
-        
-        let allCourseData = []; 
-        let globalEquipmentList = []; 
-        let globalBankInfo = { bankName: "", bankCode: "", accountName: "", accountNumber: "" };
+        let allCourses = [], equipList = [];
 
-        function toggleSidebar() { sidebar.classList.toggle('collapsed'); mainContent.classList.toggle('expanded'); }
-
-        function setCourseType(type) {
-            const input = document.getElementById('form-courseType');
-            if (input) input.value = type;
-            document.querySelectorAll('.type-banner-btn').forEach(btn => btn.classList.remove('active'));
-            const target = document.getElementById(`btn-type-${type}`);
-            if(target) target.classList.add('active');
-        }
-
-        async function switchView(viewName) {
-            document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
-            const link = document.getElementById(`nav-${viewName}`);
-            if (link) link.classList.add('active');
-            document.getElementById('page-title').innerText = viewName === 'activities' ? '課程內容管理' : '系統參數設定';
-
-            appContent.innerHTML = `<div class="p-40 text-center"><div class="loading-spinner mx-auto mb-4"></div>數據導入中...</div>`;
-
-            // 切換視圖時，始終先獲取最新參數，確保資料一致
-            await initAppData();
-
-            if (viewName === 'settings') {
-                renderSettingsUI(globalBankInfo, globalEquipmentList);
-            } else {
-                renderActivityList(allCourseData);
-            }
-        }
-
-        // 初始化應用程序數據 (核心修正：統一數據入口)
-        async function initAppData() {
+        async function init() {
+            const app = document.getElementById('app-content');
+            app.innerHTML = `<div class="p-40 text-center flex flex-col items-center gap-4"><div class="loading-spinner"></div>數據加載中...</div>`;
+            
             try {
-                syncStatus.innerText = "Connecting...";
-                
-                // 1. 同步參數設定 (Setup JSON)
-                const configRes = await fetch(`${CLOUDFLARE_URL}?type=config`);
-                const configResult = await configRes.json();
-                const allConfig = configResult.config || [];
-                
-                const equipRow = allConfig.find(i => i.type === 'equipment_list');
-                if (equipRow && equipRow.options) {
-                    try { globalEquipmentList = JSON.parse(equipRow.options); } catch(e) { globalEquipmentList = []; }
-                }
+                // 1. 同步設備清單 (供 Modal 使用)
+                const confRes = await fetch(`${CLOUDFLARE_URL}?type=config`);
+                const confData = await confRes.json();
+                const equipRow = (confData.config || []).find(i => i.type === 'equipment_list');
+                if (equipRow && equipRow.options) equipList = JSON.parse(equipRow.options);
 
-                const bankRow = allConfig.find(i => i.type === 'remittance');
-                if (bankRow && bankRow.options) {
-                    try { globalBankInfo = JSON.parse(bankRow.options); } catch(e) {}
-                }
-
-                // 2. 同步課程清單
-                const courseRes = await fetch(CLOUDFLARE_URL);
-                const courseResult = await courseRes.json();
-                allCourseData = courseResult.data || [];
-
-                syncStatus.innerText = "Database Active";
-                syncStatus.classList.replace('text-slate-400', 'text-green-500');
-                return true;
-            } catch (error) {
-                console.error("Data fetch failed:", error);
-                syncStatus.innerText = "Sync Failed";
-                syncStatus.classList.replace('text-slate-400', 'text-red-500');
-                return false;
-            }
+                // 2. 同步課程
+                const res = await fetch(CLOUDFLARE_URL);
+                allCourses = (await res.json()).data || [];
+                renderList();
+            } catch (e) { app.innerHTML = `<div class="p-20 text-center text-red-500 font-bold">連線失敗，請確認後端部署。</div>`; }
         }
 
-        function renderSettingsUI(bank, equips) {
-            appContent.innerHTML = `
-                <div class="px-12 py-12 max-w-6xl animate-in fade-in duration-500">
-                    <section>
-                        <h3 class="text-[#06C755]"><i class="fas fa-university"></i> 1. 匯款帳戶設定 (JSON 儲存)</h3>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-10 p-4 bg-slate-50 rounded-xl">
-                            <div><label>銀行名稱</label><input type="text" id="bank-name" value="${bank.bankName || ''}"></div>
-                            <div><label>銀行代碼</label><input type="text" id="bank-code" value="${bank.bankCode || ''}"></div>
-                            <div><label>受款人戶名</label><input type="text" id="bank-acc-name" value="${bank.accountName || ''}"></div>
-                            <div><label>轉帳帳號</label><input type="text" id="bank-acc-num" value="${bank.accountNumber || ''}"></div>
-                        </div>
-                    </section>
-                    <section>
-                        <div class="flex justify-between items-center mb-10 pb-4 border-b">
-                            <h3 class="!mb-0 border-0"><i class="fas fa-tools text-[#06C755]"></i> 2. 租借設備清單設定 (JSON 陣列)</h3>
-                            <button onclick="addEqItem()" class="btn-line btn-line-green text-xs font-black shadow-lg shadow-green-100"><i class="fas fa-plus"></i> 新增項目</button>
-                        </div>
-                        <div class="space-y-4">
-                            ${equips.map((eq, index) => `
-                                <div class="flex gap-6 items-center p-6 bg-slate-50/50 rounded-xl border border-transparent hover:border-slate-200">
-                                    <div class="flex-1"><label class="text-[9px] text-slate-400 font-bold uppercase">設備名稱</label><input type="text" value="${eq.name}" oninput="globalEquipmentList[${index}].name=this.value" class="bg-white"></div>
-                                    <div class="w-40"><label class="text-[9px] text-slate-400 font-bold uppercase">費用</label><input type="number" value="${eq.price}" oninput="globalEquipmentList[${index}].price=this.value" class="bg-white"></div>
-                                    <button onclick="globalEquipmentList.splice(${index},1);renderSettingsUI(getBankFields(), globalEquipmentList)" class="mt-4 p-4 text-slate-300 hover:text-red-500 bg-transparent border-none cursor-pointer"><i class="fas fa-trash-alt text-lg"></i></button>
-                                </div>
-                            `).join('')}
-                        </div>
-                    </section>
-                    <div class="mt-20 flex justify-end">
-                        <button onclick="saveConfigJSON()" id="save-cfg-btn" class="btn-line btn-line-green px-24 py-5 shadow-2xl font-black">儲存參數並同步至試算表</button>
-                    </div>
-                </div>`;
-        }
-
-        function addEqItem() { globalEquipmentList.push({ name: '', price: 0 }); renderSettingsUI(getBankFields(), globalEquipmentList); }
-        function getBankFields() {
-            return {
-                bankName: document.getElementById('bank-name').value,
-                bankCode: document.getElementById('bank-code').value,
-                accountName: document.getElementById('bank-acc-name').value,
-                accountNumber: document.getElementById('bank-acc-num').value
-            };
-        }
-
-        async function saveConfigJSON() {
-            const btn = document.getElementById('save-cfg-btn');
-            btn.disabled = true; btn.innerText = "資料寫入中...";
-            const payload = [
-                { type: 'remittance', name: 'Global', options: JSON.stringify(getBankFields()) },
-                { type: 'equipment_list', name: 'Global', options: JSON.stringify(globalEquipmentList) }
-            ];
-            try {
-                const res = await fetch(CLOUDFLARE_URL, { method: 'POST', body: JSON.stringify({ type: 'config_update', data: payload }) });
-                if ((await res.json()).status === "success") { alert("參數已存入雲端！"); await initAppData(); }
-            } catch (e) { alert("儲存失敗"); }
-            finally { btn.disabled = false; btn.innerText = "儲存參數並同步至試算表"; }
-        }
-
-        function renderActivityList(data) {
-            const rows = data.map(item => `
-                <tr class="hover:bg-slate-50 transition-colors">
-                    <td>
-                        <div class="font-black text-slate-800 text-base">${item.courseName || '未命名'}</div>
-                        <div class="text-[10px] text-slate-400 font-mono font-bold uppercase tracking-widest">${item.courseId || '-'}</div>
-                    </td>
+        function renderList() {
+            const rows = allCourses.map(item => `
+                <tr class="hover:bg-slate-50 transition-colors group">
+                    <td><div class="font-black text-slate-800 text-base">${item.courseName || '未命名'}</div><div class="text-[10px] text-slate-400 font-mono">${item.courseId}</div></td>
                     <td><div class="text-sm font-bold text-slate-500">${item.courseDate ? item.courseDate.split('T')[0] : '-'}</div></td>
                     <td><span class="px-4 py-1.5 rounded-full text-[10px] font-black ${item.status === '報名中' ? 'bg-green-100 text-green-700' : 'bg-slate-100 text-slate-500'}">${item.status || '報名中'}</span></td>
                     <td class="text-right flex justify-end gap-3">
-                        <button onclick="editCourse('${item.courseId}')" class="w-10 h-10 rounded-full hover:bg-slate-100 text-slate-300 hover:text-blue-500 border-none bg-transparent cursor-pointer"><i class="fas fa-edit"></i></button>
+                        <button onclick="editCourse('${item.courseId}')" class="w-10 h-10 rounded-full hover:bg-slate-100 text-slate-300 hover:text-blue-500 transition-all border-none bg-transparent cursor-pointer"><i class="fas fa-edit"></i></button>
                         <button onclick="deleteCourse('${item.courseId}')" class="w-10 h-10 rounded-full hover:bg-red-50 text-slate-200 hover:text-red-500 border-none bg-transparent cursor-pointer"><i class="fas fa-trash-alt"></i></button>
                     </td>
                 </tr>`).join('');
 
-            appContent.innerHTML = `
+            document.getElementById('app-content').innerHTML = `
                 <div class="px-10 py-12 flex justify-between items-end border-b">
-                    <div>
-                        <h1 class="text-3xl font-black text-slate-800 tracking-tight">課程內容管理</h1>
-                        <p class="text-slate-400 text-xs font-bold mt-2 uppercase tracking-widest">Total Records: ${data.length}</p>
-                    </div>
-                    <button onclick="openCourseModal()" class="btn-line btn-line-green shadow-xl px-12 py-4 font-black">建立新課程</button>
+                    <div><h1 class="text-3xl font-black text-slate-800">課程內容清單</h1><p class="text-slate-400 text-xs font-bold mt-2 uppercase tracking-widest">Total ${allCourses.length} Records</p></div>
+                    <button onclick="openCourseModal()" class="btn-line btn-line-green shadow-xl px-12 py-4">建立新課程</button>
                 </div>
-                <table class="flat-table">
-                    <thead><tr><th>標題 / ID</th><th>日期</th><th>狀態</th><th class="text-right">管理</th></tr></thead>
-                    <tbody>${rows}</tbody>
-                </table>`;
+                <table class="flat-table"><thead><tr><th>標題 / ID</th><th>活動日期</th><th>狀態</th><th class="text-right">操作</th></tr></thead><tbody>${rows}</tbody></table>`;
         }
 
         function openCourseModal() {
             document.getElementById('course-form').reset();
             document.getElementById('form-courseId').value = '';
-            setCourseType('single');
             
-            // 重要修正：確保每次開啟編輯器，都根據當前 globalEquipmentList 重新生成勾選清單
             const container = document.getElementById('equipment-checkboxes');
-            if (globalEquipmentList.length === 0) {
-                container.innerHTML = '<p class="text-slate-300 text-[10px] font-bold italic py-4">※ 目前無可租借設備參數，請至系統參數設定。 </p>';
-            } else {
-                container.innerHTML = globalEquipmentList.map(eq => `
-                    <label class="flex items-center gap-4 p-5 border-2 border-slate-50 rounded-xl cursor-pointer hover:border-green-100 transition-all">
-                        <input type="checkbox" name="eq_check" value="${eq.name}" class="w-6 h-6 rounded accent-green-600">
-                        <div class="flex-1">
-                            <div class="text-xs font-black text-slate-800">${eq.name}</div>
-                            <div class="text-[10px] text-blue-500 font-black">加購: $${eq.price}</div>
-                        </div>
-                    </label>`).join('');
-            }
+            container.innerHTML = (equipList.length === 0) ? '<p class="text-slate-300 text-xs py-4 italic">無可用設備參數</p>' : equipList.map(eq => `
+                <label class="flex items-center gap-4 p-5 border-2 border-slate-50 rounded-xl cursor-pointer hover:border-green-100 transition-all">
+                    <input type="checkbox" name="eq_check" value="${eq.name}" class="w-6 h-6 rounded accent-green-600">
+                    <div class="flex-1"><div class="text-xs font-black text-slate-800">${eq.name}</div><div class="text-[10px] text-blue-500 font-black">+$${eq.price}</div></div>
+                </label>`).join('');
 
             document.getElementById('course-modal').style.display = 'flex';
-            document.body.style.overflow = 'hidden';
         }
 
         function editCourse(id) {
-            const item = allCourseData.find(d => d.courseId === id);
+            const item = allCourses.find(d => d.courseId === id);
             if (!item) return;
-            openCourseModal(); // 先打開 Modal 確保設備勾選框已生成
-            
+            openCourseModal();
             const form = document.getElementById('course-form');
             document.getElementById('form-courseId').value = item.courseId;
             
-            // 完整 40 欄位回填
-            const fieldNames = [
-                "courseName", "category", "ageGroup", "difficulty", "tags", 
-                "regStart", "regEnd", "courseDate", "startTime", "endTime", "duration",
-                "coachId", "coachName", "venueId", "venueName", "venueArea",
-                "price", "earlyBirdPrice", "earlyBirdEnd", "memberPrice", "friendPrice",
-                "quota", "minClass", "enrolled", "remaining", "waiting",
-                "genderLimit", "specialRequest", "coverImage", "detailImage", 
-                "highlights", "content", "notes", "targetAudience", "status", "weight"
-            ];
-
-            fieldNames.forEach(name => {
+            // 基礎資料回填
+            ["courseName", "category", "courseDate", "memberPrice", "highlights", "content", "status", "coverImage", "notes"].forEach(name => {
                 const input = form.querySelector(`[name="${name}"]`);
-                if (input && item[name] !== undefined) {
+                if (input && item[name]) {
                     let val = item[name];
-                    if (input.type === 'date' && val) val = val.split('T')[0];
-                    input.value = val || (input.type === 'number' ? 0 : '');
+                    if (input.type === 'date') val = val.split('T')[0];
+                    input.value = val;
                 }
             });
 
-            // 處理租用設備 (selectedEquipment) 的勾選狀態回顯
-            const selectedStr = item.selectedEquipment || '';
-            const selectedArr = selectedStr.split(',').map(s => s.trim());
-            form.querySelectorAll('input[name="eq_check"]').forEach(cb => {
-                cb.checked = selectedArr.includes(cb.value);
-            });
+            // 設備回填
+            const selectedArr = (item.selectedEquipment || '').split(',').map(s => s.trim());
+            form.querySelectorAll('input[name="eq_check"]').forEach(cb => cb.checked = selectedArr.includes(cb.value));
         }
 
         async function submitCourseForm() {
             const btn = document.getElementById('submit-btn');
-            btn.disabled = true; btn.innerText = "資料同步中...";
-            
-            const formData = new FormData(document.getElementById('course-form'));
-            const payload = Object.fromEntries(formData.entries());
-            
-            const checkedItems = Array.from(document.querySelectorAll('input[name="eq_check"]:checked')).map(cb => cb.value);
-            payload.selectedEquipment = checkedItems.join(',');
+            btn.disabled = true; btn.innerText = "Syncing...";
+            const payload = Object.fromEntries(new FormData(document.getElementById('course-form')).entries());
+            const checked = Array.from(document.querySelectorAll('input[name="eq_check"]:checked')).map(cb => cb.value);
+            payload.selectedEquipment = checked.join(',');
 
             try {
                 const res = await fetch(CLOUDFLARE_URL, { method: 'POST', body: JSON.stringify(payload) });
-                if ((await res.json()).status === "success") { 
-                    closeCourseModal(); 
-                    await initAppData();
-                    renderActivityList(allCourseData);
-                }
+                if ((await res.json()).status === "success") { closeCourseModal(); init(); }
             } catch (e) { alert("同步失敗"); }
             finally { btn.disabled = false; btn.innerText = "確認並同步雲端"; }
         }
 
-        function deleteCourse(id) {
-            if (!confirm('確定刪除？此動作無法復原。')) return;
-            fetch(CLOUDFLARE_URL, { method: 'POST', body: JSON.stringify({ type: 'course_delete', courseId: id }) }).then(async () => {
-                await initAppData();
-                renderActivityList(allCourseData);
-            });
-        }
+        function closeCourseModal() { document.getElementById('course-modal').style.display = 'none'; }
+        function deleteCourse(id) { if(confirm('刪除？')) fetch(CLOUDFLARE_URL, { method: 'POST', body: JSON.stringify({ type: 'course_delete', courseId: id }) }).then(() => init()); }
 
-        function closeCourseModal() { document.getElementById('course-modal').style.display = 'none'; document.body.style.overflow = 'auto'; }
-
-        // 啟動應用
-        window.onload = () => switchView('activities');
+        window.onload = init;
     </script>
 </body>
 </html>
