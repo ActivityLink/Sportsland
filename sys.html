@@ -46,7 +46,7 @@
     <main id="main-content" class="main-content">
         <nav class="sticky top-0 z-40 bg-white/80 backdrop-blur-md border-b border-slate-200 px-10 py-5 flex items-center justify-between shadow-sm">
             <div class="flex items-center gap-8">
-                <button onclick="document.getElementById('sidebar').classList.toggle('collapsed'); document.getElementById('main-content').classList.toggle('expanded');" class="text-slate-400 hover:text-slate-600 bg-transparent border-none cursor-pointer"><i class="fas fa-bars text-xl"></i></button>
+                <button onclick="toggleSidebar()" class="text-slate-400 hover:text-slate-600 bg-transparent border-none cursor-pointer"><i class="fas fa-bars text-xl"></i></button>
                 <h2 class="text-2xl font-black tracking-tight text-slate-800">系統參數管理</h2>
             </div>
             <div id="sync-status" class="status-badge text-slate-400">連線中...</div>
@@ -87,92 +87,283 @@
         const API_URL = 'https://aged-rice-2438.wetw-net3.workers.dev/';
         let eqList = [];
 
+        // 側邊欄切換函數
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const mainContent = document.getElementById('main-content');
+            sidebar.classList.toggle('collapsed');
+            mainContent.classList.toggle('expanded');
+        }
+
         async function loadConfig() {
             const status = document.getElementById('sync-status');
             try {
-                const res = await fetch(`${API_URL}?type=config&_t=${Date.now()}`);
-                const result = await res.json();
-                console.log("Cloud Config:", result);
-
-                // 容錯邏輯：相容 data 或 config 屬性
-                const rows = result.data || result.config || [];
-
-                // 1. 抓取匯款資訊
-                const bankRow = rows.find(r => (r.type === 'remittance' || (Array.isArray(r) && r[0] === 'remittance')));
-                if (bankRow) {
-                    const optionsStr = bankRow.options || (Array.isArray(bankRow) ? bankRow[2] : '');
-                    if (optionsStr) {
-                        try {
-                            const bank = JSON.parse(optionsStr);
-                            document.getElementById('bank-name').value = bank.bankName || "";
-                            document.getElementById('bank-code').value = bank.bankCode || "";
-                            document.getElementById('bank-acc-name').value = bank.accountName || "";
-                            document.getElementById('bank-acc-num').value = bank.accountNumber || "";
-                        } catch(e) {}
+                // 添加錯誤處理和除錯
+                console.log('正在請求配置數據...');
+                const response = await fetch(`${API_URL}?type=config&_t=${Date.now()}`, {
+                    headers: {
+                        'Content-Type': 'application/json'
                     }
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP 錯誤! 狀態碼: ${response.status}`);
+                }
+                
+                const result = await response.json();
+                console.log("Cloud Config 響應:", result);
+
+                // 提取配置數據 - 支援多種可能的數據結構
+                let configData = [];
+                
+                if (result && result.data) {
+                    configData = result.data;
+                } else if (result && Array.isArray(result)) {
+                    configData = result;
+                } else if (result && result.config) {
+                    configData = result.config;
+                } else if (result && result.rows) {
+                    configData = result.rows;
                 }
 
-                // 2. 抓取設備清單
-                const equipRow = rows.find(r => (r.type === 'equipment_list' || (Array.isArray(r) && r[0] === 'equipment_list')));
-                if (equipRow) {
-                    const optionsStr = equipRow.options || (Array.isArray(equipRow) ? equipRow[2] : '');
-                    eqList = optionsStr ? JSON.parse(optionsStr) : [];
+                console.log("解析後的配置數據:", configData);
+
+                // 重置狀態
+                let bankData = {};
+                eqList = [];
+
+                // 處理每一行配置數據
+                configData.forEach(item => {
+                    // 處理不同格式的數據
+                    let type = '';
+                    let options = '';
+                    
+                    if (typeof item === 'object') {
+                        // 物件格式 {type: '...', options: '...'}
+                        type = item.type || '';
+                        options = item.options || item.value || '';
+                    } else if (Array.isArray(item)) {
+                        // 陣列格式 [type, name, options]
+                        type = item[0] || '';
+                        options = item[2] || '';
+                    }
+                    
+                    if (!type) return;
+                    
+                    switch(type.toLowerCase()) {
+                        case 'remittance':
+                        case '匯款資訊':
+                        case 'bank':
+                            try {
+                                if (options) {
+                                    bankData = JSON.parse(options);
+                                }
+                            } catch (e) {
+                                console.error('解析匯款資訊失敗:', e);
+                            }
+                            break;
+                            
+                        case 'equipment_list':
+                        case 'equipment':
+                        case '設備清單':
+                            try {
+                                if (options) {
+                                    eqList = JSON.parse(options);
+                                }
+                            } catch (e) {
+                                console.error('解析設備清單失敗:', e);
+                            }
+                            break;
+                    }
+                });
+
+                // 填充匯款資訊表單
+                if (bankData) {
+                    document.getElementById('bank-name').value = bankData.bankName || bankData.bank_name || '';
+                    document.getElementById('bank-code').value = bankData.bankCode || bankData.bank_code || '';
+                    document.getElementById('bank-acc-name').value = bankData.accountName || bankData.account_name || bankData.accName || '';
+                    document.getElementById('bank-acc-num').value = bankData.accountNumber || bankData.account_number || bankData.accNumber || '';
                 }
+
+                // 渲染設備列表
                 renderEq();
 
+                // 更新狀態顯示
                 status.innerText = "連線正常";
-                status.classList.replace('text-slate-400', 'text-green-500');
-            } catch (e) {
+                status.style.color = '#10B981'; // green-500
+                status.style.borderColor = '#10B981';
+                
+            } catch (error) {
+                console.error('載入配置時發生錯誤:', error);
                 status.innerText = "連線失敗";
-                status.classList.replace('text-slate-400', 'text-red-500');
+                status.style.color = '#EF4444'; // red-500
+                status.style.borderColor = '#EF4444';
+                
+                // 顯示錯誤信息
+                const eqContainer = document.getElementById('eq-container');
+                eqContainer.innerHTML = `
+                    <div class="p-6 bg-red-50 border border-red-200 rounded-lg">
+                        <p class="text-red-600 font-bold mb-2">載入配置失敗</p>
+                        <p class="text-red-500 text-sm">${error.message}</p>
+                        <p class="text-gray-500 text-xs mt-4">
+                            請檢查:<br>
+                            1. Worker 服務是否正常運行<br>
+                            2. GAS 配置端點是否正確<br>
+                            3. 網路連線是否正常
+                        </p>
+                        <button onclick="loadConfig()" class="mt-3 px-4 py-2 bg-red-100 text-red-700 rounded text-sm font-bold hover:bg-red-200 transition">
+                            重新載入
+                        </button>
+                    </div>
+                `;
             }
         }
 
         function renderEq() {
             const container = document.getElementById('eq-container');
-            if (eqList.length === 0) {
-                container.innerHTML = '<p class="text-center py-10 text-slate-300 italic">目前無設備資料</p>';
+            
+            if (!container) {
+                console.error('找不到 eq-container 元素');
                 return;
             }
+            
+            if (!eqList || eqList.length === 0) {
+                container.innerHTML = '<p class="text-center py-10 text-slate-300 italic">目前無設備資料，請點擊上方按鈕新增項目</p>';
+                return;
+            }
+            
+            // 確保 eqList 中的每個項目都有必要的屬性
+            eqList = eqList.map(item => ({
+                name: item.name || '',
+                price: item.price || item.price === 0 ? Number(item.price) : 0
+            }));
+            
             container.innerHTML = eqList.map((eq, i) => `
                 <div class="flex gap-6 items-center p-6 bg-slate-50/50 rounded-xl border border-slate-100 group hover:border-slate-200 transition-all">
-                    <div class="flex-1"><label class="text-[9px]">設備名稱</label><input type="text" value="${eq.name || ''}" oninput="eqList[${i}].name=this.value" class="bg-white"></div>
-                    <div class="w-32"><label class="text-[9px]">租用費用</label><input type="number" value="${eq.price || 0}" oninput="eqList[${i}].price=this.value" class="bg-white"></div>
-                    <button onclick="eqList.splice(${i},1);renderEq()" class="mt-4 p-4 text-slate-300 hover:text-red-500 bg-transparent border-none cursor-pointer"><i class="fas fa-trash-alt text-lg"></i></button>
+                    <div class="flex-1">
+                        <label class="text-[9px]">設備名稱</label>
+                        <input type="text" 
+                               value="${eq.name || ''}" 
+                               oninput="eqList[${i}].name = this.value" 
+                               class="bg-white"
+                               placeholder="輸入設備名稱">
+                    </div>
+                    <div class="w-32">
+                        <label class="text-[9px]">租用費用</label>
+                        <input type="number" 
+                               value="${eq.price || 0}" 
+                               oninput="eqList[${i}].price = Number(this.value) || 0" 
+                               class="bg-white"
+                               placeholder="0"
+                               min="0"
+                               step="10">
+                    </div>
+                    <button onclick="removeEqItem(${i})" 
+                            class="mt-4 p-4 text-slate-300 hover:text-red-500 bg-transparent border-none cursor-pointer transition-colors"
+                            title="刪除此項目">
+                        <i class="fas fa-trash-alt text-lg"></i>
+                    </button>
                 </div>
             `).join('');
         }
 
-        function addEqItem() { eqList.push({ name: '', price: 0 }); renderEq(); }
+        function addEqItem() { 
+            eqList.push({ name: '', price: 0 }); 
+            renderEq(); 
+        }
+
+        function removeEqItem(index) {
+            if (confirm('確定要刪除此設備項目嗎？')) {
+                eqList.splice(index, 1);
+                renderEq();
+            }
+        }
 
         async function saveAllSettings() {
             const btn = document.getElementById('save-btn');
-            btn.disabled = true; btn.innerHTML = `<div class="loading-spinner mr-2"></div> 資料同步中...`;
+            const originalText = btn.innerHTML;
             
+            btn.disabled = true; 
+            btn.innerHTML = `<div class="loading-spinner mr-2"></div> 資料同步中...`;
+            
+            // 收集銀行資料
             const bankData = {
-                bankName: document.getElementById('bank-name').value,
-                bankCode: document.getElementById('bank-code').value,
-                accountName: document.getElementById('bank-acc-name').value,
-                accountNumber: document.getElementById('bank-acc-num').value
+                bankName: document.getElementById('bank-name').value.trim(),
+                bankCode: document.getElementById('bank-code').value.trim(),
+                accountName: document.getElementById('bank-acc-name').value.trim(),
+                accountNumber: document.getElementById('bank-acc-num').value.trim()
             };
-
-            const payload = [
-                { type: 'remittance', name: 'Global', options: JSON.stringify(bankData) },
-                { type: 'equipment_list', name: 'Global', options: JSON.stringify(eqList) }
-            ];
+            
+            // 過濾掉空設備項目
+            const filteredEqList = eqList.filter(item => item.name.trim() !== '');
+            
+            // 準備要發送的數據
+            const payload = {
+                type: 'config_update',
+                data: [
+                    { 
+                        type: 'remittance', 
+                        name: 'Global', 
+                        options: JSON.stringify(bankData) 
+                    },
+                    { 
+                        type: 'equipment_list', 
+                        name: 'Global', 
+                        options: JSON.stringify(filteredEqList) 
+                    }
+                ]
+            };
+            
+            console.log('發送配置數據:', payload);
 
             try {
-                const res = await fetch(API_URL, { 
+                const response = await fetch(API_URL, { 
                     method: 'POST', 
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ type: 'config_update', data: payload }) 
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify(payload) 
                 });
-                if ((await res.json()).status === "success") { alert("✅ 設定已更新！"); loadConfig(); }
-            } catch (e) { alert("❌ 儲存失敗"); }
-            finally { btn.disabled = false; btn.innerText = "儲存並更新試算表"; }
+                
+                const result = await response.json();
+                console.log('保存結果:', result);
+                
+                if (result.status === "success" || result.result === "success") {
+                    alert("✅ 設定已成功更新！");
+                    // 重新載入配置以確保數據一致性
+                    setTimeout(() => loadConfig(), 500);
+                } else {
+                    throw new Error(result.message || '保存失敗');
+                }
+            } catch (error) {
+                console.error('保存配置時發生錯誤:', error);
+                alert(`❌ 儲存失敗: ${error.message}`);
+            } finally { 
+                btn.disabled = false; 
+                btn.innerHTML = originalText; 
+            }
         }
 
-        window.onload = loadConfig;
+        // 頁面載入完成後執行
+        window.addEventListener('DOMContentLoaded', (event) => {
+            console.log('頁面載入完成，開始載入配置...');
+            loadConfig();
+            
+            // 添加表單輸入監聽，實時保存功能（可選）
+            const inputs = document.querySelectorAll('input');
+            inputs.forEach(input => {
+                input.addEventListener('blur', () => {
+                    // 可以在這裡添加自動保存功能
+                });
+            });
+        });
+
+        // 防止表單提交
+        document.addEventListener('submit', function(e) {
+            e.preventDefault();
+            return false;
+        });
     </script>
 </body>
 </html>
