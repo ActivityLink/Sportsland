@@ -95,13 +95,14 @@
                 <label>出生日期 *</label>
                 <input type="date" id="m-birth" required onchange="updateMainGrade()">
                 
+                <!-- 學校欄位 - 預設顯示 -->
                 <div id="m-school-container">
                     <label>就讀學校</label>
                     <input type="text" id="m-school" placeholder="範例：中山國小">
                 </div>
                 <div id="main-grade-badge" class="hidden"><span class="grade-badge" id="m-grade-text"></span></div>
 
-                <!-- 機關欄位 -->
+                <!-- 機關欄位 - 預設隱藏 -->
                 <div id="org-fields" class="hidden bg-gray-50 p-4 rounded-2xl mb-6">
                     <label>機關名稱 *</label>
                     <input type="text" id="o-name" placeholder="範例：光火體育有限公司">
@@ -109,7 +110,7 @@
                     <input type="text" id="o-tax" placeholder="12345678">
                 </div>
                 
-                <!-- 家長/學員管理 -->
+                <!-- 家長/學員管理 - 預設隱藏 -->
                 <div id="parent-extra" class="hidden border-t pt-10 mt-6">
                     <div class="flex justify-between items-center mb-6">
                         <div>
@@ -255,14 +256,30 @@
             document.getElementById('step-2').classList.toggle('hidden', n !== 2);
             
             if (n === 2) {
+                console.log('顯示步驟2，更新表單顯示');
+                
                 // 根據身份顯示/隱藏對應欄位
-                document.getElementById('org-fields').classList.toggle('hidden', identityType !== '機關');
-                document.getElementById('parent-extra').classList.toggle('hidden', identityType !== '家長');
+                const orgFields = document.getElementById('org-fields');
+                const parentExtra = document.getElementById('parent-extra');
+                
+                if (identityType === '機關') {
+                    console.log('顯示機關欄位');
+                    orgFields.classList.remove('hidden');
+                } else {
+                    orgFields.classList.add('hidden');
+                }
+                
+                if (identityType === '家長') {
+                    console.log('顯示家長欄位');
+                    parentExtra.classList.remove('hidden');
+                } else {
+                    parentExtra.classList.add('hidden');
+                }
                 
                 // 強制更新學校欄位顯示
                 setTimeout(() => {
                     updateMainGrade();
-                }, 50);
+                }, 100);
             }
         }
 
@@ -288,6 +305,7 @@
             const schoolContainer = document.getElementById('m-school-container');
             const gradeBadge = document.getElementById('main-grade-badge');
             
+            // 更新年級顯示
             if (b) {
                 gradeBadge.classList.remove('hidden');
                 document.getElementById('m-grade-text').innerText = "系統判定身分：" + grade;
@@ -295,14 +313,29 @@
                 gradeBadge.classList.add('hidden');
             }
             
-            // 判斷是否顯示學校欄位
-            const shouldHideSchool = grade === "社會人士" || identityType === '家長' || identityType === '機關';
-            console.log('Should hide school?', shouldHideSchool, 'Grade:', grade);
+            // 重要修正：只有在個人身分且是學生時才顯示學校欄位
+            console.log('條件判斷：');
+            console.log('1. 身份類型:', identityType);
+            console.log('2. 年級:', grade);
+            console.log('3. 是否為個人會員:', identityType === '個人');
+            console.log('4. 是否為學生:', grade !== "社會人士" && grade !== "學齡前");
+            
+            // 只隱藏學校欄位的條件：
+            // 1. 身份是家長或機關
+            // 2. 身份是個人但年級為社會人士
+            const shouldHideSchool = 
+                identityType === '家長' || 
+                identityType === '機關' || 
+                (identityType === '個人' && (grade === "社會人士" || grade === "學齡前"));
+            
+            console.log('應該隱藏學校欄位嗎？', shouldHideSchool);
             
             if (shouldHideSchool) {
+                console.log('隱藏學校欄位');
                 schoolContainer.classList.add('hidden');
                 document.getElementById('m-school').value = "";
             } else {
+                console.log('顯示學校欄位');
                 schoolContainer.classList.remove('hidden');
             }
         }
@@ -427,7 +460,10 @@
                 }
 
                 // 收集家人資料
-                const familyData = Array.from(document.querySelectorAll('.family-card')).map(card => {
+                const familyData = [];
+                const familyCards = document.querySelectorAll('.family-card');
+                
+                familyCards.forEach(card => {
                     const name = card.querySelector('.f-name').value.trim();
                     const gender = card.querySelector('.f-gender').value;
                     const birth = card.querySelector('.f-birth').value;
@@ -435,17 +471,15 @@
                     const grade = getTaiwanGrade(birth);
                     
                     // 驗證家人資料
-                    if (!name || !gender || !birth) {
-                        throw new Error('請填寫所有家人的必填欄位（姓名、性別、生日）');
+                    if (name && gender && birth) {
+                        familyData.push({
+                            姓名: name,
+                            性別: gender,
+                            出生日期: birth,
+                            就讀學校: school || '0',
+                            目前年級: grade || '社會人士'
+                        });
                     }
-                    
-                    return {
-                        姓名: name || '未填寫',
-                        性別: gender || '未填寫',
-                        出生日期: birth || '',
-                        就讀學校: school || '0',
-                        目前年級: grade || '社會人士'
-                    };
                 });
 
                 console.log('準備提交的資料：', {
@@ -480,7 +514,7 @@
                     "機關名稱": oName || "0",
                     "統一編號": oTax || "0",
                     
-                    // 家人資料（前端欄位名稱需要對應後端）
+                    // 家人資料
                     familyData: familyData.map(f => ({
                         name: f.姓名,
                         gender: f.性別,
