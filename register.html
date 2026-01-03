@@ -101,9 +101,15 @@ function getTaiwanGrade(b) {
 }
 
 function showGrade() {
+  const birth = document.getElementById('m-birth').value;
+  if (!birth) {
+    document.getElementById('gradeText').innerText = '';
+    return;
+  }
   document.getElementById('gradeText').innerText =
-    '系統判定年級：' + getTaiwanGrade(mBirth.value);
+    '系統判定年級：' + getTaiwanGrade(birth);
 }
+
 
 function addFamily() {
   const d = document.createElement('div');
