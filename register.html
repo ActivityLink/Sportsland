@@ -342,15 +342,25 @@
             btn.disabled = true;
             btn.innerHTML = `<i class="fas fa-spinner fa-spin mr-2"></i> 資料同步中...`;
 
+            // 獲取所有表單資料，如果為空則填入預設值
+            const mName = document.getElementById('m-name').value || '未填寫';
+            const mPhone = document.getElementById('m-phone').value || '0';
+            const mGender = document.getElementById('m-gender').value || '未填寫';
+            const mBirth = document.getElementById('m-birth').value || '1970-01-01';
+            const mSchool = document.getElementById('m-school').value || '0';
+            const mGrade = getTaiwanGrade(mBirth) || '社會人士';
+            
+            // 機關資料
+            const oName = identityType === '機關' ? (document.getElementById('o-name').value || '0') : '0';
+            const oTax = identityType === '機關' ? (document.getElementById('o-tax').value || '0') : '0';
+            
             // 建立家人資料（學員名單）
             const familyData = Array.from(document.querySelectorAll('.family-card')).map(card => {
-                const name = card.querySelector('.f-name').value;
-                const gender = card.querySelector('.f-gender').value;
-                const birth = card.querySelector('.f-birth').value;
-                const school = card.querySelector('.f-school').value;
-                
-                // 根據生日計算年級
-                const grade = getTaiwanGrade(birth);
+                const name = card.querySelector('.f-name').value || '未填寫';
+                const gender = card.querySelector('.f-gender').value || '未填寫';
+                const birth = card.querySelector('.f-birth').value || '1970-01-01';
+                const school = card.querySelector('.f-school').value || '0';
+                const grade = getTaiwanGrade(birth) || '社會人士';
                 
                 return {
                     姓名: name,
@@ -361,30 +371,55 @@
                 };
             });
 
-            // 建立完整的 payload
+            // 生成會員ID - 使用時間戳和隨機數確保唯一性
+            const generateMemberId = () => {
+                const timestamp = Date.now();
+                const random = Math.floor(Math.random() * 10000);
+                return `M-${timestamp}${random}`;
+            };
+
+            // 建立完整的 payload - 包含所有資料庫欄位
             const payload = {
                 type: 'member_register',
-                lineUserId: lineUser.userId,
-                identityType: identityType,
-                // 會員基本資料 - 對應資料庫欄位
-                會員ID: `M-${Date.now()}`,
-                LINE_UID: lineUser.userId,
-                "註冊身分": identityType,
-                姓名: document.getElementById('m-name').value,
-                聯絡電話: document.getElementById('m-phone').value,
-                性別: document.getElementById('m-gender').value,
-                出生日期: document.getElementById('m-birth').value,
-                就讀學校: document.getElementById('m-school').value,
-                目前年級: getTaiwanGrade(document.getElementById('m-birth').value),
+                lineUserId: lineUser.userId || '0',
+                identityType: identityType || '個人',
+                
+                // 會員基本資料 - 對應資料庫所有欄位
+                會員ID: generateMemberId(),
+                LINE_UID: lineUser.userId || '0',
+                "註冊身分": identityType || '個人',
+                姓名: mName,
+                聯絡電話: mPhone,
+                性別: mGender,
+                出生日期: mBirth,
+                就讀學校: mSchool,
+                目前年級: mGrade,
                 // 機關相關
-                機關名稱: identityType === '機關' ? document.getElementById('o-name').value : '',
-                統一編號: identityType === '機關' ? document.getElementById('o-tax').value : '',
+                機關名稱: oName,
+                統一編號: oTax,
                 // 家人/學員資料
-                familyData: familyData,
+                familyData: familyData.length > 0 ? familyData : [],
                 // 系統欄位
                 建立時間: new Date().toISOString(),
                 更新時間: new Date().toISOString()
             };
+
+            // 確保所有必要欄位都有值
+            const requiredFields = [
+                '會員ID', 'LINE_UID', '註冊身分', '姓名', '聯絡電話', 
+                '性別', '出生日期', '就讀學校', '目前年級',
+                '機關名稱', '統一編號', '建立時間', '更新時間'
+            ];
+
+            requiredFields.forEach(field => {
+                if (!payload[field]) {
+                    payload[field] = field === '統一編號' ? '0' : 
+                                   field.includes('時間') ? new Date().toISOString() : 
+                                   field === 'LINE_UID' ? '0' : '未填寫';
+                }
+            });
+
+            console.log('提交的資料:', payload); // 調試用
 
             try {
                 const res = await fetch(API_URL, {
