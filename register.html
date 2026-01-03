@@ -28,6 +28,9 @@
         .loading-overlay { position: fixed; inset: 0; background: white; z-index: 1000; display: flex; flex-direction: column; align-items: center; justify-content: center; }
         .summary-row { display: flex; align-items: center; justify-content: space-between; width: 100%; }
         .summary-avatar { width: 36px; height: 36px; background: #F1F5F9; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #94A3B8; }
+        .gender-tag { font-size: 10px; padding: 2px 6px; border-radius: 4px; margin-left: 6px; font-weight: bold; }
+        .gender-male { background: #E0F2FE; color: #0284C7; }
+        .gender-female { background: #FCE7F3; color: #DB2777; }
     </style>
 </head>
 <body>
@@ -45,17 +48,17 @@
             
             <div onclick="selectId('Individual')" id="id-Individual" class="id-option">
                 <div class="check-dot"><i class="fas fa-check"></i></div>
-                <div class="flex-1"><div class="font-black text-gray-800">個人會員</div><div class="text-[11px] text-gray-400 font-bold">一般社會大眾</div></div>
+                <div class="flex-1"><div class="font-black text-gray-800">個人會員</div><div class="text-[11px] text-gray-400 font-bold">一般社會大眾、學生</div></div>
             </div>
             
             <div onclick="selectId('Parent')" id="id-Parent" class="id-option">
                 <div class="check-dot"><i class="fas fa-check"></i></div>
-                <div class="flex-1"><div class="font-black text-gray-800">家長會員</div><div class="text-[11px] text-gray-400 font-bold">可管理孩子名單並代為報名</div></div>
+                <div class="flex-1"><div class="font-black text-gray-800">家長會員</div><div class="text-[11px] text-gray-400 font-bold">管理孩子名單並代為報名</div></div>
             </div>
 
             <div onclick="selectId('Organization')" id="id-Organization" class="id-option">
                 <div class="check-dot"><i class="fas fa-check"></i></div>
-                <div class="flex-1"><div class="font-black text-gray-800">機關/團體</div><div class="text-[11px] text-gray-400 font-bold">公司行號、機關團體專屬帳號</div></div>
+                <div class="flex-1"><div class="font-black text-gray-800">機關/團體</div><div class="text-[11px] text-gray-400 font-bold">單位報名、公文核銷需求者</div></div>
             </div>
             
             <button onclick="goStep(2)" id="next-btn" class="btn-main mt-10 opacity-50" disabled>繼續下一步</button>
@@ -72,7 +75,7 @@
                 <div class="grid grid-cols-2 gap-4">
                     <div>
                         <label>真實姓名 *</label>
-                        <input type="text" id="m-name" placeholder="範例：王大同" required>
+                        <input type="text" id="m-name" placeholder="王大同" required>
                     </div>
                     <div>
                         <label>性別 *</label>
@@ -80,13 +83,12 @@
                             <option value="">請選擇</option>
                             <option value="男">男</option>
                             <option value="女">女</option>
-                            <option value="其他">其他</option>
                         </select>
                     </div>
                 </div>
                 
                 <label>聯絡電話 *</label>
-                <input type="tel" id="m-phone" placeholder="範例：0912345678" required>
+                <input type="tel" id="m-phone" placeholder="0912345678" required>
                 
                 <label>出生日期 *</label>
                 <input type="date" id="m-birth" required onchange="updateMainGrade()">
@@ -97,27 +99,27 @@
                 </div>
                 <div id="main-grade-badge" class="hidden"><span class="grade-badge" id="m-grade-text"></span></div>
 
-                <!-- 機關專屬欄位 -->
+                <!-- 機關欄位 -->
                 <div id="org-fields" class="hidden bg-gray-50 p-4 rounded-2xl mb-6">
                     <label>機關名稱 *</label>
                     <input type="text" id="o-name" placeholder="範例：光火體育有限公司">
                     <label>統一編號</label>
-                    <input type="text" id="o-tax" placeholder="範例：12345678">
+                    <input type="text" id="o-tax" placeholder="12345678">
                 </div>
                 
-                <!-- 家長專屬：家人管理 -->
+                <!-- 家長/學員管理 -->
                 <div id="parent-extra" class="hidden border-t pt-10 mt-6">
                     <div class="flex justify-between items-center mb-6">
                         <div>
-                            <span class="font-black text-gray-800 block">成員/家人管理</span>
-                            <span class="text-[10px] text-gray-400 font-bold">點擊編輯可更新資料</span>
+                            <span class="font-black text-gray-800 block">學員/家人名單</span>
+                            <span class="text-[10px] text-gray-400 font-bold">非學生身分將自動跳過學校填寫</span>
                         </div>
                         <button type="button" onclick="addFamilyRow()" class="text-xs bg-blue-500 text-white px-4 py-2 rounded-full font-black shadow-lg shadow-blue-100 active:scale-95 transition-transform">+ 新增學員</button>
                     </div>
                     <div id="family-list"></div>
                 </div>
                 
-                <button type="submit" id="submit-btn" class="btn-main mt-12">儲存變更並同步雲端</button>
+                <button type="submit" id="submit-btn" class="btn-main mt-12">儲存並同步資料</button>
             </form>
         </div>
     </div>
@@ -166,8 +168,7 @@
                                     name: f.name || f["家人姓名"],
                                     gender: f.gender || f["性別"],
                                     birth: f.birth || f["生日"],
-                                    school: f.school || f["學校"],
-                                    identity: f.identity || f["家人身分"] || '學生'
+                                    school: f.school || f["學校"]
                                 });
                             });
                         }
@@ -201,7 +202,7 @@
         }
 
         function getTaiwanGrade(birth) {
-            if (!birth) return "";
+            if (!birth) return "社會人士";
             const b = new Date(birth);
             let entryYear = b.getFullYear() + 6;
             if (b.getMonth() + 1 > 9 || (b.getMonth() + 1 === 9 && b.getDate() >= 2)) entryYear++;
@@ -211,24 +212,26 @@
             if (g <= 6) return `國小 ${g} 年級`;
             if (g <= 9) return `國中 ${g-6} 年級`;
             if (g <= 12) return `高中 ${g-9} 年級`;
-            return "大專/成人";
+            return "社會人士";
         }
 
         function updateMainGrade() {
             const b = document.getElementById('m-birth').value;
-            if(b) {
-                const grade = getTaiwanGrade(b);
-                document.getElementById('main-grade-badge').classList.remove('hidden');
-                document.getElementById('m-grade-text').innerText = "系統預估年級：" + grade;
-                
-                // 如果是成人，隱藏學校欄位
-                const schoolContainer = document.getElementById('m-school-container');
-                if(grade === "大專/成人") {
-                    schoolContainer.classList.add('hidden');
-                    document.getElementById('m-school').value = ""; // 清空
-                } else {
-                    schoolContainer.classList.remove('hidden');
-                }
+            if(!b) return;
+            
+            const grade = getTaiwanGrade(b);
+            const schoolContainer = document.getElementById('m-school-container');
+            const gradeBadge = document.getElementById('main-grade-badge');
+            
+            gradeBadge.classList.remove('hidden');
+            document.getElementById('m-grade-text').innerText = "系統判定身分：" + grade;
+            
+            // 跳過邏輯：如果不是學生，或是身分為家長/機關，隱藏學校
+            if(grade === "社會人士" || identityType === 'Parent' || identityType === 'Organization') {
+                schoolContainer.classList.add('hidden');
+                document.getElementById('m-school').value = "";
+            } else {
+                schoolContainer.classList.remove('hidden');
             }
         }
 
@@ -242,20 +245,38 @@
             btn.innerText = isHiding ? "編輯" : "收合";
         }
 
+        function updateSummaryInfo(card) {
+            const name = card.querySelector('.f-name').value || '未填寫';
+            const gender = card.querySelector('.f-gender').value;
+            const birth = card.querySelector('.f-birth').value;
+            const grade = getTaiwanGrade(birth);
+
+            card.querySelector('.f-sum-name').innerText = name;
+            card.querySelector('.f-sum-grade').innerText = grade;
+            
+            const genderContainer = card.querySelector('.f-sum-gender');
+            genderContainer.innerHTML = gender ? `<span class="gender-tag ${gender==='男'?'gender-male':'gender-female'}">${gender}</span>` : '';
+        }
+
         function addFamilyRow(data = null) {
             const container = document.getElementById('family-list');
             const div = document.createElement('div');
             div.className = 'family-card';
             const isExisting = !!data;
             const birthVal = data ? (data.birth.includes('T') ? data.birth.split('T')[0] : data.birth) : '';
-            const initialGrade = data ? getTaiwanGrade(data.birth) : '';
+            const initialGrade = data ? getTaiwanGrade(data.birth) : '社會人士';
 
             div.innerHTML = `
                 <div class="family-summary ${isExisting ? 'summary-row' : 'hidden'}">
                     <div class="flex items-center gap-3">
                         <div class="summary-avatar"><i class="fas fa-user"></i></div>
                         <div>
-                            <div class="font-bold text-gray-800 f-sum-name">${data ? data.name : ''}</div>
+                            <div class="flex items-center">
+                                <span class="font-bold text-gray-800 f-sum-name">${data ? data.name : ''}</span>
+                                <span class="f-sum-gender">
+                                    ${data?.gender ? `<span class="gender-tag ${data.gender==='男'?'gender-male':'gender-female'}">${data.gender}</span>` : ''}
+                                </span>
+                            </div>
                             <div class="text-[10px] text-gray-400 font-bold f-sum-grade">${initialGrade}</div>
                         </div>
                     </div>
@@ -268,54 +289,52 @@
                     </div>
                     <div class="grid grid-cols-2 gap-3">
                         <div>
-                            <label>姓名 *</label>
-                            <input type="text" class="f-name" value="${data ? data.name : ''}" required oninput="this.closest('.family-card').querySelector('.f-sum-name').innerText=this.value">
+                            <label>學員姓名 *</label>
+                            <input type="text" class="f-name" value="${data ? data.name : ''}" required oninput="updateSummaryInfo(this.closest('.family-card'))">
                         </div>
                         <div>
                             <label>性別 *</label>
-                            <select class="f-gender" required>
+                            <select class="f-gender" required onchange="updateSummaryInfo(this.closest('.family-card'))">
+                                <option value="">請選擇</option>
                                 <option value="男" ${data && data.gender === '男' ? 'selected' : ''}>男</option>
                                 <option value="女" ${data && data.gender === '女' ? 'selected' : ''}>女</option>
                             </select>
                         </div>
                     </div>
-                    <label>生日 *</label>
+                    <label>學員生日 *</label>
                     <input type="date" class="f-birth" value="${birthVal}" required onchange="handleFamilyBirthChange(this)">
                     
-                    <div class="f-school-container ${initialGrade === '大專/成人' ? 'hidden' : ''}">
+                    <div class="f-school-container ${initialGrade === '社會人士' ? 'hidden' : ''}">
                         <label>就讀學校</label>
                         <input type="text" class="f-school" value="${data ? data.school : ''}" placeholder="範例：中山國小">
                     </div>
                     
-                    <select class="f-identity hidden"><option value="學生">學生</option></select>
                     ${isExisting ? `<button type="button" onclick="toggleFamilyEdit(this)" class="w-full py-2 bg-gray-50 text-gray-400 text-xs font-bold rounded-xl mt-2">完成收合</button>` : ''}
                 </div>
             `;
             container.appendChild(div);
         }
 
-        // 處理家人生日變動
         function handleFamilyBirthChange(input) {
             const card = input.closest('.family-card');
             const grade = getTaiwanGrade(input.value);
-            card.querySelector('.f-sum-grade').innerText = grade;
-            
-            // 如果是成人，隱藏學校
             const schoolContainer = card.querySelector('.f-school-container');
             const schoolInput = card.querySelector('.f-school');
-            if(grade === "大專/成人") {
+            
+            if(grade === "社會人士") {
                 schoolContainer.classList.add('hidden');
                 schoolInput.value = "";
             } else {
                 schoolContainer.classList.remove('hidden');
             }
+            updateSummaryInfo(card);
         }
 
         document.getElementById('reg-form').onsubmit = async (e) => {
             e.preventDefault();
             const btn = document.getElementById('submit-btn');
             btn.disabled = true;
-            btn.innerHTML = `<i class="fas fa-spinner fa-spin mr-2"></i> 同步中...`;
+            btn.innerHTML = `<i class="fas fa-spinner fa-spin mr-2"></i> 資料同步中...`;
 
             const families = Array.from(document.querySelectorAll('.family-card')).map(card => {
                 const b = card.querySelector('.f-birth').value;
@@ -351,7 +370,7 @@
                 });
                 const result = await res.json();
                 if(result.status === "success") {
-                    alert("✅ 會員資料已完整同步！");
+                    alert("✅ 會員資料同步成功！");
                     navigateTo('index.html');
                 } else {
                     alert("❌ 儲存失敗：" + result.message);
@@ -359,7 +378,7 @@
                     btn.innerText = "重新儲存";
                 }
             } catch(err) {
-                alert("網路異常，請稍後再試");
+                alert("連線超時，請檢查網路後再試");
                 btn.disabled = false;
                 btn.innerText = "重新儲存";
             }
