@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ActivityLink - 課程端管理</title>
+    <title>ActivityLink - 綜合管理系統</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -24,10 +24,10 @@
             background-color: var(--bg-light); 
             color: var(--text-main);
             margin: 0;
-            overflow-x: hidden;
+            -webkit-font-smoothing: antialiased;
         }
         
-        /* 側邊欄改版：仿 LINE OA */
+        /* 側邊欄：仿 LINE OA */
         .sidebar { transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1); width: 240px; background-color: var(--sidebar-dark); position: fixed; height: 100%; z-index: 50; overflow: hidden; }
         .sidebar.collapsed { width: 70px; }
         .main-content { transition: margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1); margin-left: 240px; min-height: 100vh; }
@@ -37,43 +37,43 @@
         .nav-link:hover { color: white; background-color: rgba(255, 255, 255, 0.08); }
         .nav-link.active { background-color: rgba(6, 199, 85, 0.15); color: var(--line-green); border-left: 3px solid var(--line-green); }
         
-        /* 收合時隱藏文字 */
+        /* 收合時隱藏文字與箭頭 */
         .collapsed .nav-text, .collapsed .logo-text, .collapsed .chevron-icon { display: none; }
         .collapsed .nav-link { justify-content: center; padding: 14px 0; gap: 0; }
         .collapsed .nav-link i { font-size: 20px; }
 
         .sub-menu { overflow: hidden; transition: max-height 0.3s ease-out; max-height: 0; background-color: rgba(0,0,0,0.1); }
         .sub-menu.open { max-height: 500px; }
-        .collapsed .sub-menu { display: none; } /* 收合時不顯示子選單 */
+        .collapsed .sub-menu { display: none; }
 
-        .sub-link { padding-left: 60px; font-size: 14px; }
-        .sub-link.active { color: white; background-color: rgba(255, 255, 255, 0.05); }
+        .sub-link { padding-left: 60px; font-size: 14px; color: #9CA3AF; }
+        .sub-link:hover { color: white; }
 
         /* 表格優化 */
-        .flat-table { width: 100%; border-collapse: collapse; background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.04); }
+        .flat-table { width: 100%; border-collapse: collapse; background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.04); border: 1px solid var(--border-light); }
         .flat-table th { background-color: #FAFAFA; color: var(--text-sub); font-size: 14px; padding: 18px 24px; border-bottom: 1px solid var(--border-light); text-align: left; font-weight: 400; }
-        .flat-table td { padding: 18px 24px; border-bottom: 1px solid #F9F9F9; font-weight: 400; font-size: 15px; }
+        .flat-table td { padding: 18px 24px; border-bottom: 1px solid #F9F9F9; font-weight: 400; font-size: 15px; color: var(--text-main); }
 
         /* 彈窗設計 */
         .modal-overlay { background-color: rgba(0, 0, 0, 0.4); display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 1000; align-items: center; justify-content: center; backdrop-filter: blur(2px); }
-        .modal-content { background: white; width: 95%; max-width: 1200px; height: 92vh; display: flex; flex-direction: column; border-radius: 12px; overflow: hidden; }
-        .modal-body { overflow-y: auto; flex: 1; padding: 30px 50px; background: #FFF; }
+        .modal-content { background: white; width: 95%; max-width: 1250px; height: 92vh; display: flex; flex-direction: column; border-radius: 12px; overflow: hidden; }
+        .modal-body { overflow-y: auto; flex: 1; padding: 30px 50px; background: #F9FAFB; }
         
         /* A-AN 藍色標記 */
-        .col-tag { display: inline-block; width: 28px; height: 28px; background: var(--marker-blue); color: white; border-radius: 6px; text-align: center; line-height: 28px; font-size: 11px; font-weight: 700; margin-right: 12px; flex-shrink: 0; }
+        .col-tag { display: inline-block; width: 30px; height: 30px; background: var(--marker-blue); color: white; border-radius: 6px; text-align: center; line-height: 30px; font-size: 11px; font-weight: 700; margin-right: 12px; flex-shrink: 0; }
         
-        /* 欄位高度與字體優化 */
+        /* 標籤文字與欄位放大 */
         label { display: flex; align-items: center; font-size: 16px; font-weight: 400; color: #444; margin-bottom: 10px; }
-        input, select, textarea { width: 100%; border: 1px solid #DDE2E8; border-radius: 8px; padding: 14px 16px; font-size: 16px; outline: none; transition: 0.2s; background: #FFF; color: #333; font-weight: 400; }
-        input:focus { border-color: var(--line-green); background: #FCFEFD; }
-        input[readonly] { background-color: #F8F9FA; color: #AAA; border-color: #EEE; }
+        input, select, textarea { width: 100%; border: 1px solid #DDE2E8; border-radius: 8px; padding: 14px 16px; font-size: 16px; outline: none; transition: 0.2s; background: #FFF; font-weight: 400; }
+        input:focus { border-color: var(--line-green); }
+        input[readonly] { background-color: #F3F4F6; color: #999; }
 
-        .section-box { margin-bottom: 40px; padding-bottom: 20px; border-bottom: 1px solid #F0F0F0; }
+        .section-box { margin-bottom: 40px; padding: 30px; border-radius: 12px; background: #FFF; border: 1px solid #E5E7EB; }
         .section-header { font-size: 18px; font-weight: 500; color: #000; margin-bottom: 25px; display: flex; align-items: center; gap: 10px; }
 
-        .btn-save { background-color: var(--line-green); color: white; padding: 14px 48px; border-radius: 8px; font-size: 16px; font-weight: 500; border: none; cursor: pointer; transition: 0.2s; }
-        .btn-save:hover { opacity: 0.9; transform: translateY(-1px); }
-        .btn-cancel { color: #888; padding: 14px 24px; font-size: 16px; cursor: pointer; background: transparent; border: none; }
+        .btn-green { background-color: var(--line-green); color: white; padding: 12px 32px; border-radius: 8px; font-size: 15px; font-weight: 500; border: none; cursor: pointer; transition: 0.2s; }
+        .btn-green:hover { opacity: 0.9; transform: translateY(-1px); }
+        .btn-ghost { color: #6B7280; padding: 12px 24px; font-size: 15px; cursor: pointer; background: transparent; border: none; }
 
         .loading-spinner { border: 2px solid #EEE; border-top: 2px solid var(--line-green); border-radius: 50%; width: 30px; height: 30px; animation: spin 0.8s linear infinite; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
@@ -89,16 +89,22 @@
         </div>
         <nav>
             <!-- 課程端區收合 -->
-            <div onclick="toggleSubMenu()" id="nav-group-course" class="nav-link">
+            <div onclick="toggleSubMenu('course-submenu', 'chevron-course')" class="nav-link">
                 <i class="fas fa-th-large w-5 text-center"></i>
                 <span class="nav-text font-medium flex-1">課程端區</span>
-                <i id="chevron" class="fas fa-chevron-down text-[10px] transition-transform chevron-icon"></i>
+                <i id="chevron-course" class="fas fa-chevron-down text-[10px] transition-transform chevron-icon"></i>
             </div>
             <div id="course-submenu" class="sub-menu">
-                <div onclick="switchMode('SingleCourses')" id="sub-SingleCourses" class="nav-link sub-link active">單日課程建置</div>
+                <div onclick="switchMode('SingleCourses')" id="sub-SingleCourses" class="nav-link sub-link">單日課程建置</div>
                 <div onclick="switchMode('BatchCourses')" id="sub-BatchCourses" class="nav-link sub-link">梯次課程建置</div>
                 <div onclick="switchMode('CampCourses')" id="sub-CampCourses" class="nav-link sub-link">營隊活動建置</div>
                 <div onclick="switchMode('AfterSchoolCourses')" id="sub-AfterSchoolCourses" class="nav-link sub-link">平日課後班</div>
+            </div>
+
+            <!-- 會員 CRM 區 (簡化為單一總表) -->
+            <div onclick="loadCRM()" class="nav-link" id="nav-crm">
+                <i class="fas fa-user-friends w-5 text-center"></i>
+                <span class="nav-text font-medium flex-1">會員 CRM 總表</span>
             </div>
 
             <div class="my-4 border-t border-white/5 mx-4"></div>
@@ -109,62 +115,62 @@
 
     <!-- 主內容區 -->
     <main id="main-content" class="main-content">
-        <nav class="sticky top-0 z-40 bg-white border-b border-gray-100 px-8 py-5 flex items-center justify-between shadow-sm">
+        <nav class="sticky top-0 z-40 bg-white/95 backdrop-blur-sm border-b border-gray-100 px-8 py-4 flex items-center justify-between shadow-sm">
             <div class="flex items-center gap-6">
                 <button onclick="toggleSidebar()" class="text-gray-400 hover:text-gray-600 bg-transparent border-none cursor-pointer"><i class="fas fa-bars-staggered text-xl"></i></button>
-                <h2 id="page-title" class="text-lg font-medium text-gray-800">單日課程建置</h2>
+                <h2 id="page-title" class="text-lg font-medium text-gray-800">歡迎使用管理系統</h2>
             </div>
             <div class="flex items-center gap-4">
-                <span id="conn-status" class="text-[10px] font-bold text-gray-400 uppercase tracking-widest px-2 py-1 bg-gray-50 rounded">Syncing...</span>
+                <span id="conn-status" class="text-[10px] font-bold text-gray-400 uppercase tracking-widest px-2 py-1 bg-gray-50 rounded">System Online</span>
                 <div class="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center text-xs text-gray-400">AD</div>
             </div>
         </nav>
 
         <div id="app-content" class="px-8 py-8">
-            <!-- 資料渲染 -->
+            <!-- 動態資料載入區 -->
         </div>
     </main>
 
-    <!-- 40 欄位逐條建置彈窗 (A to AN) -->
+    <!-- 40 欄位逐條建置彈窗 -->
     <div id="course-modal" class="modal-overlay">
         <div class="modal-content">
             <div class="flex bg-white border-b px-10 py-5 justify-between items-center">
-                <h3 class="text-lg font-medium text-gray-600">活動資料詳細錄入 <span class="text-xs text-gray-400 ml-2">(A - AN 全欄位)</span></h3>
+                <h3 class="text-lg font-medium text-gray-700">課程活動詳細建置 <span class="text-xs text-gray-400 ml-2">(A - AN 全欄位映射)</span></h3>
                 <button onclick="document.getElementById('course-modal').style.display='none';" class="text-gray-300 hover:text-gray-500 text-xl cursor-pointer"><i class="fas fa-times"></i></button>
             </div>
             <div class="modal-body">
                 <form id="course-form">
                     <input type="hidden" name="sheetName" id="form-sheetName">
 
-                    <!-- 區塊 1: 基礎 -->
+                    <!-- A-F 基礎資訊 -->
                     <div class="section-box">
-                        <div class="section-header"><i class="fas fa-info-circle text-blue-500"></i> 基礎分類 (A-F)</div>
-                        <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
-                            <div><label><span class="col-tag">A</span>課程ID</label><input type="text" name="courseId" readonly placeholder="系統自動生成"></div>
+                        <div class="section-header">區塊一：基礎分類與標籤 (A-F)</div>
+                        <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+                            <div><label><span class="col-tag">A</span>課程ID</label><input type="text" name="courseId" readonly placeholder="自動生成"></div>
                             <div class="md:col-span-2"><label><span class="col-tag">B</span>課程名稱 *</label><input type="text" name="courseName" required></div>
-                            <div><label><span class="col-tag">C</span>運動類別</label><input type="text" name="category" placeholder="籃球, 羽球"></div>
+                            <div><label><span class="col-tag">C</span>運動類別</label><input type="text" name="category" placeholder="羽球, 籃球"></div>
                             <div><label><span class="col-tag">D</span>年齡分級</label><input type="text" name="ageGroup"></div>
                             <div><label><span class="col-tag">E</span>難度等級</label><select name="difficulty"><option value="體驗">體驗</option><option value="初階">初階</option><option value="中階">中階</option><option value="高階">高階</option></select></div>
-                            <div class="md:col-span-2"><label><span class="col-tag">F</span>標籤分類</label><input type="text" name="tags" placeholder="熱門, 推薦"></div>
+                            <div class="md:col-span-2"><label><span class="col-tag">F</span>標籤分類</label><input type="text" name="tags"></div>
                         </div>
                     </div>
 
-                    <!-- 區塊 2: 時間 -->
+                    <!-- G-L 時間週期 -->
                     <div class="section-box">
-                        <div class="section-header"><i class="fas fa-calendar-alt text-blue-500"></i> 時間與週期 (G-L)</div>
-                        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div class="section-header">區塊二：報名與活動排程 (G-L)</div>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
                             <div><label><span class="col-tag">G</span>開放報名日</label><input type="date" name="regStart"></div>
                             <div><label><span class="col-tag">H</span>截止報名日</label><input type="date" name="regEnd"></div>
-                            <div><label><span class="col-tag">I</span>課程日期 *</label><input type="text" name="courseDate" required placeholder="YYYY/MM/DD"></div>
-                            <div><label><span class="col-tag">J</span>開始時間</label><input type="time" name="startTime"></div>
-                            <div><label><span class="col-tag">K</span>結束時間</label><input type="time" name="endTime"></div>
-                            <div><label><span class="col-tag">L</span>課程時長(分)</label><input type="number" name="duration"></div>
+                            <div><label><span class="col-tag">I</span>課程日期 *</label><input type="date" name="courseDate" required></div>
+                            <div><label><span class="col-tag">J</span>開始時間</label><input type="time" name="startTime" oninput="calcDur()"></div>
+                            <div><label><span class="col-tag">K</span>結束時間</label><input type="time" name="endTime" oninput="calcDur()"></div>
+                            <div><label><span class="col-tag">L</span>課程時長(分)</label><input type="number" name="duration" placeholder="自動計算"></div>
                         </div>
                     </div>
 
-                    <!-- 區塊 3: 師資場地 -->
+                    <!-- M-Q 師資場地 -->
                     <div class="section-box">
-                        <div class="section-header"><i class="fas fa-map-marker-alt text-blue-500"></i> 師資與場地 (M-Q)</div>
+                        <div class="section-header">區塊三：教練與場地資源 (M-Q)</div>
                         <div class="grid grid-cols-1 md:grid-cols-5 gap-4">
                             <div><label><span class="col-tag">M</span>教練ID</label><input type="text" name="coachId"></div>
                             <div><label><span class="col-tag">N</span>教練姓名</label><input type="text" name="coachName"></div>
@@ -174,10 +180,10 @@
                         </div>
                     </div>
 
-                    <!-- 區塊 4: 費用名額 -->
+                    <!-- R-AA 費用名額 -->
                     <div class="section-box">
-                        <div class="section-header"><i class="fas fa-money-bill-wave text-blue-500"></i> 費用與名額 (R-AA)</div>
-                        <div class="grid grid-cols-1 md:grid-cols-5 gap-6">
+                        <div class="section-header">區塊四：費用設定與名額控制 (R-AA)</div>
+                        <div class="grid grid-cols-1 md:grid-cols-5 gap-8">
                             <div><label><span class="col-tag">R</span>原價</label><input type="number" name="price" value="0"></div>
                             <div><label><span class="col-tag">S</span>早鳥價</label><input type="number" name="earlyBirdPrice" value="0"></div>
                             <div><label><span class="col-tag">T</span>早鳥截止</label><input type="date" name="earlyBirdEnd"></div>
@@ -191,71 +197,74 @@
                         </div>
                     </div>
 
-                    <!-- 區塊 5: 介紹 -->
+                    <!-- AB-AN 內容與系統 -->
                     <div class="section-box">
-                        <div class="section-header"><i class="fas fa-image text-blue-500"></i> 詳細圖片與內容 (AB-AI)</div>
+                        <div class="section-header">區塊五：內容介紹與租借設定 (AB-AN)</div>
                         <div class="space-y-6">
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
                                 <div><label><span class="col-tag">AB</span>性別限制</label><select name="genderLimit"><option value="不限">不限</option><option value="限男">限男</option><option value="限女">限女</option></select></div>
                                 <div><label><span class="col-tag">AC</span>特殊要求</label><input type="text" name="specialRequest"></div>
                                 <div><label><span class="col-tag">AD</span>封面網址</label><input type="text" name="coverImage"></div>
                                 <div><label><span class="col-tag">AE</span>詳細圖片</label><input type="text" name="detailImage"></div>
                             </div>
-                            <div><label><span class="col-tag">AF</span>課程亮點</label><input type="text" name="highlights" placeholder="一句話描述亮點"></div>
+                            <div><label><span class="col-tag">AF</span>課程亮點</label><input type="text" name="highlights"></div>
                             <div><label><span class="col-tag">AG</span>完整內容描述</label><textarea name="content" rows="4"></textarea></div>
                             <div><label><span class="col-tag">AH</span>注意事項</label><textarea name="notes" rows="3"></textarea></div>
                             <div><label><span class="col-tag">AI</span>適合對象</label><input type="text" name="targetAudience"></div>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                <div><label><span class="col-tag">AJ</span>課程狀態</label><select name="status"><option value="報名中">報名中</option><option value="已額滿">已額滿</option><option value="草稿">草稿</option></select></div>
+                                <div><label><span class="col-tag">AK</span>排序權重</label><input type="number" name="weight"></div>
+                            </div>
                         </div>
-                    </div>
-
-                    <!-- 區塊 6: 系統 -->
-                    <div class="section-box">
-                        <div class="section-header"><i class="fas fa-cogs text-blue-500"></i> 狀態與系統租借 (AJ-AN)</div>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-                            <div><label><span class="col-tag">AJ</span>課程狀態</label><select name="status"><option value="報名中">報名中</option><option value="已額滿">已額滿</option><option value="草稿">草稿</option></select></div>
-                            <div><label><span class="col-tag">AK</span>排序權重</label><input type="number" name="weight" value="0"></div>
-                            <div><label><span class="col-tag">AL</span>建立時間</label><input type="text" name="createdAt" readonly></div>
-                            <div><label><span class="col-tag">AM</span>更新時間</label><input type="text" name="updatedAt" readonly></div>
-                        </div>
-                        <label class="text-blue-600 font-medium mb-4"><span class="col-tag">AN</span>租用設備勾選項目 (來自系統參數)</label>
-                        <div id="equipment-checkboxes" class="grid grid-cols-2 md:grid-cols-4 gap-4 p-4 bg-gray-50 rounded-lg border">
-                            <!-- JS 動態生成 -->
+                        <label class="text-blue-600 font-medium my-6 flex items-center"><span class="col-tag">AN</span>租用設備勾選項目</label>
+                        <div id="equipment-checkboxes" class="grid grid-cols-2 md:grid-cols-5 gap-4 p-4 bg-gray-50 rounded-lg border">
+                            <!-- JS 生成 -->
                         </div>
                     </div>
                 </form>
             </div>
             <div class="px-10 py-5 border-t flex justify-end gap-4 bg-white sticky bottom-0 z-10 shadow-lg">
-                <button onclick="document.getElementById('course-modal').style.display='none';" class="btn-cancel">取消</button>
-                <button onclick="submitCourseForm()" id="submit-btn" class="btn-save">同步儲存試算表</button>
+                <button onclick="document.getElementById('course-modal').style.display='none';" class="btn-ghost">取消</button>
+                <button onclick="submitCourseForm()" id="submit-btn" class="btn-green shadow-lg">儲存並更新雲端試算表</button>
             </div>
         </div>
     </div>
 
     <script>
         const API_URL = 'https://aged-rice-2438.wetw-net3.workers.dev/';
-        let currentSheet = 'SingleCourses';
-        let allCourses = [], equipList = [];
+        let currentSheet = 'SingleCourses', allCourses = [], equipList = [];
 
-        // 側邊欄與子選單邏輯
         function toggleSidebar() {
-            const sidebar = document.getElementById('sidebar');
-            const main = document.getElementById('main-content');
-            sidebar.classList.toggle('collapsed');
-            main.classList.toggle('expanded');
+            document.getElementById('sidebar').classList.toggle('collapsed');
+            document.getElementById('main-content').classList.toggle('expanded');
         }
 
-        function toggleSubMenu() {
-            const menu = document.getElementById('course-submenu');
-            const chevron = document.getElementById('chevron');
+        function toggleSubMenu(menuId, chevronId) {
+            const menu = document.getElementById(menuId);
+            const chevron = document.getElementById(chevronId);
             const sidebar = document.getElementById('sidebar');
+            if (sidebar.classList.contains('collapsed')) toggleSidebar();
             
-            // 如果是在收合狀態下點擊，則先展開側邊欄
-            if (sidebar.classList.contains('collapsed')) {
-                toggleSidebar();
+            const isOpen = menu.classList.contains('open');
+            document.querySelectorAll('.sub-menu').forEach(m => m.classList.remove('open'));
+            document.querySelectorAll('.chevron-icon').forEach(c => c.style.transform = 'rotate(0deg)');
+            
+            if (!isOpen) {
+                menu.classList.add('open');
+                chevron.style.transform = 'rotate(180deg)';
             }
-            
-            menu.classList.toggle('open');
-            chevron.style.transform = menu.classList.contains('open') ? 'rotate(180deg)' : 'rotate(0deg)';
+        }
+
+        function calcDur() {
+            const s = document.querySelector('[name="startTime"]').value;
+            const e = document.querySelector('[name="endTime"]').value;
+            if (s && e) {
+                const t1 = new Date(`1970-01-01T${s}:00`);
+                const t2 = new Date(`1970-01-01T${e}:00`);
+                let diff = (t2 - t1) / 60000;
+                if (diff < 0) diff += 1440;
+                document.querySelector('[name="duration"]').value = Math.floor(diff);
+            }
         }
 
         async function switchMode(sheetName) {
@@ -268,43 +277,36 @@
 
         async function loadData() {
             const container = document.getElementById('app-content');
-            container.innerHTML = `<div class="p-40 text-center"><div class="loading-spinner mx-auto mb-4"></div>資料讀取中...</div>`;
+            container.innerHTML = '<div class="p-20 text-center"><div class="loading-spinner mx-auto"></div></div>';
             try {
-                // 1. 抓取設備
                 const confRes = await fetch(`${API_URL}?type=config&_t=${Date.now()}`);
                 const confData = await confRes.json();
                 const rows = confData.data || confData.config || [];
                 const equipRow = rows.find(r => (r.type === 'equipment_list' || (Array.isArray(r) && r[0] === 'equipment_list')));
                 equipList = equipRow ? JSON.parse(equipRow.options || (Array.isArray(equipRow) ? equipRow[2] : '[]')) : [];
 
-                // 2. 抓取課程
                 const res = await fetch(`${API_URL}?sheet=${currentSheet}&_t=${Date.now()}`);
                 const result = await res.json();
                 allCourses = result.data || [];
-                renderList();
-                
-                document.getElementById('conn-status').innerText = "Cloud Active";
-                document.getElementById('conn-status').style.color = "#06C755";
-            } catch (e) {
-                container.innerHTML = `<div class="p-20 text-center text-red-500">連線失敗: ${e.message}</div>`;
-            }
+                renderTable();
+            } catch (e) { container.innerHTML = '連線失敗'; }
         }
 
-        function renderList() {
+        function renderTable() {
             const rows = allCourses.map(item => `
-                <tr class="hover:bg-gray-50 transition-all">
+                <tr>
                     <td><div class="font-medium text-gray-800">${item.courseName}</div><div class="text-[10px] text-gray-400 font-mono">${item.courseId}</div></td>
-                    <td><div class="text-sm text-gray-600">${item.courseDate || '-'}</div></td>
+                    <td><div class="text-sm">${item.courseDate ? item.courseDate.split('T')[0] : '-'}</div></td>
                     <td><span class="px-3 py-1 rounded-full text-[11px] ${item.status === '報名中' ? 'bg-green-50 text-green-600' : 'bg-gray-100 text-gray-500'}">${item.status || '報名中'}</span></td>
-                    <td class="text-right"><button onclick="editCourse('${item.courseId}')" class="w-8 h-8 text-blue-500 hover:bg-blue-50 rounded-full"><i class="fas fa-edit"></i></button></td>
+                    <td class="text-right"><button onclick="editCourse('${item.courseId}')" class="text-blue-500"><i class="fas fa-edit"></i></button></td>
                 </tr>`).join('');
 
             document.getElementById('app-content').innerHTML = `
-                <div class="flex justify-between items-center mb-8">
-                    <h1 class="text-2xl font-bold text-gray-800">${currentSheet}</h1>
-                    <button onclick="openCourseModal()" class="btn-green shadow-md">新增課程項目</button>
+                <div class="flex justify-between items-center mb-6">
+                    <h1 class="text-2xl font-bold">${currentSheet}</h1>
+                    <button onclick="openCourseModal()" class="btn-green shadow-sm">建立資料</button>
                 </div>
-                <table class="flat-table"><thead><tr><th>活動標題 / ID</th><th>排程日期</th><th>狀態</th><th class="text-right">操作</th></tr></thead><tbody>${rows}</tbody></table>`;
+                <table class="flat-table"><thead><tr><th>名稱/ID</th><th>日期</th><th>狀態</th><th class="text-right">操作</th></tr></thead><tbody>${rows}</tbody></table>`;
         }
 
         function openCourseModal() {
@@ -312,9 +314,9 @@
             document.getElementById('form-sheetName').value = currentSheet;
             const container = document.getElementById('equipment-checkboxes');
             container.innerHTML = equipList.map(eq => `
-                <label class="flex items-center gap-3 p-4 bg-white border border-gray-100 rounded-xl cursor-pointer hover:border-green-500 transition-all">
-                    <input type="checkbox" name="eq_check" value="${eq.name}" class="w-5 h-5 rounded accent-green-600">
-                    <div><div class="text-[13px] font-medium">${eq.name}</div><div class="text-[10px] text-blue-500">+$${eq.price}</div></div>
+                <label class="flex items-center gap-3 p-3 bg-white border border-gray-100 rounded-lg cursor-pointer">
+                    <input type="checkbox" name="eq_check" value="${eq.name}" class="w-4 h-4 accent-green-600">
+                    <div><div class="text-xs">${eq.name}</div><div class="text-[10px] text-blue-500">$${eq.price}</div></div>
                 </label>`).join('');
             document.getElementById('course-modal').style.display = 'flex';
         }
@@ -334,7 +336,6 @@
                     input.value = val;
                 }
             });
-
             const selected = (item.selectedEquipment || '').split(',').map(s => s.trim());
             form.querySelectorAll('input[name="eq_check"]').forEach(cb => cb.checked = selected.includes(cb.value));
         }
@@ -345,15 +346,46 @@
             const payload = Object.fromEntries(new FormData(document.getElementById('course-form')).entries());
             const checked = Array.from(document.querySelectorAll('input[name="eq_check"]:checked')).map(cb => cb.value);
             payload.selectedEquipment = checked.join(',');
-
             try {
                 const res = await fetch(API_URL, { method: 'POST', body: JSON.stringify(payload) });
-                if ((await res.json()).status === "success") {
-                    document.getElementById('course-modal').style.display = 'none';
-                    await loadData();
-                }
+                if ((await res.json()).status === "success") { document.getElementById('course-modal').style.display = 'none'; await loadData(); }
             } catch (e) { alert("儲存失敗"); }
             finally { btn.disabled = false; btn.innerText = "同步儲存試算表"; }
+        }
+
+        // --- 會員 CRM 總表 ---
+        async function loadCRM() {
+            document.getElementById('page-title').innerText = '會員 CRM 總表';
+            const container = document.getElementById('app-content');
+            container.innerHTML = '<div class="p-20 text-center"><div class="loading-spinner mx-auto"></div></div>';
+            try {
+                const res = await fetch(`${API_URL}?type=members_get&identity=ALL`);
+                const result = await res.json();
+                renderCRMTable(result.data || []);
+            } catch(e) { container.innerHTML = '載入會員失敗'; }
+        }
+
+        function renderCRMTable(data) {
+            const container = document.getElementById('app-content');
+            const rows = data.map(m => `
+                <tr>
+                    <td><div class="font-medium">${m.name}</div><div class="text-[10px] text-gray-400">${m.memberId}</div></td>
+                    <td><span class="px-3 py-1 rounded-full text-[10px] bg-slate-100 text-slate-600">${m.identityType || '一般'}</span></td>
+                    <td>${m.phone}</td>
+                    <td>${m.birthDate ? m.birthDate.split('T')[0] : '-'}</td>
+                    <td class="text-right">
+                        <button class="text-blue-500"><i class="fas fa-edit"></i></button>
+                    </td>
+                </tr>
+            `).join('');
+            container.innerHTML = `
+                <div class="flex justify-between items-center mb-6">
+                    <h1 class="text-2xl font-bold text-gray-800">所有註冊會員</h1>
+                </div>
+                <table class="flat-table">
+                    <thead><tr><th>姓名 / ID</th><th>身分屬性</th><th>電話</th><th>生日</th><th class="text-right">管理</th></tr></thead>
+                    <tbody>${rows}</tbody>
+                </table>`;
         }
 
         window.onload = () => switchMode('SingleCourses');
