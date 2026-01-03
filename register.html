@@ -409,45 +409,88 @@
             btn.innerHTML = `<i class="fas fa-spinner fa-spin mr-2"></i> 資料同步中...`;
 
             try {
-                // 收集表單資料
-                const formData = {
-                    lineUserId: lineUser.userId,
-                    identityType: identityType,
-                    name: document.getElementById('m-name').value.trim(),
-                    phone: document.getElementById('m-phone').value.trim(),
-                    gender: document.getElementById('m-gender').value,
-                    birthDate: document.getElementById('m-birth').value,
-                    school: document.getElementById('m-school').value.trim(),
-                    grade: getTaiwanGrade(document.getElementById('m-birth').value)
-                };
-
+                // 收集主要資料 - 確保所有欄位都有值
+                const mName = document.getElementById('m-name').value.trim();
+                const mPhone = document.getElementById('m-phone').value.trim();
+                const mGender = document.getElementById('m-gender').value;
+                const mBirth = document.getElementById('m-birth').value;
+                const mSchool = document.getElementById('m-school').value.trim();
+                const mGrade = getTaiwanGrade(mBirth);
+                
                 // 機關資料
-                if (identityType === '機關') {
-                    formData.orgName = document.getElementById('o-name').value.trim();
-                    formData.taxId = document.getElementById('o-tax').value.trim();
+                const oName = identityType === '機關' ? document.getElementById('o-name').value.trim() : '';
+                const oTax = identityType === '機關' ? document.getElementById('o-tax').value.trim() : '';
+                
+                // 驗證必填欄位
+                if (!mName || !mPhone || !mGender || !mBirth) {
+                    throw new Error('請填寫所有必填欄位（姓名、電話、性別、出生日期）');
                 }
 
-                // 家人資料
+                // 收集家人資料
                 const familyData = Array.from(document.querySelectorAll('.family-card')).map(card => {
+                    const name = card.querySelector('.f-name').value.trim();
+                    const gender = card.querySelector('.f-gender').value;
+                    const birth = card.querySelector('.f-birth').value;
+                    const school = card.querySelector('.f-school').value.trim();
+                    const grade = getTaiwanGrade(birth);
+                    
+                    // 驗證家人資料
+                    if (!name || !gender || !birth) {
+                        throw new Error('請填寫所有家人的必填欄位（姓名、性別、生日）');
+                    }
+                    
                     return {
-                        name: card.querySelector('.f-name').value.trim(),
-                        gender: card.querySelector('.f-gender').value,
-                        birth: card.querySelector('.f-birth').value,
-                        school: card.querySelector('.f-school').value.trim(),
-                        grade: getTaiwanGrade(card.querySelector('.f-birth').value)
+                        姓名: name || '未填寫',
+                        性別: gender || '未填寫',
+                        出生日期: birth || '',
+                        就讀學校: school || '0',
+                        目前年級: grade || '社會人士'
                     };
                 });
 
-                // 準備 API 請求
+                console.log('準備提交的資料：', {
+                    identityType,
+                    mName,
+                    mPhone,
+                    mGender,
+                    mBirth,
+                    mSchool,
+                    mGrade,
+                    oName,
+                    oTax,
+                    familyData
+                });
+
+                // 建立完整的 payload - 符合後端期望的格式
                 const payload = {
                     type: 'member_register',
                     lineUserId: lineUser.userId,
                     identityType: identityType,
-                    ...formData,
-                    familyData: familyData
+                    
+                    // 主要資料（使用正確的欄位名稱）
+                    "註冊身分": identityType,
+                    "姓名": mName,
+                    "聯絡電話": mPhone,
+                    "性別": mGender,
+                    "出生日期": mBirth,
+                    "就讀學校": mSchool || (mGrade === "社會人士" ? "0" : ""),
+                    "目前年級": mGrade,
+                    
+                    // 機關資料
+                    "機關名稱": oName || "0",
+                    "統一編號": oTax || "0",
+                    
+                    // 家人資料（前端欄位名稱需要對應後端）
+                    familyData: familyData.map(f => ({
+                        name: f.姓名,
+                        gender: f.性別,
+                        birth: f.出生日期,
+                        school: f.就讀學校,
+                        grade: f.目前年級
+                    }))
                 };
 
-                console.log('Submitting payload:', payload);
+                console.log('提交的完整 payload:', JSON.stringify(payload, null, 2));
 
                 const response = await fetch(API_URL, {
                     method: 'POST',
@@ -459,19 +502,21 @@
                 });
 
                 const result = await response.json();
-                console.log('Submission result:', result);
+                console.log('API 回應:', result);
 
                 if (result.status === "success") {
                     alert("✅ 會員資料同步成功！");
                     // 重新載入頁面以更新資料
-                    location.reload();
+                    setTimeout(() => {
+                        location.reload();
+                    }, 1500);
                 } else {
-                    throw new Error(result.message || "儲存失敗");
+                    throw new Error(result.message || "儲存失敗，請檢查資料格式");
                 }
 
             } catch (error) {
-                console.error('Submission error:', error);
-                alert("❌ 儲存失敗：" + error.message);
+                console.error('提交錯誤:', error);
+                alert("❌ " + error.message);
                 btn.disabled = false;
                 btn.innerText = "重新儲存";
             }
