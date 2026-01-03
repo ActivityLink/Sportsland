@@ -79,14 +79,14 @@
             <i class="fas fa-user-check text-[#06C755] text-lg"></i>
             <div class="text-sm text-green-800">
                 <span id="status-name" class="font-bold">用戶</span>，您已成功加入。
-                <div id="status-desc" class="mt-1 text-xs opacity-75">您可以隨時更新資料，家長身分可管理多位家人資料。</div>
+                <div id="status-desc" class="mt-1 text-xs opacity-75">您可以隨時更新資料，家長可新增多位家人。</div>
             </div>
         </div>
 
-        <!-- 步驟 1: 選擇帳戶身分 (僅註冊時顯示) -->
+        <!-- 步驟 1: 選擇帳戶身分 -->
         <div id="step-1" class="hidden">
             <h2 class="title">選擇帳戶類型</h2>
-            <p class="subtitle">不同的身分將提供不同的報名與管理功能：</p>
+            <p class="subtitle">請選擇您要使用的主要身分：</p>
             
             <div onclick="selectId('Individual')" id="id-Individual" class="id-option">
                 <div class="flex-1 font-medium text-[17px]">個人註冊</div>
@@ -95,7 +95,7 @@
             <div onclick="selectId('Parent')" id="id-Parent" class="id-option">
                 <div class="flex-1 text-left">
                     <div class="font-medium text-[17px]">家長註冊</div>
-                    <div class="text-[12px] text-gray-400">可新增多位學員資料並代為報名</div>
+                    <div class="text-[12px] text-gray-400">可幫家中小朋友或成員報名</div>
                 </div>
                 <i class="fas fa-check-circle check-icon"></i>
             </div>
@@ -115,27 +115,25 @@
             </div>
 
             <form id="reg-form">
-                <label>真實姓名 *</label><input type="text" id="m-name" required placeholder="請輸入姓名">
-                <label>聯絡電話 *</label><input type="tel" id="m-phone" required placeholder="09XX-XXX-XXX">
-                <label>出生日期 *</label><input type="date" id="m-birth" required onchange="updateMainGrade()">
+                <label>姓名 *</label><input type="text" id="m-name" required placeholder="請輸入姓名">
+                <label>電話 *</label><input type="tel" id="m-phone" required placeholder="09XX-XXX-XXX">
+                <label>生日 *</label><input type="date" id="m-birth" required onchange="updateMainGrade()">
                 
                 <div id="main-grade-badge" class="grade-tag hidden">年級預估：<span id="m-grade-text">-</span></div>
 
-                <!-- 非家長身分的轉換按鈕 -->
+                <!-- 升級為家長按鈕 -->
                 <div id="upgrade-box" class="hidden mb-10 p-5 border border-dashed border-blue-200 rounded-2xl bg-blue-50/50">
-                    <p class="text-xs text-blue-500 mb-3 text-center">如果您需要幫小朋友或家人報名，請轉換為家長身分：</p>
+                    <p class="text-xs text-blue-500 mb-3 text-center">如果您需要幫家人/學員報名，請轉換身分：</p>
                     <button type="button" onclick="switchToParent()" class="btn-outline">變更為家長身分並新增家人</button>
                 </div>
 
                 <!-- 家長專區: 動態管理家人 -->
                 <div id="parent-extra" class="hidden border-t pt-8 mt-4 mb-10">
                     <div class="flex justify-between items-center mb-6">
-                        <span class="text-lg font-medium text-gray-800">家人/學員管理庫</span>
-                        <button type="button" onclick="addFamilyRow()" class="text-sm font-bold text-white bg-blue-500 px-4 py-2 rounded-full shadow-lg shadow-blue-100">+ 補填成員</button>
+                        <span class="text-lg font-medium text-gray-800">家人/學員名單</span>
+                        <button type="button" onclick="addFamilyRow()" class="text-sm font-bold text-white bg-blue-600 px-4 py-2 rounded-full shadow-lg shadow-blue-100">+ 新增成員</button>
                     </div>
-                    <div id="family-list">
-                        <!-- 動態生成家人卡片 -->
-                    </div>
+                    <div id="family-list"></div>
                 </div>
 
                 <button type="submit" id="submit-btn" class="btn-main shadow-lg">儲存並同步至雲端</button>
@@ -176,21 +174,21 @@
             if (result.status === "exists") {
                 isExistingMember = true;
                 const user = result.data;
-                
-                // 讀取後端身分
                 identityType = user.註冊身分 || 'Individual';
                 
-                // 回填資料
+                // 回填資料 & 補 0 處理
+                let phone = String(user.聯絡電話 || "");
+                if (phone.length === 9 && !phone.startsWith('0')) phone = '0' + phone;
+
                 document.getElementById('member-status-box').classList.remove('hidden');
                 document.getElementById('status-name').innerText = user.姓名;
                 document.getElementById('m-name').value = user.姓名;
-                document.getElementById('m-phone').value = user.聯絡電話;
+                document.getElementById('m-phone').value = phone;
                 if(user.出生日期) {
                     const d = new Date(user.出生日期);
                     document.getElementById('m-birth').value = d.toISOString().split('T')[0];
                 }
                 
-                // 更新 UI 身分標籤
                 updateIdentityUI();
                 goStep(2);
             } else {
@@ -202,9 +200,7 @@
             const badge = document.getElementById('identity-badge');
             const parentSection = document.getElementById('parent-extra');
             const upgradeBox = document.getElementById('upgrade-box');
-
             badge.innerText = `身分：${identityType === 'Parent' ? '家長' : (identityType === 'Individual' ? '個人' : '機關')}`;
-            
             if (identityType === 'Parent') {
                 parentSection.classList.remove('hidden');
                 upgradeBox.classList.add('hidden');
@@ -218,10 +214,10 @@
         }
 
         function switchToParent() {
-            if (confirm("確定要將帳戶類型變更為「家長身分」嗎？變更後即可新增家人資料。")) {
+            if (confirm("確定要將帳戶變更為「家長」嗎？變更後即可新增成員資料。")) {
                 identityType = 'Parent';
                 updateIdentityUI();
-                addFamilyRow(); // 自動彈出一組欄位
+                addFamilyRow();
             }
         }
 
@@ -267,12 +263,25 @@
 
         function addFamilyRow() {
             const div = document.createElement('div');
-            div.className = 'family-card fade-in';
+            div.className = 'family-card fade-in shadow-sm';
             div.innerHTML = `
-                <div class="flex justify-between mb-4 border-b pb-2"><span class="text-sm font-bold text-blue-600"><i class="fas fa-user-plus mr-1"></i> 補填家人資料</span><button type="button" onclick="this.parentElement.parentElement.remove()" class="text-red-400 text-xs hover:text-red-600">移除</button></div>
-                <label>家人姓名 *</label><input type="text" class="f-name" required placeholder="成員真實姓名">
-                <label>生日 *</label><input type="date" class="f-birth" required onchange="const g=getTaiwanGrade(this.value); this.nextElementSibling.innerText='年級預估：'+g;">
+                <div class="flex justify-between mb-4 border-b pb-2"><span class="text-sm font-bold text-blue-600"><i class="fas fa-user-plus mr-1"></i> 家人資料</span><button type="button" onclick="this.parentElement.parentElement.remove()" class="text-red-400 text-xs hover:text-red-600">移除</button></div>
+                <label>家人姓名 *</label><input type="text" class="f-name" required placeholder="學員姓名">
+                
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label>性別</label>
+                        <select class="f-gender"><option value="男">男</option><option value="女">女</option></select>
+                    </div>
+                    <div>
+                        <label>生日 *</label>
+                        <input type="date" class="f-birth" required onchange="const g=getTaiwanGrade(this.value); this.parentElement.parentElement.nextElementSibling.innerText='年級預估：'+g;">
+                    </div>
+                </div>
                 <div class="grade-tag">年級預估：-</div>
+                
+                <label>就讀學校</label>
+                <input type="text" class="f-school" placeholder="例如：某某國小">
             `;
             document.getElementById('family-list').appendChild(div);
             div.scrollIntoView({ behavior: 'smooth' });
@@ -285,7 +294,9 @@
 
             const families = Array.from(document.querySelectorAll('.family-card')).map(card => ({
                 name: card.querySelector('.f-name').value,
+                gender: card.querySelector('.f-gender').value,
                 birth: card.querySelector('.f-birth').value,
+                school: card.querySelector('.f-school').value,
                 grade: getTaiwanGrade(card.querySelector('.f-birth').value)
             }));
 
@@ -308,11 +319,11 @@
                 });
                 const result = await res.json();
                 if (result.status === "success") {
-                    alert("✅ 會員資料更新成功！");
+                    alert("✅ 資料儲存成功！");
                     window.location.replace('index.html');
                 }
             } catch (err) {
-                alert("儲存失敗，請檢查網路連線。");
+                alert("儲存失敗，請確認網路連線。");
                 btn.disabled = false;
                 btn.innerText = "儲存並同步至雲端";
             }
