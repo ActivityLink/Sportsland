@@ -1,157 +1,245 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Sports-Island - 運動探索中心</title>
-    <script charset="utf-8" src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700;900&display=swap');
-        :root { --line-green: #06C755; --bg-gray: #F0F2F5; }
-        body { font-family: 'Noto Sans TC', sans-serif; background-color: var(--bg-gray); margin: 0; display: flex; justify-content: center; -webkit-font-smoothing: antialiased; }
-        .page-wrapper { width: 100%; max-width: 640px; background-color: #FFFFFF; min-height: 100vh; position: relative; box-shadow: 0 0 30px rgba(0,0,0,0.05); padding-bottom: 80px; }
-        .top-nav { background: white; padding: 12px 20px; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 100; border-bottom: 1px solid #F0F0F0; }
-        .tab-container { display: flex; background: white; border-bottom: 1px solid #F0F0F0; position: sticky; top: 56px; z-index: 90; overflow-x: auto; scrollbar-width: none; }
-        .tab-item { padding: 16px 20px; font-size: 14px; color: #888; white-space: nowrap; cursor: pointer; border-bottom: 3px solid transparent; }
-        .tab-item.active { color: var(--line-green); border-bottom-color: var(--line-green); font-weight: 700; }
-        .course-card { background: white; margin: 20px; border-radius: 16px; overflow: hidden; border: 1px solid #F0F0F0; transition: transform 0.2s; }
-        .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 1000; align-items: center; justify-content: center; padding: 20px; }
-        .modal-content { background: white; width: 100%; max-width: 500px; border-radius: 24px; max-height: 80vh; overflow-y: auto; position: relative; animation: slideUp 0.3s ease-out; }
-        .detail-section { margin-bottom: 24px; padding: 0 24px; }
-        .detail-title { font-size: 15px; font-weight: 700; color: #111; margin-bottom: 8px; display: flex; align-items: center; gap: 8px; }
-        .detail-text { font-size: 14px; color: #666; line-height: 1.7; white-space: pre-wrap; }
-        @keyframes slideUp { from { transform: translateY(30px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
-        .btn-outline { border: 1.5px solid var(--line-green); color: var(--line-green); }
-        .btn-solid { background-color: var(--line-green); color: white; }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Sports-Island - 運動探索中心</title>
+
+  <script charset="utf-8" src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700;900&display=swap');
+    :root { --line-green:#06C755; --bg-gray:#F0F2F5; }
+    body {
+      font-family:'Noto Sans TC',sans-serif;
+      background-color:var(--bg-gray);
+      margin:0;
+      display:flex;
+      justify-content:center;
+    }
+    .page-wrapper {
+      width:100%;
+      max-width:640px;
+      background:#fff;
+      min-height:100vh;
+      padding-bottom:80px;
+      box-shadow:0 0 30px rgba(0,0,0,0.05);
+    }
+    .top-nav {
+      background:#fff;
+      padding:12px 20px;
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      position:sticky;
+      top:0;
+      z-index:100;
+      border-bottom:1px solid #F0F0F0;
+    }
+    .tab-container {
+      display:flex;
+      background:#fff;
+      border-bottom:1px solid #F0F0F0;
+      position:sticky;
+      top:56px;
+      z-index:90;
+      overflow-x:auto;
+    }
+    .tab-item {
+      padding:16px 20px;
+      font-size:14px;
+      color:#888;
+      cursor:pointer;
+      border-bottom:3px solid transparent;
+      white-space:nowrap;
+    }
+    .tab-item.active {
+      color:var(--line-green);
+      border-bottom-color:var(--line-green);
+      font-weight:700;
+    }
+    .course-card {
+      background:#fff;
+      margin:20px;
+      border-radius:16px;
+      overflow:hidden;
+      border:1px solid #F0F0F0;
+    }
+    .modal-overlay {
+      display:none;
+      position:fixed;
+      inset:0;
+      background:rgba(0,0,0,0.7);
+      z-index:1000;
+      align-items:center;
+      justify-content:center;
+      padding:20px;
+    }
+    .modal-content {
+      background:#fff;
+      width:100%;
+      max-width:500px;
+      border-radius:24px;
+      max-height:80vh;
+      overflow-y:auto;
+      animation:slideUp .3s ease-out;
+    }
+    @keyframes slideUp {
+      from { transform:translateY(30px); opacity:0; }
+      to { transform:translateY(0); opacity:1; }
+    }
+    .btn-outline { border:1.5px solid var(--line-green); color:var(--line-green); }
+    .btn-solid { background:var(--line-green); color:#fff; }
+  </style>
 </head>
+
 <body>
-    <div class="page-wrapper">
-        <header class="top-nav">
-            <div class="font-black text-xl tracking-tighter text-gray-800">Sports-Island</div>
-            <div id="nav-user" class="hidden flex items-center gap-2">
-                <span id="nav-name" class="text-xs font-bold text-gray-500"></span>
-                <img id="nav-avatar" src="" class="w-8 h-8 rounded-full border">
-            </div>
-            <button onclick="navigateTo('register.html')" id="nav-login" class="text-xs text-green-600 font-bold px-4 py-1.5 border-2 border-green-500 rounded-full">登入中心</button>
-        </header>
+<div class="page-wrapper">
 
-        <div class="w-full bg-gray-50"><img src="https://aiwe.cc/wp-content/uploads/2025/12/3486bc19dc6317e16bf4f1449ec52ae4.jpg" class="w-full h-auto"></div>
+  <!-- Top -->
+  <header class="top-nav">
+    <div class="font-black text-xl text-gray-800">Sports-Island</div>
+    <button onclick="navigateTo('register.html')" class="text-xs text-green-600 font-bold px-4 py-1.5 border-2 border-green-500 rounded-full">
+      登入中心
+    </button>
+  </header>
 
-        <div class="tab-container">
-            <div onclick="switchTab('SingleCourses')" id="tab-SingleCourses" class="tab-item active">單日活動</div>
-            <div onclick="switchTab('BatchCourses')" id="tab-BatchCourses" class="tab-item">梯次課程</div>
-            <div onclick="switchTab('CampCourses')" id="tab-CampCourses" class="tab-item">營隊專區</div>
-            <div onclick="switchTab('AfterSchoolCourses')" id="tab-AfterSchoolCourses" class="tab-item">課後班</div>
-        </div>
+  <!-- Banner -->
+  <img src="https://aiwe.cc/wp-content/uploads/2025/12/3486bc19dc6317e16bf4f1449ec52ae4.jpg" class="w-full">
 
-        <main id="course-list" class="min-h-[400px]"></main>
+  <!-- Tabs -->
+  <div class="tab-container">
+    <div id="tab-SingleCourses" class="tab-item active" onclick="switchTab('SingleCourses')">單日活動</div>
+    <div id="tab-BatchCourses" class="tab-item" onclick="switchTab('BatchCourses')">梯次課程</div>
+    <div id="tab-CampCourses" class="tab-item" onclick="switchTab('CampCourses')">營隊專區</div>
+    <div id="tab-AfterSchoolCourses" class="tab-item" onclick="switchTab('AfterSchoolCourses')">課後班</div>
+  </div>
 
-        <nav class="fixed bottom-0 w-full max-w-[640px] bg-white border-t flex justify-around py-3 z-50">
-            <a href="#" onclick="location.reload()" class="flex flex-col items-center text-green-500"><i class="fas fa-compass text-xl"></i><span class="text-[10px] font-bold">探索</span></a>
-            <a href="register.html" class="flex flex-col items-center text-gray-300"><i class="fas fa-user-circle text-xl"></i><span class="text-[10px] font-bold">會員</span></a>
-        </nav>
+  <!-- Course List -->
+  <main id="course-list" class="min-h-[400px]"></main>
+
+  <!-- Bottom Nav -->
+  <nav class="fixed bottom-0 w-full max-w-[640px] bg-white border-t flex justify-around py-3 z-50">
+    <a href="#" onclick="location.reload()" class="flex flex-col items-center text-green-500">
+      <i class="fas fa-compass text-xl"></i><span class="text-[10px] font-bold">探索</span>
+    </a>
+    <a href="register.html" class="flex flex-col items-center text-gray-300">
+      <i class="fas fa-user-circle text-xl"></i><span class="text-[10px] font-bold">會員</span>
+    </a>
+  </nav>
+</div>
+
+<!-- Modal -->
+<div id="detail-modal" class="modal-overlay" onclick="if(event.target===this)closeDetails()">
+  <div class="modal-content">
+    <div class="p-6 border-b flex justify-between">
+      <h3 id="modal-title" class="font-black"></h3>
+      <button onclick="closeDetails()"><i class="fas fa-times"></i></button>
     </div>
-
-    <!-- 詳情彈窗 -->
-    <div id="detail-modal" class="modal-overlay" onclick="if(event.target === this) closeDetails()">
-        <div class="modal-content">
-            <div class="p-6 border-b flex justify-between items-center">
-                <h3 id="modal-title" class="font-black text-gray-800">課程詳情</h3>
-                <button onclick="closeDetails()" class="text-gray-400 p-2"><i class="fas fa-times text-xl"></i></button>
-            </div>
-            <div id="modal-body" class="py-6"></div>
-            <div class="p-6 border-t"><button id="modal-book-btn" class="w-full btn-solid py-4 rounded-2xl font-black shadow-lg shadow-green-100">立即前往預約</button></div>
-        </div>
+    <div id="modal-body" class="p-6"></div>
+    <div class="p-6 border-t">
+      <button id="modal-book-btn" class="w-full btn-solid py-4 rounded-2xl font-black">
+        立即前往預約
+      </button>
     </div>
+  </div>
+</div>
 
-    <script>
-        const API_URL = 'https://aged-rice-2438.wetw-net3.workers.dev/';
-        const LIFF_ID = '2008786875-F7ifLsbN';
-        let currentCourses = [], isLogged = false, currentSheet = 'SingleCourses';
+<script>
+const API_URL = 'https://aged-rice-2438.wetw-net3.workers.dev/';
+let currentCourses = [];
+let currentSheet = 'SingleCourses';
 
-        function navigateTo(page) {
-            const base = window.location.href.split('?')[0].split('#')[0];
-            const dir = base.substring(0, base.lastIndexOf('/') + 1);
-            window.location.href = dir + page;
-        }
+/* === 核心修正：normalizeCourse === */
+function normalizeCourse(c) {
+  return {
+    courseId: c.courseId || c['課程ID'] || c['ID'] || '',
+    courseName: c.courseName || c['課程名稱'] || c['活動名稱'] || '',
+    courseDate: c.courseDate || c['課程日期'] || c['活動日期'] || '',
+    memberPrice: c.memberPrice || c['會員價'] || c['價格'] || 0,
+    coverImage: c.coverImage || c['封面圖片'] || '',
 
-        async function init() {
-            try {
-                await liff.init({ liffId: LIFF_ID });
-                if (liff.isLoggedIn()) {
-                    isLogged = true;
-                    const profile = await liff.getProfile();
-                    document.getElementById('nav-user').classList.remove('hidden');
-                    document.getElementById('nav-login').classList.add('hidden');
-                    document.getElementById('nav-name').innerText = profile.displayName;
-                    document.getElementById('nav-avatar').src = profile.pictureUrl;
-                }
-            } catch (e) {}
-            switchTab('SingleCourses');
-        }
+    highlights: c.highlights || c.AF || c['課程亮點'] || '',
+    content: c.content || c.AG || c['課程內容'] || '',
+    notes: c.notes || c.AH || c['注意事項'] || '',
+    targetAudience: c.targetAudience || c.AI || c['適合對象'] || ''
+  };
+}
 
-        async function switchTab(name) {
-            currentSheet = name;
-            document.querySelectorAll('.tab-item').forEach(t => t.classList.remove('active'));
-            document.getElementById(`tab-${name}`).classList.add('active');
-            const list = document.getElementById('course-list');
-            list.innerHTML = '<div class="p-20 text-center text-gray-300">讀取中...</div>';
-            try {
-                const res = await fetch(`${API_URL}?sheet=${name}&_t=${Date.now()}`);
-                const result = await res.json();
-                currentCourses = result.data || [];
-                render(currentCourses);
-            } catch(e) { list.innerHTML = '<div class="p-10 text-center text-red-400">載入失敗</div>'; }
-        }
+function navigateTo(p) {
+  const base = location.href.split('?')[0];
+  location.href = base.substring(0, base.lastIndexOf('/')+1) + p;
+}
 
-        function render(data) {
-            const list = document.getElementById('course-list');
-            if(data.length === 0) { list.innerHTML = '<div class="p-10 text-center text-gray-400 italic">目前無進行中的活動</div>'; return; }
-            list.innerHTML = data.map(c => `
-                <div class="course-card">
-                    <img src="${c.coverImage || 'https://placehold.co/800x450?text=Sports-Island'}" class="w-full h-auto bg-gray-50">
-                    <div class="p-6">
-                        <h3 class="font-black text-lg text-gray-800">${c.courseName || '未命名'}</h3>
-                        <p class="text-xs text-gray-400 mt-1"><i class="far fa-calendar-alt text-green-500"></i> ${c.courseDate || '即將公布'}</p>
-                        <div class="flex justify-between items-center mt-6">
-                            <div class="text-green-600 font-bold text-xl">$${c.memberPrice || 0}</div>
-                            <div class="flex gap-2">
-                                <button onclick="showDetails('${c.courseId}')" class="btn-outline px-4 py-1.5 rounded-full text-xs font-black">詳情</button>
-                                <button onclick="startBooking('${c.courseId}')" class="btn-solid px-4 py-1.5 rounded-full text-xs font-black shadow-sm">預約</button>
-                            </div>
-                        </div>
-                    </div>
-                </div>`).join('');
-        }
+async function switchTab(name) {
+  currentSheet = name;
+  document.querySelectorAll('.tab-item').forEach(t=>t.classList.remove('active'));
+  document.getElementById(`tab-${name}`).classList.add('active');
 
-        function showDetails(id) {
-            // 修復：確保 ID 比對不受字串/數字類型影響
-            const c = currentCourses.find(i => String(i.courseId) === String(id));
-            if (!c) { console.error("Course not found for ID:", id); return; }
-            
-            document.getElementById('modal-title').innerText = c.courseName;
-            document.getElementById('modal-body').innerHTML = `
-                <div class="detail-section"><div class="detail-title"><i class="fas fa-star"></i> 課程亮點 (AF)</div><div class="detail-text">${c.highlights || '暫無資料'}</div></div>
-                <div class="detail-section"><div class="detail-title"><i class="fas fa-info-circle"></i> 課程內容 (AG)</div><div class="detail-text">${c.content || '暫無資料'}</div></div>
-                <div class="detail-section"><div class="detail-title"><i class="fas fa-exclamation-triangle"></i> 注意事項 (AH)</div><div class="detail-text">${c.notes || '暫無資料'}</div></div>
-                <div class="detail-section"><div class="detail-title"><i class="fas fa-users"></i> 適合對象 (AI)</div><div class="detail-text">${c.targetAudience || '暫無資料'}</div></div>
-            `;
-            document.getElementById('modal-book-btn').onclick = () => { closeDetails(); startBooking(id); };
-            document.getElementById('detail-modal').style.display = 'flex';
-        }
+  const list = document.getElementById('course-list');
+  list.innerHTML = '<div class="p-20 text-center text-gray-300">讀取中...</div>';
 
-        function closeDetails() { document.getElementById('detail-modal').style.display = 'none'; }
+  try {
+    const res = await fetch(`${API_URL}?sheet=${name}`);
+    const json = await res.json();
+    currentCourses = (json.data || []).map(normalizeCourse);
+    render();
+  } catch {
+    list.innerHTML = '<div class="p-10 text-center text-red-400">載入失敗</div>';
+  }
+}
 
-        function startBooking(id) {
-            if (!isLogged) { if(confirm("預約需要登入中心帳戶，是否前往？")) navigateTo('register.html'); return; }
-            const base = window.location.href.split('?')[0].split('#')[0];
-            const dir = base.substring(0, base.lastIndexOf('/') + 1);
-            window.location.href = `${dir}booking.html?id=${id}&type=${currentSheet}`;
-        }
-        window.onload = init;
-    </script>
+function render() {
+  const list = document.getElementById('course-list');
+  if (!currentCourses.length) {
+    list.innerHTML = '<div class="p-10 text-center text-gray-400">目前無活動</div>';
+    return;
+  }
+
+  list.innerHTML = currentCourses.map(c=>`
+    <div class="course-card">
+      <img src="${c.coverImage || 'https://placehold.co/800x450'}">
+      <div class="p-6">
+        <h3 class="font-black text-lg">${c.courseName}</h3>
+        <p class="text-xs text-gray-400 mt-1">${c.courseDate || ''}</p>
+        <div class="flex justify-between mt-6">
+          <div class="text-green-600 font-bold text-xl">$${c.memberPrice}</div>
+          <div class="flex gap-2">
+            <button onclick="showDetails('${c.courseId}')" class="btn-outline px-4 py-1.5 rounded-full text-xs font-black">詳情</button>
+            <button onclick="startBooking('${c.courseId}')" class="btn-solid px-4 py-1.5 rounded-full text-xs font-black">預約</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function showDetails(id) {
+  const c = currentCourses.find(x => String(x.courseId) === String(id));
+  if (!c) return;
+
+  document.getElementById('modal-title').innerText = c.courseName;
+  document.getElementById('modal-body').innerHTML = `
+    <p><b>課程亮點</b><br>${c.highlights || '暫無資料'}</p><br>
+    <p><b>課程內容</b><br>${c.content || '暫無資料'}</p><br>
+    <p><b>注意事項</b><br>${c.notes || '暫無資料'}</p><br>
+    <p><b>適合對象</b><br>${c.targetAudience || '暫無資料'}</p>
+  `;
+  document.getElementById('modal-book-btn').onclick = ()=>startBooking(id);
+  document.getElementById('detail-modal').style.display='flex';
+}
+
+function closeDetails() {
+  document.getElementById('detail-modal').style.display='none';
+}
+
+function startBooking(id) {
+  navigateTo(`booking.html?id=${id}&type=${currentSheet}`);
+}
+
+switchTab('SingleCourses');
+</script>
 </body>
 </html>
