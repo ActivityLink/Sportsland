@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Sports-Island - 預約程序</title>
+    <title>Sports-Island - 預約中心</title>
     <script charset="utf-8" src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -13,16 +13,23 @@
         body { font-family: 'Noto Sans TC', sans-serif; background-color: var(--bg-gray); margin: 0; display: flex; justify-content: center; -webkit-font-smoothing: antialiased; }
         .page-wrapper { width: 100%; max-width: 640px; background: #FFFFFF; min-height: 100vh; position: relative; padding-bottom: 120px; box-shadow: 0 0 20px rgba(0,0,0,0.03); }
         .step-header { padding: 30px 24px 20px 24px; border-bottom: 1px solid #F0F0F0; background: white; }
+        .course-card { background: #FAFBFC; padding: 20px; border-radius: 16px; margin: 20px; display: flex; gap: 15px; align-items: center; border: 1px solid #F0F0F0; }
         .member-option { border: 1.5px solid #EEE; border-radius: 20px; padding: 20px; margin: 12px 20px; cursor: pointer; transition: 0.3s; display: flex; align-items: center; gap: 15px; background: white; }
-        .member-option.active { border-color: var(--line-green); background: #F0FAF3; }
-        .footer-action { position: fixed; bottom: 0; width: 100%; max-width: 640px; background: white; padding: 20px; border-top: 1px solid #EEE; z-index: 100; }
-        .btn-main { background: var(--line-green); color: white; width: 100%; padding: 18px; border-radius: 16px; font-weight: 900; font-size: 17px; }
-        .btn-main:disabled { background: #DDD; }
+        .member-option.active { border-color: var(--line-green); background: #F0FAF3; transform: translateY(-2px); box-shadow: 0 4px 12px rgba(6,199,85,0.1); }
+        .check-icon { width: 24px; height: 24px; border: 2px solid #DDD; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; transition: 0.2s; }
+        .active .check-icon { background: var(--line-green); border-color: var(--line-green); }
+        .footer-action { position: fixed; bottom: 0; width: 100%; max-width: 640px; background: white; padding: 20px; border-top: 1px solid #EEE; z-index: 100; box-shadow: 0 -4px 10px rgba(0,0,0,0.02); }
+        .btn-main { background: var(--line-green); color: white; width: 100%; padding: 18px; border-radius: 16px; font-weight: 900; font-size: 17px; transition: 0.2s; }
+        .btn-main:disabled { background: #DDD; cursor: not-allowed; }
         .loading-screen { position: fixed; inset: 0; background: white; z-index: 1000; display: flex; flex-direction: column; align-items: center; justify-content: center; }
         .info-card { margin: 0 20px; background: #F9FAFB; border-radius: 20px; padding: 24px; border: 2px dashed #E2E8F0; }
         .info-row { display: flex; justify-content: space-between; margin-bottom: 14px; font-size: 14px; }
         .info-label { color: #888; font-weight: 500; }
         .info-val { font-weight: 700; color: #333; }
+        .option-group { margin: 20px; }
+        .option-label { font-size: 13px; font-weight: 800; color: #64748b; margin-bottom: 10px; display: block; }
+        input[type="text"] { width: 100%; border: 1.5px solid #E2E8F0; border-radius: 12px; padding: 12px 16px; outline: none; transition: 0.2s; }
+        input[type="text"]:focus { border-color: var(--line-green); }
     </style>
 </head>
 <body>
@@ -34,39 +41,58 @@
     <div class="page-wrapper">
         <div class="step-header">
             <h1 id="step-title" class="text-2xl font-black text-gray-800">Step 01. 選取報名人</h1>
-            <p id="step-desc" class="text-xs text-gray-400 mt-1 font-bold">請勾選要參加活動的學員</p>
+            <p id="step-desc" class="text-xs text-gray-400 mt-1 font-bold">請從名單中勾選一位要參加活動的學員</p>
         </div>
         
-        <div id="course-summary" class="p-5 mx-5 mt-5 bg-gray-50 rounded-2xl flex items-center gap-4">
+        <div id="course-summary" class="course-card">
             <img id="c-img" src="" class="w-16 h-16 rounded-xl object-cover bg-gray-200">
             <div class="flex-1">
                 <div id="c-name" class="font-black text-gray-800 text-sm">讀取中...</div>
-                <div id="c-price-box" class="text-green-600 text-xs font-bold mt-1"></div>
+                <div id="c-meta" class="text-[10px] text-gray-400 mt-0.5"></div>
             </div>
         </div>
 
+        <!-- 階段一：選取學員 -->
         <div id="view-member-list">
             <div id="member-list" class="mt-4"></div>
-            <div class="px-6 py-8 text-center"><button onclick="navigateTo('register.html')" class="text-sm text-blue-500 font-black underline"><i class="fas fa-user-plus mr-1"></i> 前往中心修改成員資料</button></div>
+            <div class="px-6 py-8 text-center"><button onclick="navigateTo('register.html')" class="text-sm text-blue-500 font-black underline"><i class="fas fa-user-plus mr-1"></i> 前往中心修改資料</button></div>
         </div>
 
+        <!-- 階段二：額外選項 (設備租借) -->
+        <div id="view-options" class="hidden">
+            <div class="option-group">
+                <span class="option-label">是否有租借設備需求？</span>
+                <div id="eq-list" class="space-y-3">
+                    <!-- JS 渲染設備清單 -->
+                </div>
+            </div>
+        </div>
+
+        <!-- 階段三：最終確認 (匯款後五碼) -->
         <div id="view-confirm" class="hidden">
-            <div class="info-card mt-6">
+            <div class="info-card">
                 <div class="info-row"><span class="info-label">報名學員</span><span id="res-name" class="info-val"></span></div>
                 <div class="info-row"><span class="info-label">聯繫電話</span><span id="res-phone" class="info-val"></span></div>
+                <div class="info-row"><span class="info-label">場地教練</span><span id="res-snapshot" class="info-val"></span></div>
                 <div class="info-row"><span class="info-label">早鳥優待</span><span id="res-early" class="info-val"></span></div>
-                <div class="info-row border-t border-gray-200 pt-4 mt-2"><span class="info-label font-black text-gray-800">應付付款金額</span><span id="res-total" class="text-3xl font-black text-green-600"></span></div>
+                <div class="info-row border-t border-gray-200 pt-4 mt-2"><span class="info-label font-black text-gray-800 text-lg">應付總額</span><span id="res-total" class="text-2xl font-black text-green-600"></span></div>
             </div>
-            <p class="px-10 mt-6 text-[11px] text-gray-400 leading-relaxed font-bold">● 點擊送出後系統將產生訂單編號。請於 24 小時內完成付款以保留名額。</p>
+            
+            <div class="option-group mt-6">
+                <span class="option-label">請輸入匯款帳號後五碼 (核銷對帳用)</span>
+                <input type="text" id="last-five" placeholder="範例：88888" maxlength="5">
+                <p class="text-[10px] text-gray-400 mt-2">※ 若尚未匯款可先留空，但會影響核銷速度。</p>
+            </div>
         </div>
 
-        <div class="footer-action"><button id="next-btn" class="btn-main shadow-lg" disabled onclick="handleAction()">下一步：確認細節</button></div>
+        <div class="footer-action"><button id="next-btn" class="btn-main shadow-lg" disabled onclick="handleAction()">下一步</button></div>
     </div>
 
     <script>
         const API_URL = 'https://aged-rice-2438.wetw-net3.workers.dev/';
         const LIFF_ID = '2008786875-F7ifLsbN';
-        let currentStep = 1, selectedMember = null, courseData = null, candidates = [], mainUser = null;
+        let currentStep = 1, selectedMember = null, courseData = null, candidates = [], mainUser = null, eqList = [];
+        let selectedEq = [];
 
         function navigateTo(page) {
             const base = window.location.href.split('?')[0].split('#')[0];
@@ -78,34 +104,42 @@
             const params = new URLSearchParams(window.location.search);
             const id = params.get('id');
             const type = params.get('type') || 'SingleCourses';
-            if(!id) { alert("課程代碼遺失"); navigateTo('index.html'); return; }
+            if(!id) { alert("參數遺失"); navigateTo('index.html'); return; }
 
             try {
                 await liff.init({ liffId: LIFF_ID });
                 if(!liff.isLoggedIn()) { liff.login(); return; }
                 const profile = await liff.getProfile();
                 
-                const [cRes, mRes] = await Promise.all([
+                const [cRes, mRes, sRes] = await Promise.all([
                     fetch(`${API_URL}?sheet=${type}&id=${id}&_t=${Date.now()}`),
-                    fetch(`${API_URL}?type=member_check&lineUserId=${profile.userId}&_t=${Date.now()}`)
+                    fetch(`${API_URL}?type=member_check&lineUserId=${profile.userId}&_t=${Date.now()}`),
+                    fetch(`${API_URL}?type=config`)
                 ]);
                 
                 const cResult = await cRes.json();
                 const mResult = await mRes.json();
+                const sResult = await sRes.json();
                 
                 courseData = (cResult.data || [])[0];
                 if(courseData) {
                     document.getElementById('c-name').innerText = courseData.courseName || "未知課程";
-                    document.getElementById('c-price-box').innerText = `$${courseData.memberPrice || 0}`;
-                    document.getElementById('c-img').src = courseData.coverImage || 'https://placehold.co/100?text=Course';
-                } else { alert("找不到該課程 A-AN 完整資料"); navigateTo('index.html'); return; }
+                    document.getElementById('c-meta').innerText = `${courseData.venueName || '場地待定'} | ${courseData.coachName || '教練待定'}`;
+                    document.getElementById('c-img').src = courseData.coverImage || 'https://placehold.co/100?text=SI';
+                }
 
                 if(mResult.status === "exists") {
                     mainUser = mResult.data;
-                    candidates.push({ name: mainUser.name || mainUser["姓名"], info: "本人", grade: mainUser.currentGrade || "成人" });
+                    candidates.push({ name: mainUser.name || mainUser["姓名"], info: "本人", grade: mainUser.currentGrade || mainUser["目前年級"] || "成人" });
                     if(mResult.families) mResult.families.forEach(f => candidates.push({ name: f.name || f["家人姓名"], info: "家人", grade: f.grade || f["目前年級"] }));
                     renderList();
                 } else { navigateTo('register.html'); }
+
+                // 解析設備清單
+                const equipRow = (sResult.data || []).find(r => r.type === 'equipment_list');
+                if(equipRow) eqList = JSON.parse(equipRow.options);
+                renderEq();
+
                 document.getElementById('loading').style.display = 'none';
             } catch (e) { document.getElementById('loading').innerHTML = '<div class="p-10 text-center font-bold text-red-500">雲端連線失敗</div>'; }
         }
@@ -116,6 +150,30 @@
                     <div class="w-6 h-6 border-2 rounded-full flex items-center justify-center mr-4 border-gray-200 check-dot"><div class="w-3 h-3 rounded-full bg-green-500 hidden"></div></div>
                     <div class="flex-1 font-black text-gray-800 text-lg">${m.name}</div>
                 </div>`).join('');
+        }
+
+        function renderEq() {
+            const container = document.getElementById('eq-list');
+            if(eqList.length === 0) { container.innerHTML = '<p class="text-gray-400 text-xs">目前無可選租設備</p>'; return; }
+            container.innerHTML = eqList.map((eq, i) => `
+                <div onclick="toggleEq(${i})" class="flex justify-between items-center p-4 border-2 rounded-xl bg-white transition-all eq-opt" id="eq-${i}">
+                    <div class="font-bold text-gray-700">${eq.name} <span class="text-xs text-gray-400 font-normal ml-1">+$${eq.price}</span></div>
+                    <i class="fas fa-check-circle text-gray-100 eq-check"></i>
+                </div>
+            `).join('');
+        }
+
+        function toggleEq(i) {
+            const idx = selectedEq.indexOf(i);
+            if(idx > -1) {
+                selectedEq.splice(idx, 1);
+                document.getElementById(`eq-${i}`).classList.remove('border-green-500', 'bg-green-50');
+                document.getElementById(`eq-${i}`).querySelector('.eq-check').classList.replace('text-green-500', 'text-gray-100');
+            } else {
+                selectedEq.push(i);
+                document.getElementById(`eq-${i}`).classList.add('border-green-500', 'bg-green-50');
+                document.getElementById(`eq-${i}`).querySelector('.eq-check').classList.replace('text-gray-100', 'text-green-500');
+            }
         }
 
         function selectMember(i) {
@@ -130,31 +188,57 @@
         function handleAction() {
             if (currentStep === 1) {
                 currentStep = 2;
-                document.getElementById('step-title').innerText = "Step 02. 確認細節";
+                document.getElementById('step-title').innerText = "Step 02. 選項設定";
                 document.getElementById('view-member-list').classList.add('hidden');
+                document.getElementById('view-options').classList.remove('hidden');
+            } else if (currentStep === 2) {
+                currentStep = 3;
+                document.getElementById('step-title').innerText = "Step 03. 預約確認";
+                document.getElementById('view-options').classList.add('hidden');
                 document.getElementById('view-confirm').classList.remove('hidden');
                 
                 const now = new Date();
-                let isEarly = false, amt = courseData.memberPrice || 0;
-                // 確保讀取 earlyBirdEnd
+                let isEarly = false, baseAmt = courseData.memberPrice || 0;
                 if (courseData.earlyBirdPrice && courseData.earlyBirdEnd && now <= new Date(courseData.earlyBirdEnd)) {
-                    isEarly = true; amt = courseData.earlyBirdPrice;
+                    isEarly = true; baseAmt = courseData.earlyBirdPrice;
                 }
+                
+                // 計算設備費
+                let eqAmt = 0;
+                let eqNames = selectedEq.map(i => { eqAmt += Number(eqList[i].price); return eqList[i].name; });
+                
+                const total = baseAmt + eqAmt;
                 
                 document.getElementById('res-name').innerText = selectedMember.name;
                 document.getElementById('res-phone').innerText = mainUser.phone;
-                document.getElementById('res-early').innerText = isEarly ? "符合早鳥資格" : "不適用 (或已逾期)";
-                document.getElementById('res-total').innerText = `$${amt}`;
+                document.getElementById('res-snapshot').innerText = `${courseData.coachName || 'N/A'} @ ${courseData.venueName || 'N/A'}`;
+                document.getElementById('res-early').innerText = isEarly ? "符合早鳥資格" : "不適用";
+                document.getElementById('res-total').innerText = `$${total}`;
                 document.getElementById('next-btn').innerText = "確認預約並送出";
-                selectedMember.finalAmt = amt;
+                
+                selectedMember.finalAmt = total;
                 selectedMember.isEarly = isEarly;
+                selectedMember.eqStr = eqNames.join(', ') || '無';
             } else { submitBooking(); }
         }
 
         async function submitBooking() {
             const btn = document.getElementById('next-btn');
             btn.disabled = true; btn.innerText = "傳送中...";
-            const payload = { type: 'course_booking', courseId: courseData.courseId, courseName: courseData.courseName, enrolleeName: selectedMember.name, phone: mainUser.phone, amount: selectedMember.finalAmt, isEarlyBird: selectedMember.isEarly, lineUserId: liff.getContext().userId };
+            const payload = { 
+                type: 'course_booking', 
+                courseId: courseData.courseId, 
+                courseName: courseData.courseName, 
+                enrolleeName: selectedMember.name, 
+                phone: mainUser.phone, 
+                amount: selectedMember.finalAmt, 
+                isEarlyBird: selectedMember.isEarly, 
+                equipment: selectedMember.eqStr,
+                lastFiveDigits: document.getElementById('last-five').value,
+                venueName: courseData.venueName,
+                coachName: courseData.coachName,
+                lineUserId: liff.getContext().userId 
+            };
             const res = await fetch(API_URL, { method: 'POST', body: JSON.stringify(payload), headers: { 'Content-Type': 'application/json' } });
             const result = await res.json();
             if(result.status === "success") { alert("✅ 預約成功！編號：" + result.bookingId); navigateTo('index.html'); }
