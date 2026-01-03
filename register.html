@@ -4,80 +4,32 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>ActivityLink - 會員註冊中心</title>
-    <!-- 引入 LINE LIFF SDK -->
     <script charset="utf-8" src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&display=swap');
-        
-        :root { 
-            --line-green: #06C755; 
-            --bg-gray: #F7F9FB;
-            --text-main: #333333;
-            --text-sub: #8E8E8E;
-            --border-color: #EBEBEB;
-        }
-
-        body { 
-            font-family: 'Noto Sans TC', sans-serif; 
-            background-color: var(--bg-gray); 
-            color: var(--text-main);
-            margin: 0;
-            display: flex;
-            justify-content: center;
-            -webkit-font-smoothing: antialiased;
-        }
-
-        .page-wrapper {
-            width: 100%;
-            max-width: 640px; 
-            background: #FFFFFF;
-            min-height: 100vh;
-            padding: 40px 24px;
-            box-shadow: 0 0 20px rgba(0,0,0,0.03);
-            position: relative;
-        }
-
+        :root { --line-green: #06C755; --bg-gray: #F7F9FB; --border-color: #EBEBEB; }
+        body { font-family: 'Noto Sans TC', sans-serif; background-color: var(--bg-gray); margin: 0; display: flex; justify-content: center; -webkit-font-smoothing: antialiased; }
+        .page-wrapper { width: 100%; max-width: 640px; background: #FFFFFF; min-height: 100vh; padding: 40px 24px; box-shadow: 0 0 20px rgba(0,0,0,0.03); }
         .title { font-size: 24px; font-weight: 500; color: #111; margin-bottom: 8px; }
-        .subtitle { font-size: 15px; color: var(--text-sub); margin-bottom: 35px; }
-
-        .id-option {
-            border: 1px solid var(--border-color);
-            border-radius: 12px;
-            padding: 24px;
-            margin-bottom: 15px;
-            cursor: pointer;
-            transition: 0.2s;
-            display: flex;
-            align-items: center;
-            gap: 20px;
-        }
-        .id-option:hover { background: #F9FAFB; }
+        .subtitle { font-size: 15px; color: #8E8E8E; margin-bottom: 35px; }
+        .id-option { border: 1px solid var(--border-color); border-radius: 12px; padding: 24px; margin-bottom: 15px; cursor: pointer; transition: 0.2s; display: flex; align-items: center; gap: 20px; }
         .id-option.active { border-color: var(--line-green); background: #F0FAF3; }
-        .id-option.active .check-icon { color: var(--line-green); opacity: 1; }
-        .check-icon { opacity: 0; transition: 0.2s; font-size: 20px; }
-
-        label { display: flex; align-items: center; font-size: 16px; color: #444; margin-bottom: 10px; font-weight: 400; }
-        input, select, textarea { width: 100%; background: #F8F9FA; border: 1px solid #E9EEF2; border-radius: 10px; padding: 14px 16px; font-size: 16px; outline: none; margin-bottom: 20px; transition: border-color 0.2s; font-weight: 400; }
+        label { display: block; font-size: 16px; color: #444; margin-bottom: 10px; font-weight: 400; }
+        input, select { width: 100%; background: #F8F9FA; border: 1px solid #E9EEF2; border-radius: 10px; padding: 14px 16px; font-size: 16px; outline: none; margin-bottom: 20px; font-weight: 400; }
         input:focus { border-color: var(--line-green); background: white; }
-
         .btn-main { background-color: var(--line-green); color: white; width: 100%; padding: 16px; border-radius: 12px; font-size: 17px; font-weight: 500; border: none; cursor: pointer; margin-top: 20px; }
-        .btn-main:disabled { background: #E0E0E0; cursor: not-allowed; }
-
-        .loading-screen { position: fixed; inset: 0; background: white; z-index: 1000; display: flex; flex-direction: column; align-items: center; justify-content: center; }
-        .error-msg { background: #FFF5F5; border: 1px solid #FED7D7; color: #C53030; padding: 20px; border-radius: 12px; font-size: 14px; margin-bottom: 20px; display: none; line-height: 1.6; }
-        
-        .family-box { background: #FAFBFC; padding: 25px; border-radius: 12px; border: 1px solid #F0F0F0; margin-bottom: 20px; }
-        .grade-badge { background: #EBF5FF; color: #0066CC; padding: 4px 10px; border-radius: 6px; font-size: 13px; font-weight: 500; display: inline-block; margin-top: -10px; margin-bottom: 20px; }
+        .loading-screen { position: fixed; inset: 0; background: white; z-index: 1000; display: flex; flex-direction: column; align-items: center; justify-content: center; transition: opacity 0.5s; }
+        .error-msg { background: #FFF5F5; border: 1px solid #FED7D7; color: #C53030; padding: 15px; border-radius: 10px; font-size: 14px; margin-bottom: 20px; display: none; }
     </style>
 </head>
 <body>
 
     <div id="loading" class="loading-screen">
         <div class="animate-spin rounded-full h-10 w-10 border-b-2 border-[#06C755] mb-4"></div>
-        <p id="loading-text" class="text-gray-400 text-sm">LINE Login 安全登入中...</p>
-        <button id="manual-login-btn" onclick="liff.login()" class="hidden mt-4 text-[#06C755] font-medium border border-[#06C755] px-4 py-2 rounded-lg">手動重新登入</button>
+        <p id="loading-text" class="text-gray-400 text-sm font-medium">LINE 安全登入中...</p>
+        <button id="retry-btn" onclick="location.reload()" class="hidden mt-4 text-xs text-gray-400 underline">連線逾時，點此重試</button>
     </div>
 
     <div class="page-wrapper">
@@ -85,40 +37,27 @@
 
         <div id="step-1" class="hidden">
             <div class="flex items-center gap-3 mb-10">
-                <img id="user-img" src="https://placehold.co/100x100/eeeeee/999999?text=User" class="w-12 h-12 rounded-full border shadow-sm" onerror="this.src='https://placehold.co/100x100/eeeeee/999999?text=Error'">
+                <img id="user-img" src="" class="w-12 h-12 rounded-full border shadow-sm" onerror="this.src='https://placehold.co/100?text=User'">
                 <div>
                     <div class="text-sm text-gray-400 font-normal">您好，<span id="user-name">LINE 用戶</span></div>
-                    <div class="text-lg font-medium text-gray-800">歡迎加入 ActivityLink</div>
+                    <div class="text-lg font-medium text-gray-800 tracking-tight">歡迎加入 ActivityLink</div>
                 </div>
             </div>
-            
-            <h2 class="title">選擇身分類型</h2>
-            <p class="subtitle">請選擇您最常使用的報名身分：</p>
-            
-            <div onclick="selectId('Individual')" id="id-Individual" class="id-option">
-                <div class="flex-1 font-medium">個人註冊</div>
-                <i class="fas fa-check-circle check-icon"></i>
-            </div>
-            <div onclick="selectId('Parent')" id="id-Parent" class="id-option">
-                <div class="flex-1 font-medium">家長註冊</div>
-                <i class="fas fa-check-circle check-icon"></i>
-            </div>
-            <div onclick="selectId('Organization')" id="id-Organization" class="id-option">
-                <div class="flex-1 font-medium">機關團體單位</div>
-                <i class="fas fa-check-circle check-icon"></i>
-            </div>
-
-            <button onclick="goStep(2)" id="next-btn" class="btn-main" disabled style="opacity: 0.6;">繼續下一步</button>
+            <h2 class="title">選擇註冊身分</h2>
+            <p class="subtitle">請選擇您要使用的報名身分：</p>
+            <div onclick="selectId('Individual')" id="id-Individual" class="id-option"><div class="flex-1 font-medium">個人註冊</div><i class="fas fa-check-circle opacity-0 text-green-500"></i></div>
+            <div onclick="selectId('Parent')" id="id-Parent" class="id-option"><div class="flex-1 font-medium">家長註冊</div><i class="fas fa-check-circle opacity-0 text-green-500"></i></div>
+            <div onclick="selectId('Organization')" id="id-Organization" class="id-option"><div class="flex-1 font-medium">機關團體</div><i class="fas fa-check-circle opacity-0 text-green-500"></i></div>
+            <button onclick="goStep(2)" id="next-btn" class="btn-main" disabled style="opacity: 0.5;">繼續下一步</button>
         </div>
 
         <div id="step-2" class="hidden">
-            <h2 class="title">完善個資檔案</h2>
-            <p class="subtitle">資訊將用於報名保險與聯繫，請務必正確。</p>
+            <h2 class="title">完善資料</h2>
             <form id="reg-form">
-                <label>真實姓名 *</label><input type="text" id="m-name" required>
-                <label>聯絡電話 *</label><input type="tel" id="m-phone" required>
-                <label>出生日期 *</label><input type="date" id="m-birth" required>
-                <button type="submit" id="submit-btn" class="btn-main">確認註冊並完成綁定</button>
+                <label>姓名 *</label><input type="text" id="m-name" required placeholder="您的真實姓名">
+                <label>電話 *</label><input type="tel" id="m-phone" required placeholder="09XX-XXX-XXX">
+                <label>生日 *</label><input type="date" id="m-birth" required>
+                <button type="submit" class="btn-main">確認並完成註冊</button>
             </form>
         </div>
     </div>
@@ -126,62 +65,53 @@
     <script>
         const API_URL = 'https://aged-rice-2438.wetw-net3.workers.dev/';
         const LIFF_ID = '2008786875-F7ifLsbN';
-        let lineProfile = {}, selectedIdentity = '';
+        let lineUser = {}, identityType = '';
+
+        // 強制隱藏 Loading 的保險機制
+        const hideLoading = () => {
+            document.getElementById('loading').style.opacity = '0';
+            setTimeout(() => document.getElementById('loading').style.display = 'none', 500);
+        };
 
         async function initLIFF() {
-            const loading = document.getElementById('loading');
-            const errorDisplay = document.getElementById('error-display');
-            const manualBtn = document.getElementById('manual-login-btn');
+            // 5秒逾時設定
+            const timeout = setTimeout(() => {
+                document.getElementById('retry-btn').classList.remove('hidden');
+                document.getElementById('loading-text').innerText = '連線緩慢，請確認網路狀態';
+            }, 5000);
 
             try {
-                console.log("LIFF 啟動中...");
                 await liff.init({ liffId: LIFF_ID });
+                clearTimeout(timeout);
                 
                 if (!liff.isLoggedIn()) {
-                    console.log("未登入，導向 LINE 登入頁面...");
-                    // 在外部瀏覽器打開時執行登入
-                    liff.login({ redirectUri: window.location.href });
-                    // 顯示手動按鈕以防自動跳轉失敗
-                    manualBtn.classList.remove('hidden');
+                    liff.login();
                 } else {
-                    console.log("已登入，取得個人資料...");
                     const profile = await liff.getProfile();
-                    lineProfile = profile;
+                    lineUser = profile;
                     document.getElementById('user-name').innerText = profile.displayName;
                     document.getElementById('user-img').src = profile.pictureUrl;
                     
-                    await checkUserExists(profile.userId);
+                    const res = await fetch(`${API_URL}?type=member_check&lineUserId=${profile.userId}`);
+                    const result = await res.json();
+                    
+                    if (result.status === "exists") {
+                        window.location.href = 'index.html';
+                    } else {
+                        hideLoading();
+                        document.getElementById('step-1').classList.remove('hidden');
+                    }
                 }
             } catch (err) {
-                console.error("LIFF 初始化錯誤:", err);
-                loading.style.display = 'none';
-                errorDisplay.innerHTML = `<strong>登入過程發生異常</strong><br>請確認是否於 LINE 環境開啟，或檢查 LIFF ID 設定。<br><small>${err.message}</small>`;
-                errorDisplay.style.display = 'block';
-            }
-        }
-
-        async function checkUserExists(uid) {
-            try {
-                const res = await fetch(`${API_URL}?type=member_check&lineUserId=${uid}`);
-                if (!res.ok) throw new Error("後端連線異常");
-                const result = await res.json();
-                
-                document.getElementById('loading').style.display = 'none';
-                if (result.status === "exists") {
-                    window.location.href = 'index.html';
-                } else {
-                    document.getElementById('step-1').classList.remove('hidden');
-                }
-            } catch (e) {
-                console.error("API 錯誤:", e);
-                document.getElementById('loading').style.display = 'none';
-                document.getElementById('error-display').innerText = "連線伺服器失敗，請稍後再試。";
+                console.error(err);
+                hideLoading();
+                document.getElementById('error-display').innerText = "LINE 登入連線失敗，請嘗試於 LINE APP 內開啟。";
                 document.getElementById('error-display').style.display = 'block';
             }
         }
 
         function selectId(id) {
-            selectedIdentity = id;
+            identityType = id;
             document.querySelectorAll('.id-option').forEach(el => el.classList.remove('active'));
             document.getElementById('id-' + id).classList.add('active');
             const btn = document.getElementById('next-btn');
