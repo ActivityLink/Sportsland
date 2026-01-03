@@ -3,61 +3,76 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>ActivityLink - 會員註冊中心</title>
+    <title>Sports-Island - 會員註冊中心</title>
+    <!-- 引入 LINE LIFF SDK -->
     <script charset="utf-8" src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&display=swap');
         :root { --line-green: #06C755; --bg-gray: #F7F9FB; --border-color: #EBEBEB; }
-        body { font-family: 'Noto Sans TC', sans-serif; background-color: var(--bg-gray); margin: 0; display: flex; justify-content: center; -webkit-font-smoothing: antialiased; }
+        body { font-family: 'Noto Sans TC', sans-serif; background-color: var(--bg-gray); color: #333; margin: 0; display: flex; justify-content: center; -webkit-font-smoothing: antialiased; }
         .page-wrapper { width: 100%; max-width: 640px; background: #FFFFFF; min-height: 100vh; padding: 40px 24px; box-shadow: 0 0 20px rgba(0,0,0,0.03); }
         .title { font-size: 24px; font-weight: 500; color: #111; margin-bottom: 8px; }
         .subtitle { font-size: 15px; color: #8E8E8E; margin-bottom: 35px; }
+        
         .id-option { border: 1px solid var(--border-color); border-radius: 12px; padding: 24px; margin-bottom: 15px; cursor: pointer; transition: 0.2s; display: flex; align-items: center; gap: 20px; }
         .id-option.active { border-color: var(--line-green); background: #F0FAF3; }
+        
         label { display: block; font-size: 16px; color: #444; margin-bottom: 10px; font-weight: 400; }
-        input, select { width: 100%; background: #F8F9FA; border: 1px solid #E9EEF2; border-radius: 10px; padding: 14px 16px; font-size: 16px; outline: none; margin-bottom: 20px; font-weight: 400; }
+        input, select { width: 100%; background: #F8F9FA; border: 1px solid #E9EEF2; border-radius: 10px; padding: 14px 16px; font-size: 16px; outline: none; margin-bottom: 20px; }
         input:focus { border-color: var(--line-green); background: white; }
+        
         .btn-main { background-color: var(--line-green); color: white; width: 100%; padding: 16px; border-radius: 12px; font-size: 17px; font-weight: 500; border: none; cursor: pointer; margin-top: 20px; }
-        .loading-screen { position: fixed; inset: 0; background: white; z-index: 1000; display: flex; flex-direction: column; align-items: center; justify-content: center; transition: opacity 0.5s; }
-        .error-msg { background: #FFF5F5; border: 1px solid #FED7D7; color: #C53030; padding: 15px; border-radius: 10px; font-size: 14px; margin-bottom: 20px; display: none; }
+        .loading-screen { position: fixed; inset: 0; background: white; z-index: 1000; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+        .family-box { background: #FAFBFC; padding: 25px; border-radius: 12px; border: 1px solid #F0F0F0; margin-bottom: 20px; }
     </style>
 </head>
 <body>
 
     <div id="loading" class="loading-screen">
         <div class="animate-spin rounded-full h-10 w-10 border-b-2 border-[#06C755] mb-4"></div>
-        <p id="loading-text" class="text-gray-400 text-sm font-medium">LINE 安全登入中...</p>
-        <button id="retry-btn" onclick="location.reload()" class="hidden mt-4 text-xs text-gray-400 underline">連線逾時，點此重試</button>
+        <p id="loading-text" class="text-gray-400 text-sm font-medium">Sports-Island 安全登入中...</p>
     </div>
 
     <div class="page-wrapper">
-        <div id="error-display" class="error-msg"></div>
+        <div id="error-display" class="hidden bg-red-50 text-red-500 p-4 rounded-lg mb-6 text-sm"></div>
 
+        <!-- 步驟 1: 選擇身分 -->
         <div id="step-1" class="hidden">
             <div class="flex items-center gap-3 mb-10">
-                <img id="user-img" src="" class="w-12 h-12 rounded-full border shadow-sm" onerror="this.src='https://placehold.co/100?text=User'">
+                <img id="user-img" src="" class="w-12 h-12 rounded-full border shadow-sm" onerror="this.src='https://placehold.co/100?text=U'">
                 <div>
                     <div class="text-sm text-gray-400 font-normal">您好，<span id="user-name">LINE 用戶</span></div>
-                    <div class="text-lg font-medium text-gray-800 tracking-tight">歡迎加入 ActivityLink</div>
+                    <div class="text-lg font-medium text-gray-800 tracking-tight">歡迎加入 Sports-Island</div>
                 </div>
             </div>
             <h2 class="title">選擇註冊身分</h2>
             <p class="subtitle">請選擇您要使用的報名身分：</p>
-            <div onclick="selectId('Individual')" id="id-Individual" class="id-option"><div class="flex-1 font-medium">個人註冊</div><i class="fas fa-check-circle opacity-0 text-green-500"></i></div>
-            <div onclick="selectId('Parent')" id="id-Parent" class="id-option"><div class="flex-1 font-medium">家長註冊</div><i class="fas fa-check-circle opacity-0 text-green-500"></i></div>
-            <div onclick="selectId('Organization')" id="id-Organization" class="id-option"><div class="flex-1 font-medium">機關團體</div><i class="fas fa-check-circle opacity-0 text-green-500"></i></div>
-            <button onclick="goStep(2)" id="next-btn" class="btn-main" disabled style="opacity: 0.5;">繼續下一步</button>
+            <div onclick="selectId('Individual')" id="id-Individual" class="id-option"><div class="flex-1 font-medium">個人註冊</div></div>
+            <div onclick="selectId('Parent')" id="id-Parent" class="id-option"><div class="flex-1 font-medium">家長註冊</div></div>
+            <div onclick="selectId('Organization')" id="id-Organization" class="id-option"><div class="flex-1 font-medium">機關團體</div></div>
+            <button onclick="goStep(2)" id="next-btn" class="btn-main mt-6 opacity-50" disabled>繼續下一步</button>
         </div>
 
+        <!-- 步驟 2: 詳細資料 -->
         <div id="step-2" class="hidden">
-            <h2 class="title">完善資料</h2>
+            <div onclick="goStep(1)" class="text-gray-400 mb-6 cursor-pointer text-sm flex items-center"><i class="fas fa-arrow-left mr-2"></i> 返回</div>
+            <h2 class="title">完善基本資料</h2>
             <form id="reg-form">
-                <label>姓名 *</label><input type="text" id="m-name" required placeholder="您的真實姓名">
-                <label>電話 *</label><input type="tel" id="m-phone" required placeholder="09XX-XXX-XXX">
-                <label>生日 *</label><input type="date" id="m-birth" required>
-                <button type="submit" class="btn-main">確認並完成註冊</button>
+                <label>姓名 *</label><input type="text" id="m-name" required placeholder="請輸入姓名">
+                <label>聯絡電話 *</label><input type="tel" id="m-phone" required placeholder="09XX-XXX-XXX">
+                <label>出生日期 *</label><input type="date" id="m-birth" required>
+                
+                <div id="parent-extra" class="hidden mt-10">
+                    <div class="flex justify-between items-center mb-6 border-b pb-4">
+                        <span class="text-lg font-medium">家人資料 (學員)</span>
+                        <button type="button" onclick="addFamilyRow()" class="text-sm text-green-600 font-medium">+ 新增家人</button>
+                    </div>
+                    <div id="family-list"></div>
+                </div>
+
+                <button type="submit" id="submit-btn" class="btn-main">確認並完成註冊</button>
             </form>
         </div>
     </div>
@@ -65,25 +80,16 @@
     <script>
         const API_URL = 'https://aged-rice-2438.wetw-net3.workers.dev/';
         const LIFF_ID = '2008786875-F7ifLsbN';
-        let lineUser = {}, identityType = '';
-
-        // 強制隱藏 Loading 的保險機制
-        const hideLoading = () => {
-            document.getElementById('loading').style.opacity = '0';
-            setTimeout(() => document.getElementById('loading').style.display = 'none', 500);
-        };
+        let lineUser = {}, identityType = '', familyCount = 0;
 
         async function initLIFF() {
-            // 5秒逾時設定
-            const timeout = setTimeout(() => {
-                document.getElementById('retry-btn').classList.remove('hidden');
-                document.getElementById('loading-text').innerText = '連線緩慢，請確認網路狀態';
-            }, 5000);
+            const timer = setTimeout(() => {
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('step-1').classList.remove('hidden');
+            }, 6000);
 
             try {
                 await liff.init({ liffId: LIFF_ID });
-                clearTimeout(timeout);
-                
                 if (!liff.isLoggedIn()) {
                     liff.login();
                 } else {
@@ -95,18 +101,19 @@
                     const res = await fetch(`${API_URL}?type=member_check&lineUserId=${profile.userId}`);
                     const result = await res.json();
                     
+                    clearTimeout(timer);
+                    document.getElementById('loading').style.display = 'none';
+
                     if (result.status === "exists") {
-                        window.location.href = 'index.html';
+                        // 使用 replace 確保手機端不卡在歷史紀錄
+                        window.location.replace('index.html');
                     } else {
-                        hideLoading();
                         document.getElementById('step-1').classList.remove('hidden');
                     }
                 }
             } catch (err) {
-                console.error(err);
-                hideLoading();
-                document.getElementById('error-display').innerText = "LINE 登入連線失敗，請嘗試於 LINE APP 內開啟。";
-                document.getElementById('error-display').style.display = 'block';
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('step-1').classList.remove('hidden');
             }
         }
 
@@ -119,9 +126,71 @@
         }
 
         function goStep(n) {
-            document.getElementById('step-1').classList.add('hidden');
-            document.getElementById('step-2').classList.remove('hidden');
+            document.getElementById('step-1').classList.toggle('hidden', n !== 1);
+            document.getElementById('step-2').classList.toggle('hidden', n !== 2);
+            if (n === 2) {
+                document.getElementById('parent-extra').classList.toggle('hidden', identityType !== 'Parent');
+            }
         }
+
+        function addFamilyRow() {
+            familyCount++;
+            const div = document.createElement('div');
+            div.className = 'family-box';
+            div.innerHTML = `
+                <div class="flex justify-between mb-4 border-b pb-2"><span class="text-xs text-gray-400">成員 ${familyCount}</span><button onclick="this.parentElement.parentElement.remove()" class="text-red-400 text-xs">移除</button></div>
+                <label>家人姓名</label><input type="text" class="f-name" required placeholder="姓名">
+                <label>生日</label><input type="date" class="f-birth" required>
+            `;
+            document.getElementById('family-list').appendChild(div);
+        }
+
+        document.getElementById('reg-form').onsubmit = async (e) => {
+            e.preventDefault();
+            const btn = document.getElementById('submit-btn');
+            btn.disabled = true; btn.innerText = "資料寫入中...";
+
+            if (!lineUser.userId) {
+                alert("尚未取得 LINE ID，請嘗試重新載入。");
+                btn.disabled = false; return;
+            }
+
+            const families = Array.from(document.querySelectorAll('.family-box')).map(box => ({
+                name: box.querySelector('.f-name').value,
+                gender: '不限',
+                birth: box.querySelector('.f-birth').value,
+                school: '',
+                grade: ''
+            }));
+
+            const payload = {
+                type: 'member_register',
+                lineUserId: lineUser.userId,
+                identityType: identityType,
+                name: document.getElementById('m-name').value,
+                phone: document.getElementById('m-phone').value,
+                birthDate: document.getElementById('m-birth').value,
+                familyData: families
+            };
+
+            try {
+                const res = await fetch(API_URL, { 
+                    method: 'POST', 
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload) 
+                });
+                const result = await res.json();
+                if (result.status === "success") {
+                    alert("🎉 註冊成功！");
+                    window.location.replace('index.html');
+                } else {
+                    throw new Error(result.message);
+                }
+            } catch (err) {
+                alert("❌ 寫入失敗: " + err.message);
+                btn.disabled = false; btn.innerText = "確認並完成註冊";
+            }
+        };
 
         window.onload = initLIFF;
     </script>
