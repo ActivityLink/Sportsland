@@ -91,8 +91,10 @@
                 <label>出生日期 *</label>
                 <input type="date" id="m-birth" required onchange="updateMainGrade()">
                 
-                <label>就讀學校 / 工作單位</label>
-                <input type="text" id="m-school" placeholder="範例：中山國小 或 自營業">
+                <div id="m-school-container">
+                    <label>就讀學校</label>
+                    <input type="text" id="m-school" placeholder="範例：中山國小">
+                </div>
                 <div id="main-grade-badge" class="hidden"><span class="grade-badge" id="m-grade-text"></span></div>
 
                 <!-- 機關專屬欄位 -->
@@ -215,8 +217,18 @@
         function updateMainGrade() {
             const b = document.getElementById('m-birth').value;
             if(b) {
+                const grade = getTaiwanGrade(b);
                 document.getElementById('main-grade-badge').classList.remove('hidden');
-                document.getElementById('m-grade-text').innerText = "系統預估年級：" + getTaiwanGrade(b);
+                document.getElementById('m-grade-text').innerText = "系統預估年級：" + grade;
+                
+                // 如果是成人，隱藏學校欄位
+                const schoolContainer = document.getElementById('m-school-container');
+                if(grade === "大專/成人") {
+                    schoolContainer.classList.add('hidden');
+                    document.getElementById('m-school').value = ""; // 清空
+                } else {
+                    schoolContainer.classList.remove('hidden');
+                }
             }
         }
 
@@ -236,6 +248,7 @@
             div.className = 'family-card';
             const isExisting = !!data;
             const birthVal = data ? (data.birth.includes('T') ? data.birth.split('T')[0] : data.birth) : '';
+            const initialGrade = data ? getTaiwanGrade(data.birth) : '';
 
             div.innerHTML = `
                 <div class="family-summary ${isExisting ? 'summary-row' : 'hidden'}">
@@ -243,7 +256,7 @@
                         <div class="summary-avatar"><i class="fas fa-user"></i></div>
                         <div>
                             <div class="font-bold text-gray-800 f-sum-name">${data ? data.name : ''}</div>
-                            <div class="text-[10px] text-gray-400 font-bold f-sum-grade">${data ? getTaiwanGrade(data.birth) : ''}</div>
+                            <div class="text-[10px] text-gray-400 font-bold f-sum-grade">${initialGrade}</div>
                         </div>
                     </div>
                     <button type="button" onclick="toggleFamilyEdit(this)" class="text-blue-500 text-sm font-black px-3 py-1 bg-blue-50 rounded-lg">編輯</button>
@@ -267,14 +280,35 @@
                         </div>
                     </div>
                     <label>生日 *</label>
-                    <input type="date" class="f-birth" value="${birthVal}" required onchange="this.closest('.family-card').querySelector('.f-sum-grade').innerText=getTaiwanGrade(this.value)">
-                    <label>就讀學校</label>
-                    <input type="text" class="f-school" value="${data ? data.school : ''}" placeholder="範例：中山國小">
+                    <input type="date" class="f-birth" value="${birthVal}" required onchange="handleFamilyBirthChange(this)">
+                    
+                    <div class="f-school-container ${initialGrade === '大專/成人' ? 'hidden' : ''}">
+                        <label>就讀學校</label>
+                        <input type="text" class="f-school" value="${data ? data.school : ''}" placeholder="範例：中山國小">
+                    </div>
+                    
                     <select class="f-identity hidden"><option value="學生">學生</option></select>
                     ${isExisting ? `<button type="button" onclick="toggleFamilyEdit(this)" class="w-full py-2 bg-gray-50 text-gray-400 text-xs font-bold rounded-xl mt-2">完成收合</button>` : ''}
                 </div>
             `;
             container.appendChild(div);
+        }
+
+        // 處理家人生日變動
+        function handleFamilyBirthChange(input) {
+            const card = input.closest('.family-card');
+            const grade = getTaiwanGrade(input.value);
+            card.querySelector('.f-sum-grade').innerText = grade;
+            
+            // 如果是成人，隱藏學校
+            const schoolContainer = card.querySelector('.f-school-container');
+            const schoolInput = card.querySelector('.f-school');
+            if(grade === "大專/成人") {
+                schoolContainer.classList.add('hidden');
+                schoolInput.value = "";
+            } else {
+                schoolContainer.classList.remove('hidden');
+            }
         }
 
         document.getElementById('reg-form').onsubmit = async (e) => {
