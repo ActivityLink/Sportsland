@@ -16,7 +16,7 @@
         .tab-container { display: flex; background: white; border-bottom: 1px solid #F0F0F0; position: sticky; top: 60px; z-index: 90; overflow-x: auto; scrollbar-width: none; }
         .tab-item { padding: 16px 20px; font-size: 14px; color: #888; white-space: nowrap; cursor: pointer; border-bottom: 3px solid transparent; transition: 0.2s; }
         .tab-item.active { color: var(--line-green); border-bottom-color: var(--line-green); font-weight: 500; }
-        .course-card { background: white; margin: 20px; border-radius: 16px; overflow: hidden; border: 1px solid #F0F0F0; transition: transform 0.1s; }
+        .course-card { background: white; margin: 20px; border-radius: 16px; overflow: hidden; border: 1px solid #F0F0F0; }
         .price-tag { color: var(--line-green); font-weight: 700; font-size: 20px; }
         .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 1000; align-items: center; justify-content: center; padding: 20px; }
         .modal-content { background: white; width: 100%; max-width: 500px; border-radius: 20px; max-height: 85vh; overflow-y: auto; animation: slideUp 0.3s; }
@@ -40,6 +40,7 @@
             <a href="register.html" id="nav-login" class="text-xs text-green-600 font-bold px-4 py-1.5 border border-green-500 rounded-full">中心登入</a>
         </header>
 
+        <!-- 首頁 Banner -->
         <div class="w-full h-auto overflow-hidden">
             <img src="https://aiwe.cc/wp-content/uploads/2025/12/3486bc19dc6317e16bf4f1449ec52ae4.jpg" class="w-full h-auto object-contain">
         </div>
@@ -60,6 +61,7 @@
         </nav>
     </div>
 
+    <!-- 詳細說明彈窗 -->
     <div id="detail-modal" class="modal-overlay" onclick="if(event.target === this) closeDetails()">
         <div class="modal-content">
             <div class="p-5 border-b flex justify-between items-center">
@@ -94,7 +96,9 @@
         async function switchTab(name) {
             currentSheet = name;
             document.querySelectorAll('.tab-item').forEach(t => t.classList.remove('active'));
-            document.getElementById(`tab-${name}`).classList.add('active');
+            const target = document.getElementById(`tab-${name}`);
+            if(target) target.classList.add('active');
+            
             const list = document.getElementById('course-list');
             list.innerHTML = '<div class="p-20 text-center text-gray-300">資料讀取中...</div>';
             try {
@@ -107,13 +111,13 @@
 
         function render(data) {
             const list = document.getElementById('course-list');
-            if(data.length === 0) { list.innerHTML = '<div class="p-10 text-center text-gray-300 italic">目前無進行中的活動</div>'; return; }
+            if(data.length === 0) { list.innerHTML = '<div class="p-10 text-center text-gray-400 italic">目前無進行中的活動</div>'; return; }
             list.innerHTML = data.map(c => `
                 <div class="course-card">
-                    <img src="${c.coverImage || 'https://placehold.co/800x450?text=Sports-Island'}" class="w-full h-auto object-contain bg-gray-50">
+                    <img src="${c.coverImage || 'https://placehold.co/800x450?text=Sports-Island'}" class="w-full h-auto object-contain bg-gray-50" onerror="this.src='https://placehold.co/800x450?text=Image+Not+Found'">
                     <div class="p-6">
                         <div class="flex justify-between items-start mb-2">
-                            <h3 class="font-black text-lg text-gray-800">${c.courseName}</h3>
+                            <h3 class="font-black text-lg text-gray-800">${c.courseName || '未命名課程'}</h3>
                         </div>
                         <p class="text-xs text-gray-400 flex items-center gap-2"><i class="far fa-calendar-alt text-green-500"></i> ${c.courseDate || '即將公布'}</p>
                         <div class="flex justify-between items-center mt-6">
@@ -130,7 +134,8 @@
         function showDetails(id) {
             const c = currentCourses.find(i => i.courseId === id);
             if (!c) return;
-            document.getElementById('modal-title').innerText = c.courseName;
+            document.getElementById('modal-title').innerText = c.courseName || "課程詳情";
+            
             // 讀取 AG(content), AF(highlights), AH(notes), AI(targetAudience)
             document.getElementById('modal-body').innerHTML = `
                 <div class="detail-section"><div class="detail-title"><i class="fas fa-star"></i> 課程亮點 (AF)</div><div class="detail-text">${c.highlights || '暫無亮點資料'}</div></div>
@@ -146,7 +151,6 @@
 
         function startBooking(id) {
             if (!isLogged) { if(confirm("預約需要登入中心帳戶，是否前往？")) window.location.href='register.html'; return; }
-            // 重要：帶上 type 參數，讓預約頁面知道去哪讀取資料
             window.location.href = `booking.html?id=${id}&type=${currentSheet}`;
         }
         window.onload = init;
