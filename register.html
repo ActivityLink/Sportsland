@@ -5,7 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
   <title>會員個人檔案管理</title>
 
+  <!-- LIFF -->
   <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+  <!-- Tailwind -->
   <script src="https://cdn.tailwindcss.com"></script>
 
   <style>
@@ -54,7 +56,7 @@
     <label>出生日期</label>
     <input type="date" id="m-birth" onchange="showGrade()">
 
-    <div class="text-xs text-blue-500 mb-4" id="gradeText"></div>
+    <div id="gradeText" class="text-xs text-blue-500 mb-4"></div>
 
     <label>就讀學校</label>
     <input id="m-school" placeholder="中山國小 / 可不填">
@@ -82,24 +84,41 @@
 </div>
 
 <script>
+/* ========================
+   基本設定
+======================== */
 const API_URL = 'https://aged-rice-2438.wetw-net3.workers.dev/';
 const LIFF_ID = '2008786875-F7ifLsbN';
 let lineUser = {};
 
-const v0 = v => v && v.trim() !== '' ? v.trim() : '0';
+/* ========================
+   工具函式
+======================== */
+function v0(v) {
+  return v && v.toString().trim() !== '' ? v.toString().trim() : '0';
+}
 
-function getTaiwanGrade(b) {
-  if (!b) return '0';
-  const y = new Date(b).getFullYear() + 6;
-  const ay = new Date().getFullYear();
-  const g = ay - y + 1;
+function getTaiwanGrade(birth) {
+  if (!birth) return '0';
+  const b = new Date(birth);
+  let entryYear = b.getFullYear() + 6;
+  if (b.getMonth() + 1 > 9 || (b.getMonth() + 1 === 9 && b.getDate() >= 2)) {
+    entryYear++;
+  }
+  const now = new Date();
+  const ay = (now.getMonth() + 1 >= 9) ? now.getFullYear() : now.getFullYear() - 1;
+  const g = ay - entryYear + 1;
+
   if (g <= 0) return '學齡前';
   if (g <= 6) return `國小${g}`;
-  if (g <= 9) return `國中${g-6}`;
-  if (g <= 12) return `高中${g-9}`;
+  if (g <= 9) return `國中${g - 6}`;
+  if (g <= 12) return `高中${g - 9}`;
   return '社會人士';
 }
 
+/* ========================
+   UI 行為
+======================== */
 function showGrade() {
   const birth = document.getElementById('m-birth').value;
   if (!birth) {
@@ -110,27 +129,50 @@ function showGrade() {
     '系統判定年級：' + getTaiwanGrade(birth);
 }
 
-
 function addFamily() {
-  const d = document.createElement('div');
-  d.className = "border rounded-xl p-4 mb-4";
-  d.innerHTML = `
-    <label>姓名</label><input class="f-name">
+  const div = document.createElement('div');
+  div.className = "border rounded-xl p-4 mb-4";
+  div.innerHTML = `
+    <label>姓名</label>
+    <input class="f-name">
+
     <label>性別</label>
     <select class="f-gender">
-      <option value="">未填</option><option>男</option><option>女</option>
+      <option value="">未填</option>
+      <option value="男">男</option>
+      <option value="女">女</option>
     </select>
-    <label>生日</label><input type="date" class="f-birth">
-    <label>學校</label><input class="f-school">
-    <button type="button" onclick="this.parentElement.remove()" class="text-xs text-red-400 mt-2">刪除</button>
+
+    <label>生日</label>
+    <input type="date" class="f-birth">
+
+    <label>學校</label>
+    <input class="f-school">
+
+    <button type="button"
+      onclick="this.parentElement.remove()"
+      class="text-xs text-red-400 mt-2">
+      刪除
+    </button>
   `;
-  document.getElementById('family-list').appendChild(d);
+  document.getElementById('family-list').appendChild(div);
 }
 
-document.getElementById('reg-form').onsubmit = async e => {
+/* ========================
+   表單送出
+======================== */
+document.getElementById('reg-form').onsubmit = async (e) => {
   e.preventDefault();
 
-  const families = [...document.querySelectorAll('#family-list > div')].map(c => ({
+  const mName   = document.getElementById('m-name').value;
+  const mPhone  = document.getElementById('m-phone').value;
+  const mGender = document.getElementById('m-gender').value;
+  const mBirth  = document.getElementById('m-birth').value;
+  const mSchool = document.getElementById('m-school').value;
+  const oName   = document.getElementById('o-name').value;
+  const oTax    = document.getElementById('o-tax').value;
+
+  const familyData = [...document.querySelectorAll('#family-list > div')].map(c => ({
     姓名: v0(c.querySelector('.f-name').value),
     性別: v0(c.querySelector('.f-gender').value),
     出生日期: v0(c.querySelector('.f-birth').value),
@@ -140,30 +182,47 @@ document.getElementById('reg-form').onsubmit = async e => {
 
   const payload = {
     type: 'member_register',
-    lineUserId: lineUser.userId,
-    姓名: v0(mName.value),
-    聯絡電話: v0(mPhone.value),
-    性別: v0(mGender.value),
-    出生日期: v0(mBirth.value),
-    就讀學校: v0(mSchool.value),
-    目前年級: getTaiwanGrade(mBirth.value),
-    機關名稱: v0(oName.value),
-    統一編號: v0(oTax.value),
-    familyData: families
+    lineUserId: lineUser.userId || '0',
+
+    姓名: v0(mName),
+    聯絡電話: v0(mPhone),
+    性別: v0(mGender),
+    出生日期: v0(mBirth),
+    就讀學校: v0(mSchool),
+    目前年級: getTaiwanGrade(mBirth),
+
+    機關名稱: v0(oName),
+    統一編號: v0(oTax),
+
+    familyData
   };
 
-  await fetch(API_URL, {
-    method:'POST',
-    headers:{'Content-Type':'application/json'},
-    body:JSON.stringify(payload)
-  });
+  console.log('送出 payload：', payload);
 
-  alert('✅ 資料已同步');
+  try {
+    const res = await fetch(API_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    const result = await res.json();
+    console.log('API 回應：', result);
+    alert('✅ 資料已同步');
+  } catch (err) {
+    console.error(err);
+    alert('❌ 送出失敗');
+  }
 };
 
-(async()=>{
+/* ========================
+   LIFF 初始化
+======================== */
+(async () => {
   await liff.init({ liffId: LIFF_ID });
-  if (!liff.isLoggedIn()) liff.login();
+  if (!liff.isLoggedIn()) {
+    liff.login();
+    return;
+  }
   lineUser = await liff.getProfile();
 })();
 </script>
