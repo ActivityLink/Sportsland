@@ -2,12 +2,10 @@
 <html lang="zh-TW">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-  <title>會員個人檔案管理</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>會員註冊</title>
 
-  <!-- LIFF -->
   <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
-  <!-- Tailwind -->
   <script src="https://cdn.tailwindcss.com"></script>
 
   <style>
@@ -34,66 +32,45 @@
 
   <form id="reg-form">
 
-    <!-- 基本資料 -->
-    <div class="grid grid-cols-2 gap-4">
-      <div>
-        <label>真實姓名</label>
-        <input id="m-name" placeholder="王大同">
-      </div>
-      <div>
-        <label>性別</label>
-        <select id="m-gender">
-          <option value="">未填</option>
-          <option value="男">男</option>
-          <option value="女">女</option>
-        </select>
-      </div>
-    </div>
+    <label>姓名</label>
+    <input id="m-name">
 
     <label>聯絡電話</label>
-    <input id="m-phone" placeholder="0912345678">
+    <input id="m-phone">
+
+    <label>性別</label>
+    <select id="m-gender">
+      <option value="">未填</option>
+      <option value="男">男</option>
+      <option value="女">女</option>
+    </select>
 
     <label>出生日期</label>
-    <input type="date" id="m-birth" onchange="showGrade()">
-
-    <div id="gradeText" class="text-xs text-blue-500 mb-4"></div>
+    <input type="date" id="m-birth">
 
     <label>就讀學校</label>
-    <input id="m-school" placeholder="中山國小 / 可不填">
+    <input id="m-school">
 
-    <!-- 機關資料 -->
     <hr class="my-6">
+
     <label>機關名稱</label>
-    <input id="o-name" placeholder="公司 / 單位">
+    <input id="o-name">
 
     <label>統一編號</label>
-    <input id="o-tax" placeholder="8 碼統編">
+    <input id="o-tax">
 
-    <!-- 家人資料 -->
-    <hr class="my-6">
-    <div class="flex justify-between items-center mb-4">
-      <span class="font-bold">學員 / 家人名單</span>
-      <button type="button" onclick="addFamily()" class="text-sm bg-blue-500 text-white px-4 py-2 rounded-full">＋新增</button>
-    </div>
-
-    <div id="family-list"></div>
-
-    <button class="btn-main mt-8">儲存並同步資料</button>
+    <button class="btn-main mt-8">儲存</button>
 
   </form>
 </div>
 
 <script>
-/* ========================
-   基本設定
-======================== */
+/* ========= 基本設定 ========= */
 const API_URL = 'https://aged-rice-2438.wetw-net3.workers.dev/';
 const LIFF_ID = '2008786875-F7ifLsbN';
 let lineUser = {};
 
-/* ========================
-   工具函式
-======================== */
+/* ========= 工具 ========= */
 function v0(v) {
   return v && v.toString().trim() !== '' ? v.toString().trim() : '0';
 }
@@ -101,103 +78,45 @@ function v0(v) {
 function getTaiwanGrade(birth) {
   if (!birth) return '0';
   const b = new Date(birth);
-  let entryYear = b.getFullYear() + 6;
-  if (b.getMonth() + 1 > 9 || (b.getMonth() + 1 === 9 && b.getDate() >= 2)) {
-    entryYear++;
-  }
+  let entry = b.getFullYear() + 6;
   const now = new Date();
-  const ay = (now.getMonth() + 1 >= 9) ? now.getFullYear() : now.getFullYear() - 1;
-  const g = ay - entryYear + 1;
-
+  const ay = now.getFullYear();
+  const g = ay - entry + 1;
   if (g <= 0) return '學齡前';
   if (g <= 6) return `國小${g}`;
-  if (g <= 9) return `國中${g - 6}`;
-  if (g <= 12) return `高中${g - 9}`;
+  if (g <= 9) return `國中${g-6}`;
+  if (g <= 12) return `高中${g-9}`;
   return '社會人士';
 }
 
-/* ========================
-   UI 行為
-======================== */
-function showGrade() {
-  const birth = document.getElementById('m-birth').value;
-  if (!birth) {
-    document.getElementById('gradeText').innerText = '';
-    return;
-  }
-  document.getElementById('gradeText').innerText =
-    '系統判定年級：' + getTaiwanGrade(birth);
-}
-
-function addFamily() {
-  const div = document.createElement('div');
-  div.className = "border rounded-xl p-4 mb-4";
-  div.innerHTML = `
-    <label>姓名</label>
-    <input class="f-name">
-
-    <label>性別</label>
-    <select class="f-gender">
-      <option value="">未填</option>
-      <option value="男">男</option>
-      <option value="女">女</option>
-    </select>
-
-    <label>生日</label>
-    <input type="date" class="f-birth">
-
-    <label>學校</label>
-    <input class="f-school">
-
-    <button type="button"
-      onclick="this.parentElement.remove()"
-      class="text-xs text-red-400 mt-2">
-      刪除
-    </button>
-  `;
-  document.getElementById('family-list').appendChild(div);
-}
-
-/* ========================
-   表單送出
-======================== */
-document.getElementById('reg-form').onsubmit = async (e) => {
+/* ========= 送出 ========= */
+document.getElementById('reg-form').addEventListener('submit', async function (e) {
   e.preventDefault();
 
-  const mName   = document.getElementById('m-name').value;
-  const mPhone  = document.getElementById('m-phone').value;
-  const mGender = document.getElementById('m-gender').value;
-  const mBirth  = document.getElementById('m-birth').value;
-  const mSchool = document.getElementById('m-school').value;
-  const oName   = document.getElementById('o-name').value;
-  const oTax    = document.getElementById('o-tax').value;
-
-  const familyData = [...document.querySelectorAll('#family-list > div')].map(c => ({
-    姓名: v0(c.querySelector('.f-name').value),
-    性別: v0(c.querySelector('.f-gender').value),
-    出生日期: v0(c.querySelector('.f-birth').value),
-    就讀學校: v0(c.querySelector('.f-school').value),
-    目前年級: getTaiwanGrade(c.querySelector('.f-birth').value)
-  }));
+  /* 🔑 全部先抓成區域變數（這一步最重要） */
+  const name   = document.getElementById('m-name').value;
+  const phone  = document.getElementById('m-phone').value;
+  const gender = document.getElementById('m-gender').value;
+  const birth  = document.getElementById('m-birth').value;
+  const school = document.getElementById('m-school').value;
+  const org    = document.getElementById('o-name').value;
+  const tax    = document.getElementById('o-tax').value;
 
   const payload = {
     type: 'member_register',
     lineUserId: lineUser.userId || '0',
 
-    姓名: v0(mName),
-    聯絡電話: v0(mPhone),
-    性別: v0(mGender),
-    出生日期: v0(mBirth),
-    就讀學校: v0(mSchool),
-    目前年級: getTaiwanGrade(mBirth),
-
-    機關名稱: v0(oName),
-    統一編號: v0(oTax),
-
-    familyData
+    姓名: v0(name),
+    聯絡電話: v0(phone),
+    性別: v0(gender),
+    出生日期: v0(birth),
+    就讀學校: v0(school),
+    目前年級: getTaiwanGrade(birth),
+    機關名稱: v0(org),
+    統一編號: v0(tax)
   };
 
-  console.log('送出 payload：', payload);
+  console.log('payload', payload);
 
   try {
     const res = await fetch(API_URL, {
@@ -205,18 +124,18 @@ document.getElementById('reg-form').onsubmit = async (e) => {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload)
     });
+
     const result = await res.json();
-    console.log('API 回應：', result);
-    alert('✅ 資料已同步');
+    console.log(result);
+    alert('✅ 已送出');
+
   } catch (err) {
     console.error(err);
     alert('❌ 送出失敗');
   }
-};
+});
 
-/* ========================
-   LIFF 初始化
-======================== */
+/* ========= LIFF ========= */
 (async () => {
   await liff.init({ liffId: LIFF_ID });
   if (!liff.isLoggedIn()) {
