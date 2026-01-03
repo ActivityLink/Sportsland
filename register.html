@@ -130,7 +130,7 @@
         const API_URL = 'https://aged-rice-2438.wetw-net3.workers.dev/';
         const LIFF_ID = '2008786875-F7ifLsbN';
         let lineUser = {}, identityType = '';
-        let existingMemberId = ''; // 儲存現有會員ID
+        let existingMemberId = '';
 
         function navigateTo(page) {
             const base = window.location.href.split('?')[0].split('#')[0];
@@ -146,67 +146,123 @@
                 } else {
                     const profile = await liff.getProfile();
                     lineUser = profile;
+                    console.log('LINE User Profile:', profile);
                     
-                    const res = await fetch(`${API_URL}?type=member_check&lineUserId=${profile.userId}&_t=${Date.now()}`);
-                    const result = await res.json();
-                    
-                    if (result.status === "exists") {
-                        const u = result.data;
-                        existingMemberId = u["會員ID"] || '';
-                        identityType = u["註冊身分"] || u.identityType || '個人';
+                    // 檢查會員資料
+                    try {
+                        const res = await fetch(`${API_URL}?type=member_check&lineUserId=${profile.userId}&_t=${Date.now()}`);
+                        console.log('API Response Status:', res.status);
                         
-                        // 填入現有資料
-                        document.getElementById('m-name').value = u["姓名"] || u.name || '';
-                        document.getElementById('m-phone').value = u["聯絡電話"] || u.phone || '';
-                        document.getElementById('m-gender').value = u["性別"] || u.gender || '';
-                        document.getElementById('m-school').value = u["就讀學校"] || u.school || '';
-                        if(u["出生日期"] || u.birthDate) {
-                            const birthDate = u["出生日期"] || u.birthDate;
-                            document.getElementById('m-birth').value = birthDate.includes('T') ? birthDate.split('T')[0] : birthDate;
+                        if (!res.ok) {
+                            throw new Error(`API 請求失敗: ${res.status}`);
                         }
                         
-                        if(identityType === '機關') {
-                            document.getElementById('o-name').value = u["機關名稱"] || u.orgName || '';
-                            document.getElementById('o-tax').value = u["統一編號"] || u.taxId || '';
-                        }
+                        const result = await res.json();
+                        console.log('API Result:', result);
+                        
+                        if (result.status === "exists" && result.data) {
+                            const u = result.data;
+                            console.log('Existing User Data:', u);
+                            
+                            // 取得註冊身分
+                            identityType = u["註冊身分"] || u.identityType || '個人';
+                            console.log('Identity Type:', identityType);
+                            
+                            // 立即選擇身分（重要！）
+                            selectId(identityType);
+                            
+                            // 填入表單資料
+                            document.getElementById('m-name').value = u["姓名"] || u.name || '';
+                            document.getElementById('m-phone').value = u["聯絡電話"] || u.phone || '';
+                            document.getElementById('m-gender').value = u["性別"] || u.gender || '';
+                            document.getElementById('m-school').value = u["就讀學校"] || u.school || '';
+                            
+                            // 處理出生日期格式
+                            if (u["出生日期"]) {
+                                let birthDate = u["出生日期"];
+                                if (birthDate.includes('T')) {
+                                    birthDate = birthDate.split('T')[0];
+                                }
+                                document.getElementById('m-birth').value = birthDate;
+                            }
+                            
+                            // 機關資料
+                            if (identityType === '機關') {
+                                document.getElementById('o-name').value = u["機關名稱"] || u.orgName || '';
+                                document.getElementById('o-tax').value = u["統一編號"] || u.taxId || '';
+                            }
 
-                        if (identityType === '家長' && result.families) {
-                            result.families.forEach(f => {
-                                addFamilyRow({
-                                    name: f["姓名"] || f.name,
-                                    gender: f["性別"] || f.gender,
-                                    birth: f["出生日期"] || f.birth,
-                                    school: f["就讀學校"] || f.school
+                            // 家人資料
+                            if (identityType === '家長' && result.families && result.families.length > 0) {
+                                console.log('Loading families:', result.families);
+                                result.families.forEach(f => {
+                                    addFamilyRow({
+                                        name: f["姓名"] || f.name || f["家人姓名"] || '',
+                                        gender: f["性別"] || f.gender || '',
+                                        birth: f["出生日期"] || f.birth || f["生日"] || '',
+                                        school: f["就讀學校"] || f.school || ''
+                                    });
                                 });
-                            });
+                            }
+                            
+                            // 更新年級顯示
+                            setTimeout(() => {
+                                updateMainGrade();
+                            }, 100);
+                            
+                            // 直接進入步驟2
+                            goStep(2);
+                            
+                        } else if (result.status === "not_found") {
+                            console.log('No existing member found, showing step 1');
+                            document.getElementById('step-1').classList.remove('hidden');
+                        } else {
+                            console.log('Unexpected response:', result);
+                            document.getElementById('step-1').classList.remove('hidden');
                         }
-                        selectId(identityType);
-                        goStep(2);
-                    } else {
+                        
+                    } catch (apiError) {
+                        console.error('API Error:', apiError);
+                        alert('無法載入會員資料，請稍後再試');
                         document.getElementById('step-1').classList.remove('hidden');
                     }
                 }
-            } catch (e) { console.error(e); } finally {
+            } catch (e) { 
+                console.error('Init Error:', e);
+                alert('初始化失敗，請重新整理頁面');
+                document.getElementById('step-1').classList.remove('hidden');
+            } finally {
                 document.getElementById('loading').style.display = 'none';
             }
         }
 
         function selectId(id) {
+            console.log('Selecting identity:', id);
             identityType = id;
             document.querySelectorAll('.id-option').forEach(el => el.classList.remove('active'));
-            document.getElementById('id-'+id).classList.add('active');
+            const targetElement = document.getElementById('id-'+id);
+            if (targetElement) {
+                targetElement.classList.add('active');
+            }
             const btn = document.getElementById('next-btn');
             btn.disabled = false;
             btn.classList.remove('opacity-50');
         }
 
         function goStep(n) {
+            console.log('Going to step:', n, 'with identity:', identityType);
             document.getElementById('step-1').classList.toggle('hidden', n !== 1);
             document.getElementById('step-2').classList.toggle('hidden', n !== 2);
-            if(n === 2) {
+            
+            if (n === 2) {
+                // 根據身份顯示/隱藏對應欄位
                 document.getElementById('org-fields').classList.toggle('hidden', identityType !== '機關');
                 document.getElementById('parent-extra').classList.toggle('hidden', identityType !== '家長');
-                updateMainGrade();
+                
+                // 強制更新學校欄位顯示
+                setTimeout(() => {
+                    updateMainGrade();
+                }, 50);
             }
         }
 
@@ -226,17 +282,24 @@
 
         function updateMainGrade() {
             const b = document.getElementById('m-birth').value;
-            if(!b) return;
+            console.log('Birth date:', b, 'Identity:', identityType);
             
             const grade = getTaiwanGrade(b);
             const schoolContainer = document.getElementById('m-school-container');
             const gradeBadge = document.getElementById('main-grade-badge');
             
-            gradeBadge.classList.remove('hidden');
-            document.getElementById('m-grade-text').innerText = "系統判定身分：" + grade;
+            if (b) {
+                gradeBadge.classList.remove('hidden');
+                document.getElementById('m-grade-text').innerText = "系統判定身分：" + grade;
+            } else {
+                gradeBadge.classList.add('hidden');
+            }
             
-            // 跳過邏輯：如果不是學生，或是身分為家長/機關，隱藏學校
-            if(grade === "社會人士" || identityType === '家長' || identityType === '機關') {
+            // 判斷是否顯示學校欄位
+            const shouldHideSchool = grade === "社會人士" || identityType === '家長' || identityType === '機關';
+            console.log('Should hide school?', shouldHideSchool, 'Grade:', grade);
+            
+            if (shouldHideSchool) {
                 schoolContainer.classList.add('hidden');
                 document.getElementById('m-school').value = "";
             } else {
@@ -345,90 +408,48 @@
             btn.disabled = true;
             btn.innerHTML = `<i class="fas fa-spinner fa-spin mr-2"></i> 資料同步中...`;
 
-            // 獲取所有表單資料，如果為空則填入預設值
-            const mName = document.getElementById('m-name').value.trim() || '未填寫';
-            const mPhone = document.getElementById('m-phone').value.trim() || '0';
-            const mGender = document.getElementById('m-gender').value || '未填寫';
-            const mBirth = document.getElementById('m-birth').value || '1970-01-01';
-            const mSchool = document.getElementById('m-school').value.trim() || '0';
-            const mGrade = getTaiwanGrade(mBirth) || '社會人士';
-            
-            // 機關資料
-            const oName = identityType === '機關' ? (document.getElementById('o-name').value.trim() || '0') : '0';
-            const oTax = identityType === '機關' ? (document.getElementById('o-tax').value.trim() || '0') : '0';
-            
-            // 建立家人資料（學員名單）
-            const familyData = Array.from(document.querySelectorAll('.family-card')).map(card => {
-                const name = card.querySelector('.f-name').value.trim() || '未填寫';
-                const gender = card.querySelector('.f-gender').value || '未填寫';
-                const birth = card.querySelector('.f-birth').value || '1970-01-01';
-                const school = card.querySelector('.f-school').value.trim() || '0';
-                const grade = getTaiwanGrade(birth) || '社會人士';
-                
-                return {
-                    姓名: name,
-                    性別: gender,
-                    出生日期: birth,
-                    就讀學校: school,
-                    目前年級: grade
-                };
-            });
-
-            // 生成會員ID - 如果已有則使用現有，否則生成新的
-            const generateMemberId = () => {
-                if (existingMemberId) return existingMemberId;
-                const timestamp = Date.now();
-                const random = Math.floor(Math.random() * 10000);
-                return `M-${timestamp}${random}`;
-            };
-
-            // 建立完整的 payload - 嚴格按照資料庫欄位順序和名稱
-            const payload = {
-                type: 'member_register',
-                
-                // 資料庫所有欄位，按照順序
-                會員ID: generateMemberId(),
-                LINE_UID: lineUser.userId || '0',
-                "註冊身分": identityType || '個人',
-                姓名: mName,
-                聯絡電話: mPhone,
-                性別: mGender,
-                出生日期: mBirth,
-                就讀學校: mSchool,
-                目前年級: mGrade,
-                機關名稱: oName,
-                統一編號: oTax,
-                建立時間: new Date().toISOString(),
-                更新時間: new Date().toISOString(),
-                
-                // 額外傳遞的參數
-                lineUserId: lineUser.userId || '0',
-                identityType: identityType || '個人',
-                
-                // 家人/學員資料
-                familyData: familyData.length > 0 ? familyData : []
-            };
-
-            // 確保所有欄位都有值（安全檢查）
-            const databaseFields = [
-                '會員ID', 'LINE_UID', '註冊身分', '姓名', '聯絡電話', 
-                '性別', '出生日期', '就讀學校', '目前年級',
-                '機關名稱', '統一編號', '建立時間', '更新時間'
-            ];
-
-            databaseFields.forEach(field => {
-                if (!payload[field] && payload[field] !== '0') {
-                    payload[field] = field === '統一編號' ? '0' : 
-                                   field.includes('時間') ? new Date().toISOString() : 
-                                   field === '會員ID' ? generateMemberId() : 
-                                   '未填寫';
-                }
-            });
-
-            console.log('提交的完整資料:', JSON.stringify(payload, null, 2));
-
             try {
-                const res = await fetch(API_URL, {
+                // 收集表單資料
+                const formData = {
+                    lineUserId: lineUser.userId,
+                    identityType: identityType,
+                    name: document.getElementById('m-name').value.trim(),
+                    phone: document.getElementById('m-phone').value.trim(),
+                    gender: document.getElementById('m-gender').value,
+                    birthDate: document.getElementById('m-birth').value,
+                    school: document.getElementById('m-school').value.trim(),
+                    grade: getTaiwanGrade(document.getElementById('m-birth').value)
+                };
+
+                // 機關資料
+                if (identityType === '機關') {
+                    formData.orgName = document.getElementById('o-name').value.trim();
+                    formData.taxId = document.getElementById('o-tax').value.trim();
+                }
+
+                // 家人資料
+                const familyData = Array.from(document.querySelectorAll('.family-card')).map(card => {
+                    return {
+                        name: card.querySelector('.f-name').value.trim(),
+                        gender: card.querySelector('.f-gender').value,
+                        birth: card.querySelector('.f-birth').value,
+                        school: card.querySelector('.f-school').value.trim(),
+                        grade: getTaiwanGrade(card.querySelector('.f-birth').value)
+                    };
+                });
+
+                // 準備 API 請求
+                const payload = {
+                    type: 'member_register',
+                    lineUserId: lineUser.userId,
+                    identityType: identityType,
+                    ...formData,
+                    familyData: familyData
+                };
+
+                console.log('Submitting payload:', payload);
+
+                const response = await fetch(API_URL, {
                     method: 'POST',
                     headers: { 
                         'Content-Type': 'application/json',
@@ -436,25 +457,21 @@
                     },
                     body: JSON.stringify(payload)
                 });
-                
-                if (!res.ok) {
-                    throw new Error(`HTTP error! status: ${res.status}`);
-                }
-                
-                const result = await res.json();
-                console.log('API回應:', result);
-                
-                if(result.status === "success" || result.success) {
+
+                const result = await response.json();
+                console.log('Submission result:', result);
+
+                if (result.status === "success") {
                     alert("✅ 會員資料同步成功！");
-                    navigateTo('index.html');
+                    // 重新載入頁面以更新資料
+                    location.reload();
                 } else {
-                    alert("❌ 儲存失敗：" + (result.message || JSON.stringify(result)));
-                    btn.disabled = false;
-                    btn.innerText = "重新儲存";
+                    throw new Error(result.message || "儲存失敗");
                 }
-            } catch(err) {
-                console.error("API 錯誤詳細資訊:", err);
-                alert("連線超時或發生錯誤，請檢查網路後再試\n錯誤訊息: " + err.message);
+
+            } catch (error) {
+                console.error('Submission error:', error);
+                alert("❌ 儲存失敗：" + error.message);
                 btn.disabled = false;
                 btn.innerText = "重新儲存";
             }
