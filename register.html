@@ -15,16 +15,21 @@
         .page-wrapper { width: 100%; max-width: 640px; background: #FFFFFF; min-height: 100vh; padding: 30px 24px; box-shadow: 0 0 20px rgba(0,0,0,0.03); }
         .title { font-size: 24px; font-weight: 500; color: #111; margin-bottom: 8px; }
         .subtitle { font-size: 14px; color: #8E8E8E; margin-bottom: 30px; }
+        
         .id-option { border: 1px solid var(--border-color); border-radius: 12px; padding: 20px; margin-bottom: 12px; cursor: pointer; transition: 0.2s; display: flex; align-items: center; gap: 15px; }
         .id-option.active { border-color: var(--line-green); background: #F0FAF3; }
         .active .check-icon { color: var(--line-green); opacity: 1; }
         .check-icon { opacity: 0; font-size: 18px; }
+        
         label { display: flex; align-items: center; font-size: 15px; color: #555; margin-bottom: 8px; font-weight: 400; }
         input, select { width: 100%; background: #F8F9FA; border: 1px solid #E9EEF2; border-radius: 10px; padding: 14px; font-size: 16px; outline: none; margin-bottom: 18px; }
+        
         .btn-main { background-color: var(--line-green); color: white; width: 100%; padding: 16px; border-radius: 12px; font-size: 17px; font-weight: 500; border: none; cursor: pointer; margin-top: 10px; }
         .btn-outline { border: 1px solid var(--line-green); color: var(--line-green); width: 100%; padding: 14px; border-radius: 12px; font-size: 15px; background: white; cursor: pointer; font-weight: 500; }
+        
         .family-card { background: #FCFDFF; padding: 20px; border-radius: 16px; border: 1px solid #E9EFF5; margin-bottom: 15px; box-shadow: 0 2px 8px rgba(0,0,0,0.02); position: relative; }
         .grade-tag { background: #EBF5FF; color: #0066CC; padding: 3px 10px; border-radius: 6px; font-size: 12px; font-weight: 500; display: inline-block; margin-bottom: 12px; }
+        
         .loading-screen { position: fixed; inset: 0; background: white; z-index: 1000; display: flex; flex-direction: column; align-items: center; justify-content: center; }
         .status-header { background: #F0FAF3; padding: 15px; border-radius: 12px; margin-bottom: 25px; border: 1px solid #D1E7DD; display: flex; align-items: center; gap: 10px; }
     </style>
@@ -33,7 +38,7 @@
 
     <div id="loading" class="loading-screen">
         <div class="animate-spin rounded-full h-10 w-10 border-b-2 border-[#06C755] mb-4"></div>
-        <p class="text-gray-400 text-sm">正在讀取您的 Sports-Island 檔案...</p>
+        <p class="text-gray-400 text-sm">正在同步您的 Sports-Island 檔案...</p>
     </div>
 
     <div class="page-wrapper">
@@ -42,7 +47,6 @@
             <div class="text-sm text-green-800">您已成功註冊。家長身分可在此補填家人學員資料。</div>
         </div>
 
-        <!-- 步驟 1: 選擇帳戶類型 (註冊時) -->
         <div id="step-1" class="hidden">
             <h2 class="title">選擇帳戶類型</h2>
             <p class="subtitle">家長身分可幫家中小朋友或多位成員報名活動。</p>
@@ -51,11 +55,10 @@
             <button onclick="goStep(2)" id="next-btn" class="btn-main opacity-50" disabled>繼續填寫基本資料</button>
         </div>
 
-        <!-- 步驟 2: 詳細資料維護 -->
         <div id="step-2" class="hidden">
             <div class="flex justify-between items-center mb-6">
                 <h2 class="text-xl font-bold">基本資料維護</h2>
-                <div id="identity-badge" class="text-[11px] px-2 py-1 bg-gray-100 text-gray-500 rounded">身分：讀取中</div>
+                <div id="identity-badge" class="text-[11px] px-2 py-1 bg-gray-100 text-gray-500 rounded font-bold">身分：讀取中</div>
             </div>
             
             <form id="reg-form">
@@ -72,7 +75,7 @@
 
                 <!-- 身分轉換區域 (僅針對非家長) -->
                 <div id="upgrade-box" class="hidden mb-8 p-6 border border-dashed border-blue-200 rounded-2xl bg-blue-50/50">
-                    <p class="text-sm text-blue-600 mb-4 text-center">需要幫家人或學員報名嗎？</p>
+                    <p class="text-sm text-blue-600 mb-4 text-center">需要幫家人或小朋友報名嗎？</p>
                     <button type="button" onclick="switchToParent()" class="btn-outline">變更為家長身分並補填家人</button>
                 </div>
 
@@ -82,12 +85,7 @@
                         <span class="text-lg font-bold text-gray-800">家人/學員管理</span>
                         <button type="button" onclick="addFamilyRow()" class="text-sm font-bold text-white bg-blue-500 px-5 py-2.5 rounded-full shadow-lg">+ 新增成員</button>
                     </div>
-                    <div id="family-list">
-                        <!-- 家人資料卡片由 JS 動態生成 -->
-                    </div>
-                    <p class="text-[11px] text-gray-400 mt-4 leading-relaxed">
-                        <i class="fas fa-info-circle mr-1"></i> 新增成員後，未來在報名活動時可直接勾選，不需重複填寫資料。
-                    </p>
+                    <div id="family-list"></div>
                 </div>
 
                 <button type="submit" id="submit-btn" class="btn-main shadow-lg">儲存並同步雲端</button>
@@ -123,27 +121,41 @@
 
                 if (result.status === "exists") {
                     const user = result.data;
-                    console.log("Member Data Found:", user);
+                    console.log("Raw Server Data:", user);
 
-                    // 1. 更強大的身分判斷：檢查所有可能的欄位名稱
-                    let rawIdentity = user["註冊身分"] || user["身分"] || user["identityType"] || "";
-                    if (rawIdentity === '家長' || rawIdentity === 'Parent') {
-                        identityType = 'Parent';
-                    } else {
-                        identityType = 'Individual';
+                    // --- 核心修復：強效身分掃描 ---
+                    // 不再只找 user["註冊身分"]，而是掃描所有欄位內容是否有 Parent 或 家長
+                    let detectedIdentity = 'Individual';
+                    for (const key in user) {
+                        const val = String(user[key]).trim();
+                        if (val === 'Parent' || val === '家長') {
+                            detectedIdentity = 'Parent';
+                            break;
+                        }
                     }
+                    identityType = detectedIdentity;
                     
-                    // 2. 電話補 0 處理 (針對 953740237 -> 0953740237)
-                    let phone = String(user["聯絡電話"] || user["電話"] || "");
+                    // --- 電話補 0 處理 ---
+                    // 掃描欄位尋找可能是電話的數字串
+                    let phone = "";
+                    for (const key in user) {
+                        const val = String(user[key]).trim();
+                        if (val.length >= 9 && /^\d+$/.test(val)) {
+                            phone = val;
+                            break;
+                        }
+                    }
                     if (phone.length === 9 && phone.startsWith('9')) phone = '0' + phone;
                     
-                    // 3. 回填資料
+                    // --- 資料回填 ---
                     document.getElementById('member-status-box').classList.remove('hidden');
-                    document.getElementById('m-name').value = user["姓名"] || "";
+                    // 遍歷所有欄位找到可能是姓名的值 (避免 Key Name 跑掉)
+                    document.getElementById('m-name').value = user["姓名"] || user["name"] || "";
                     document.getElementById('m-phone').value = phone;
-                    if(user["出生日期"]) {
-                        // 處理 ISO Date 格式
-                        document.getElementById('m-birth').value = user["出生日期"].split('T')[0];
+                    
+                    if(user["出生日期"] || user["birthDate"]) {
+                        const birth = user["出生日期"] || user["birthDate"];
+                        document.getElementById('m-birth').value = birth.split('T')[0];
                     }
                     
                     updateIdentityUI();
@@ -153,12 +165,14 @@
                 }
             } catch (e) {
                 document.getElementById('loading').style.display = 'none';
-                alert("讀取資料失敗，請確認網路狀態。");
+                console.error("Fetch Error:", e);
             }
         }
 
         function updateIdentityUI() {
-            document.getElementById('identity-badge').innerText = `身分：${identityType === 'Parent' ? '家長' : '個人'}`;
+            const badge = document.getElementById('identity-badge');
+            badge.innerText = `身分：${identityType === 'Parent' ? '家長' : '個人'}`;
+            
             const parentExtra = document.getElementById('parent-extra');
             const upgradeBox = document.getElementById('upgrade-box');
             
@@ -224,27 +238,16 @@
             div.className = 'family-card fade-in';
             div.innerHTML = `
                 <div class="flex justify-between mb-4 border-b border-gray-100 pb-3">
-                    <span class="text-sm font-bold text-blue-600"><i class="fas fa-user-graduate mr-1"></i> 成員學員資料</span>
+                    <span class="text-sm font-bold text-blue-600"><i class="fas fa-user-graduate mr-1"></i> 成員資料</span>
                     <button type="button" onclick="this.parentElement.parentElement.remove()" class="text-red-400 text-xs hover:text-red-600">移除</button>
                 </div>
-                
-                <label>成員姓名 *</label>
-                <input type="text" class="f-name" required placeholder="請輸入學員姓名">
-                
+                <label>成員姓名 *</label><input type="text" class="f-name" required placeholder="學員姓名">
                 <div class="grid grid-cols-2 gap-4">
-                    <div>
-                        <label>性別</label>
-                        <select class="f-gender"><option value="男">男</option><option value="女">女</option></select>
-                    </div>
-                    <div>
-                        <label>生日 *</label>
-                        <input type="date" class="f-birth" required onchange="const g=getTaiwanGrade(this.value); this.parentElement.parentElement.nextElementSibling.innerText='年級預估：'+g;">
-                    </div>
+                    <div><label>性別</label><select class="f-gender"><option value="男">男</option><option value="女">女</option></select></div>
+                    <div><label>生日 *</label><input type="date" class="f-birth" required onchange="const g=getTaiwanGrade(this.value); this.parentElement.parentElement.nextElementSibling.innerText='年級預估：'+g;"></div>
                 </div>
                 <div class="grade-tag">年級預估：-</div>
-                
-                <label>就讀學校</label>
-                <input type="text" class="f-school" placeholder="例如：某某國小">
+                <label>就讀學校</label><input type="text" class="f-school" placeholder="例如：某某國小">
             `;
             document.getElementById('family-list').appendChild(div);
             div.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -282,13 +285,13 @@
                 });
                 const result = await res.json();
                 if (result.status === "success") {
-                    alert("✅ 會員中心資料已更新完成！");
+                    alert("✅ 會員中心資料已同步！");
                     window.location.replace('index.html');
                 } else {
                     throw new Error(result.message);
                 }
             } catch (e) {
-                alert("儲存失敗，請檢查網路連線後重試。");
+                alert("儲存失敗，請檢查網路連線。");
                 btn.disabled = false;
                 btn.innerText = "儲存並同步雲端";
             }
