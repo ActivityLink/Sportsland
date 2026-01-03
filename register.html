@@ -54,13 +54,16 @@
         input:focus { border-color: var(--line-green); background: white; }
 
         .btn-main { background-color: var(--line-green); color: white; width: 100%; padding: 16px; border-radius: 12px; font-size: 17px; font-weight: 500; border: none; cursor: pointer; margin-top: 10px; }
-        .btn-outline { border: 1px solid var(--line-green); color: var(--line-green); width: 100%; padding: 14px; border-radius: 12px; font-size: 15px; background: white; cursor: pointer; }
+        .btn-outline { border: 1px solid var(--line-green); color: var(--line-green); width: 100%; padding: 14px; border-radius: 12px; font-size: 15px; background: white; cursor: pointer; font-weight: 500; }
         
-        .family-card { background: #FCFDFF; padding: 20px; border-radius: 16px; border: 1px solid #E9EFF5; margin-bottom: 15px; position: relative; }
+        .family-card { background: #FCFDFF; padding: 20px; border-radius: 16px; border: 1px solid #E9EFF5; margin-bottom: 15px; position: relative; box-shadow: 0 2px 8px rgba(0,0,0,0.02); }
         .grade-tag { background: #EBF5FF; color: #0066CC; padding: 3px 10px; border-radius: 6px; font-size: 12px; font-weight: 500; display: inline-block; margin-bottom: 12px; }
 
         .loading-screen { position: fixed; inset: 0; background: white; z-index: 1000; display: flex; flex-direction: column; align-items: center; justify-content: center; }
         .status-header { background: #F0FAF3; padding: 15px; border-radius: 12px; margin-bottom: 25px; border: 1px solid #D1E7DD; display: flex; align-items: center; gap: 10px; }
+        
+        .fade-in { animation: fadeIn 0.3s ease-in-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
 <body>
@@ -68,7 +71,7 @@
     <!-- 載入中遮罩 -->
     <div id="loading" class="loading-screen">
         <div class="animate-spin rounded-full h-10 w-10 border-b-2 border-[#06C755] mb-4"></div>
-        <p class="text-gray-400 text-sm">正在讀取您的 Sports-Island 檔案...</p>
+        <p class="text-gray-400 text-sm">正在同步您的 Sports-Island 檔案...</p>
     </div>
 
     <div class="page-wrapper">
@@ -79,7 +82,7 @@
             <i class="fas fa-user-check text-[#06C755] text-lg"></i>
             <div class="text-sm text-green-800">
                 <span id="status-name" class="font-bold">用戶</span>，您已成功加入。
-                <div id="status-desc" class="mt-1 text-xs opacity-75">您可以隨時更新資料，家長可新增多位家人。</div>
+                <div id="status-desc" class="mt-1 text-xs opacity-75">您可以隨時更新資料，家長身分可管理多位家人。</div>
             </div>
         </div>
 
@@ -111,7 +114,7 @@
         <div id="step-2" class="hidden">
             <div class="flex justify-between items-center mb-6">
                 <h2 class="text-xl font-bold" id="form-title">基本資料維護</h2>
-                <div id="identity-badge" class="text-[11px] px-2 py-1 bg-gray-100 text-gray-500 rounded">身分：讀取中</div>
+                <div id="identity-badge" class="text-[11px] px-2 py-1 bg-gray-100 text-gray-500 rounded font-medium">身分：讀取中</div>
             </div>
 
             <form id="reg-form">
@@ -121,24 +124,24 @@
                 
                 <div id="main-grade-badge" class="grade-tag hidden">年級預估：<span id="m-grade-text">-</span></div>
 
-                <!-- 升級為家長按鈕 -->
-                <div id="upgrade-box" class="hidden mb-10 p-5 border border-dashed border-blue-200 rounded-2xl bg-blue-50/50">
-                    <p class="text-xs text-blue-500 mb-3 text-center">如果您需要幫家人/學員報名，請轉換身分：</p>
-                    <button type="button" onclick="switchToParent()" class="btn-outline">變更為家長身分並新增家人</button>
+                <!-- 升級為家長按鈕區塊 -->
+                <div id="upgrade-box" class="hidden mb-10 p-6 border border-dashed border-blue-200 rounded-2xl bg-blue-50/50">
+                    <p class="text-sm text-blue-600 mb-4 text-center font-medium">需要幫家人或小朋友報名嗎？</p>
+                    <button type="button" onclick="switchToParent()" class="btn-outline shadow-sm hover:bg-blue-50">變更為家長身分並管理家人</button>
                 </div>
 
                 <!-- 家長專區: 動態管理家人 -->
                 <div id="parent-extra" class="hidden border-t pt-8 mt-4 mb-10">
                     <div class="flex justify-between items-center mb-6">
-                        <span class="text-lg font-medium text-gray-800">家人/學員名單</span>
-                        <button type="button" onclick="addFamilyRow()" class="text-sm font-bold text-white bg-blue-600 px-4 py-2 rounded-full shadow-lg shadow-blue-100">+ 新增成員</button>
+                        <span class="text-lg font-bold text-gray-800">家人/學員管理</span>
+                        <button type="button" onclick="addFamilyRow()" class="text-sm font-bold text-white bg-blue-500 px-5 py-2.5 rounded-full shadow-lg shadow-blue-100 hover:bg-blue-600 transition-colors">+ 新增成員</button>
                     </div>
                     <div id="family-list"></div>
                 </div>
 
                 <button type="submit" id="submit-btn" class="btn-main shadow-lg">儲存並同步至雲端</button>
                 <div class="mt-8 text-center">
-                    <a href="index.html" class="text-gray-400 text-xs underline">返回首頁</a>
+                    <a href="index.html" class="text-gray-400 text-xs underline">不儲存直接返回首頁</a>
                 </div>
             </form>
         </div>
@@ -174,9 +177,20 @@
             if (result.status === "exists") {
                 isExistingMember = true;
                 const user = result.data;
-                identityType = user.註冊身分 || 'Individual';
                 
-                // 回填資料 & 補 0 處理
+                // 關鍵修正：同時判斷英文 Parent 與中文 家長
+                const dbIdentity = user.註冊身分 || '';
+                if (dbIdentity === 'Parent' || dbIdentity === '家長') {
+                    identityType = 'Parent';
+                } else if (dbIdentity === 'Individual' || dbIdentity === '個人') {
+                    identityType = 'Individual';
+                } else if (dbIdentity === 'Organization' || dbIdentity === '機關') {
+                    identityType = 'Organization';
+                } else {
+                    identityType = 'Individual';
+                }
+                
+                // 電話補 0 顯示處理
                 let phone = String(user.聯絡電話 || "");
                 if (phone.length === 9 && !phone.startsWith('0')) phone = '0' + phone;
 
@@ -200,7 +214,10 @@
             const badge = document.getElementById('identity-badge');
             const parentSection = document.getElementById('parent-extra');
             const upgradeBox = document.getElementById('upgrade-box');
-            badge.innerText = `身分：${identityType === 'Parent' ? '家長' : (identityType === 'Individual' ? '個人' : '機關')}`;
+            
+            const displayNames = { 'Parent': '家長', 'Individual': '個人', 'Organization': '機關' };
+            badge.innerText = `身分：${displayNames[identityType] || '讀取中'}`;
+
             if (identityType === 'Parent') {
                 parentSection.classList.remove('hidden');
                 upgradeBox.classList.add('hidden');
@@ -214,7 +231,7 @@
         }
 
         function switchToParent() {
-            if (confirm("確定要將帳戶變更為「家長」嗎？變更後即可新增成員資料。")) {
+            if (confirm("確定要將帳戶類型變更為「家長」嗎？變更後即可在此頁面新增家人/成員資料，方便日後快速報名。")) {
                 identityType = 'Parent';
                 updateIdentityUI();
                 addFamilyRow();
@@ -265,8 +282,8 @@
             const div = document.createElement('div');
             div.className = 'family-card fade-in shadow-sm';
             div.innerHTML = `
-                <div class="flex justify-between mb-4 border-b pb-2"><span class="text-sm font-bold text-blue-600"><i class="fas fa-user-plus mr-1"></i> 家人資料</span><button type="button" onclick="this.parentElement.parentElement.remove()" class="text-red-400 text-xs hover:text-red-600">移除</button></div>
-                <label>家人姓名 *</label><input type="text" class="f-name" required placeholder="學員姓名">
+                <div class="flex justify-between mb-4 border-b border-gray-50 pb-2"><span class="text-sm font-bold text-blue-600"><i class="fas fa-user-plus mr-1"></i> 成員資料</span><button type="button" onclick="this.parentElement.parentElement.remove()" class="text-red-400 text-xs hover:text-red-600">移除成員</button></div>
+                <label>家人姓名 *</label><input type="text" class="f-name" required placeholder="學員真實姓名">
                 
                 <div class="grid grid-cols-2 gap-4">
                     <div>
@@ -284,13 +301,13 @@
                 <input type="text" class="f-school" placeholder="例如：某某國小">
             `;
             document.getElementById('family-list').appendChild(div);
-            div.scrollIntoView({ behavior: 'smooth' });
+            div.scrollIntoView({ behavior: 'smooth', block: 'center' });
         }
 
         document.getElementById('reg-form').onsubmit = async (e) => {
             e.preventDefault();
             const btn = document.getElementById('submit-btn');
-            btn.disabled = true; btn.innerText = "正在儲存檔案...";
+            btn.disabled = true; btn.innerText = "正在儲存並同步中...";
 
             const families = Array.from(document.querySelectorAll('.family-card')).map(card => ({
                 name: card.querySelector('.f-name').value,
