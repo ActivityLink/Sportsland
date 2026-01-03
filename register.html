@@ -4,145 +4,71 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Sports-Island - 會員中心</title>
-    <!-- 引入 LINE LIFF SDK -->
     <script charset="utf-8" src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&display=swap');
-        
-        :root { 
-            --line-green: #06C755; 
-            --bg-gray: #F7F9FB;
-            --text-main: #333333;
-            --text-sub: #8E8E8E;
-            --border-color: #EBEBEB;
-        }
-
-        body { 
-            font-family: 'Noto Sans TC', sans-serif; 
-            background-color: var(--bg-gray); 
-            color: var(--text-main);
-            margin: 0;
-            display: flex;
-            justify-content: center;
-            -webkit-font-smoothing: antialiased;
-        }
-
-        .page-wrapper {
-            width: 100%;
-            max-width: 640px; 
-            background: #FFFFFF;
-            min-height: 100vh;
-            padding: 30px 24px;
-            box-shadow: 0 0 20px rgba(0,0,0,0.03);
-            position: relative;
-        }
-
+        :root { --line-green: #06C755; --bg-gray: #F7F9FB; --text-main: #333333; --border-color: #EBEBEB; }
+        body { font-family: 'Noto Sans TC', sans-serif; background-color: var(--bg-gray); margin: 0; display: flex; justify-content: center; -webkit-font-smoothing: antialiased; }
+        .page-wrapper { width: 100%; max-width: 640px; background: #FFFFFF; min-height: 100vh; padding: 30px 24px; box-shadow: 0 0 20px rgba(0,0,0,0.03); }
         .title { font-size: 24px; font-weight: 500; color: #111; margin-bottom: 8px; }
-        .subtitle { font-size: 14px; color: var(--text-sub); margin-bottom: 30px; }
-
-        /* 身分卡片樣式 */
+        .subtitle { font-size: 14px; color: #8E8E8E; margin-bottom: 30px; }
         .id-option { border: 1px solid var(--border-color); border-radius: 12px; padding: 20px; margin-bottom: 12px; cursor: pointer; transition: 0.2s; display: flex; align-items: center; gap: 15px; }
         .id-option.active { border-color: var(--line-green); background: #F0FAF3; }
-        .check-icon { color: var(--line-green); opacity: 0; transition: 0.2s; font-size: 18px; }
-        .active .check-icon { opacity: 1; }
-
-        /* 表單元素優化 */
+        .active .check-icon { color: var(--line-green); opacity: 1; }
+        .check-icon { opacity: 0; font-size: 18px; }
         label { display: flex; align-items: center; font-size: 15px; color: #555; margin-bottom: 8px; font-weight: 400; }
-        input, select { width: 100%; background: #F8F9FA; border: 1px solid #E9EEF2; border-radius: 10px; padding: 14px; font-size: 16px; outline: none; margin-bottom: 18px; transition: 0.2s; font-weight: 400; }
-        input:focus { border-color: var(--line-green); background: white; }
-
+        input, select { width: 100%; background: #F8F9FA; border: 1px solid #E9EEF2; border-radius: 10px; padding: 14px; font-size: 16px; outline: none; margin-bottom: 18px; }
         .btn-main { background-color: var(--line-green); color: white; width: 100%; padding: 16px; border-radius: 12px; font-size: 17px; font-weight: 500; border: none; cursor: pointer; margin-top: 10px; }
         .btn-outline { border: 1px solid var(--line-green); color: var(--line-green); width: 100%; padding: 14px; border-radius: 12px; font-size: 15px; background: white; cursor: pointer; font-weight: 500; }
-        
-        .family-card { background: #FCFDFF; padding: 20px; border-radius: 16px; border: 1px solid #E9EFF5; margin-bottom: 15px; position: relative; box-shadow: 0 2px 8px rgba(0,0,0,0.02); }
+        .family-card { background: #FCFDFF; padding: 20px; border-radius: 16px; border: 1px solid #E9EFF5; margin-bottom: 15px; box-shadow: 0 2px 8px rgba(0,0,0,0.02); }
         .grade-tag { background: #EBF5FF; color: #0066CC; padding: 3px 10px; border-radius: 6px; font-size: 12px; font-weight: 500; display: inline-block; margin-bottom: 12px; }
-
         .loading-screen { position: fixed; inset: 0; background: white; z-index: 1000; display: flex; flex-direction: column; align-items: center; justify-content: center; }
         .status-header { background: #F0FAF3; padding: 15px; border-radius: 12px; margin-bottom: 25px; border: 1px solid #D1E7DD; display: flex; align-items: center; gap: 10px; }
-        
-        .fade-in { animation: fadeIn 0.3s ease-in-out; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
 <body>
 
-    <!-- 載入中遮罩 -->
     <div id="loading" class="loading-screen">
         <div class="animate-spin rounded-full h-10 w-10 border-b-2 border-[#06C755] mb-4"></div>
-        <p class="text-gray-400 text-sm">正在同步您的 Sports-Island 檔案...</p>
+        <p class="text-gray-400 text-sm">正在讀取您的 Sports-Island 檔案...</p>
     </div>
 
     <div class="page-wrapper">
-        <div id="error-display" class="hidden bg-red-50 text-red-500 p-4 rounded-lg mb-6 text-sm"></div>
-
-        <!-- 會員狀態提示 -->
         <div id="member-status-box" class="hidden status-header">
             <i class="fas fa-user-check text-[#06C755] text-lg"></i>
-            <div class="text-sm text-green-800">
-                <span id="status-name" class="font-bold">用戶</span>，您已成功加入。
-                <div id="status-desc" class="mt-1 text-xs opacity-75">您可以隨時更新資料，家長身分可管理多位家人。</div>
-            </div>
+            <div class="text-sm text-green-800">您已註冊，可在此更新資料或管理家人學員。</div>
         </div>
 
-        <!-- 步驟 1: 選擇帳戶身分 -->
         <div id="step-1" class="hidden">
             <h2 class="title">選擇帳戶類型</h2>
-            <p class="subtitle">請選擇您要使用的主要身分：</p>
-            
-            <div onclick="selectId('Individual')" id="id-Individual" class="id-option">
-                <div class="flex-1 font-medium text-[17px]">個人註冊</div>
-                <i class="fas fa-check-circle check-icon"></i>
-            </div>
-            <div onclick="selectId('Parent')" id="id-Parent" class="id-option">
-                <div class="flex-1 text-left">
-                    <div class="font-medium text-[17px]">家長註冊</div>
-                    <div class="text-[12px] text-gray-400">可幫家中小朋友或成員報名</div>
-                </div>
-                <i class="fas fa-check-circle check-icon"></i>
-            </div>
-            <div onclick="selectId('Organization')" id="id-Organization" class="id-option">
-                <div class="flex-1 font-medium text-[17px]">機關團體單位</div>
-                <i class="fas fa-check-circle check-icon"></i>
-            </div>
-
-            <button onclick="goStep(2)" id="next-btn" class="btn-main opacity-50" disabled>繼續填寫基本資料</button>
+            <div onclick="selectId('Individual')" id="id-Individual" class="id-option"><div class="flex-1 font-medium">個人註冊</div><i class="fas fa-check-circle check-icon"></i></div>
+            <div onclick="selectId('Parent')" id="id-Parent" class="id-option"><div class="flex-1 font-medium">家長註冊 (可管理家人)</div><i class="fas fa-check-circle check-icon"></i></div>
+            <button onclick="goStep(2)" id="next-btn" class="btn-main opacity-50" disabled>繼續下一步</button>
         </div>
 
-        <!-- 步驟 2: 詳細資料表單 -->
         <div id="step-2" class="hidden">
-            <div class="flex justify-between items-center mb-6">
-                <h2 class="text-xl font-bold" id="form-title">基本資料維護</h2>
-                <div id="identity-badge" class="text-[11px] px-2 py-1 bg-gray-100 text-gray-500 rounded font-medium">身分：讀取中</div>
-            </div>
-
+            <div class="flex justify-between items-center mb-6"><h2 class="text-xl font-bold">基本資料維護</h2><div id="identity-badge" class="text-[11px] px-2 py-1 bg-gray-100 text-gray-500 rounded">身分：讀取中</div></div>
             <form id="reg-form">
-                <label>姓名 *</label><input type="text" id="m-name" required placeholder="請輸入姓名">
+                <label>姓名 *</label><input type="text" id="m-name" required>
                 <label>電話 *</label><input type="tel" id="m-phone" required placeholder="09XX-XXX-XXX">
                 <label>生日 *</label><input type="date" id="m-birth" required onchange="updateMainGrade()">
-                
                 <div id="main-grade-badge" class="grade-tag hidden">年級預估：<span id="m-grade-text">-</span></div>
 
-                <!-- 升級為家長按鈕區塊 -->
-                <div id="upgrade-box" class="hidden mb-10 p-6 border border-dashed border-blue-200 rounded-2xl bg-blue-50/50">
-                    <p class="text-sm text-blue-600 mb-4 text-center font-medium">需要幫家人或小朋友報名嗎？</p>
-                    <button type="button" onclick="switchToParent()" class="btn-outline shadow-sm hover:bg-blue-50">變更為家長身分並管理家人</button>
+                <!-- 只有非家長身分才出現轉換按鈕 -->
+                <div id="upgrade-box" class="hidden mb-8 p-6 border border-dashed border-blue-200 rounded-2xl bg-blue-50/50">
+                    <p class="text-sm text-blue-600 mb-4 text-center">需要幫家人報名嗎？</p>
+                    <button type="button" onclick="switchToParent()" class="btn-outline">變更為家長身分</button>
                 </div>
 
-                <!-- 家長專區: 動態管理家人 -->
+                <!-- 家長專區 -->
                 <div id="parent-extra" class="hidden border-t pt-8 mt-4 mb-10">
-                    <div class="flex justify-between items-center mb-6">
-                        <span class="text-lg font-bold text-gray-800">家人/學員管理</span>
-                        <button type="button" onclick="addFamilyRow()" class="text-sm font-bold text-white bg-blue-500 px-5 py-2.5 rounded-full shadow-lg shadow-blue-100 hover:bg-blue-600 transition-colors">+ 新增成員</button>
-                    </div>
+                    <div class="flex justify-between items-center mb-6"><span class="text-lg font-bold text-gray-800">家人/學員管理</span><button type="button" onclick="addFamilyRow()" class="text-sm font-bold text-white bg-blue-500 px-5 py-2.5 rounded-full shadow-lg">+ 新增成員</button></div>
                     <div id="family-list"></div>
                 </div>
 
                 <button type="submit" id="submit-btn" class="btn-main shadow-lg">儲存並同步至雲端</button>
-                <div class="mt-8 text-center">
-                    <a href="index.html" class="text-gray-400 text-xs underline">不儲存直接返回首頁</a>
-                </div>
             </form>
         </div>
     </div>
@@ -150,88 +76,53 @@
     <script>
         const API_URL = 'https://aged-rice-2438.wetw-net3.workers.dev/';
         const LIFF_ID = '2008786875-F7ifLsbN';
-        let lineUser = {}, identityType = '', isExistingMember = false;
+        let lineUser = {}, identityType = '';
 
         async function initLIFF() {
             try {
                 await liff.init({ liffId: LIFF_ID });
-                if (!liff.isLoggedIn()) {
-                    liff.login();
-                } else {
+                if (!liff.isLoggedIn()) liff.login();
+                else {
                     const profile = await liff.getProfile();
                     lineUser = profile;
-                    await checkMemberStatus(profile.userId);
+                    const res = await fetch(`${API_URL}?type=member_check&lineUserId=${profile.userId}`);
+                    const result = await res.json();
+                    document.getElementById('loading').style.display = 'none';
+                    if (result.status === "exists") {
+                        const user = result.data;
+                        const dbId = user["註冊身分"] || '';
+                        identityType = (dbId === '家長' || dbId === 'Parent') ? 'Parent' : 'Individual';
+                        
+                        let phone = String(user["聯絡電話"] || "");
+                        if (phone.length === 9 && !phone.startsWith('0')) phone = '0' + phone;
+                        
+                        document.getElementById('member-status-box').classList.remove('hidden');
+                        document.getElementById('m-name').value = user["姓名"] || "";
+                        document.getElementById('m-phone').value = phone;
+                        if(user["出生日期"]) document.getElementById('m-birth').value = user["出生日期"].split('T')[0];
+                        
+                        updateIdentityUI();
+                        goStep(2);
+                    } else document.getElementById('step-1').classList.remove('hidden');
                 }
-            } catch (err) {
-                document.getElementById('loading').style.display = 'none';
-                document.getElementById('error-display').innerText = "LINE 登入連線失敗";
-                document.getElementById('error-display').classList.remove('hidden');
-            }
-        }
-
-        async function checkMemberStatus(uid) {
-            const res = await fetch(`${API_URL}?type=member_check&lineUserId=${uid}`);
-            const result = await res.json();
-            document.getElementById('loading').style.display = 'none';
-
-            if (result.status === "exists") {
-                isExistingMember = true;
-                const user = result.data;
-                
-                // 關鍵修正：同時判斷英文 Parent 與中文 家長
-                const dbIdentity = user.註冊身分 || '';
-                if (dbIdentity === 'Parent' || dbIdentity === '家長') {
-                    identityType = 'Parent';
-                } else if (dbIdentity === 'Individual' || dbIdentity === '個人') {
-                    identityType = 'Individual';
-                } else if (dbIdentity === 'Organization' || dbIdentity === '機關') {
-                    identityType = 'Organization';
-                } else {
-                    identityType = 'Individual';
-                }
-                
-                // 電話補 0 顯示處理
-                let phone = String(user.聯絡電話 || "");
-                if (phone.length === 9 && !phone.startsWith('0')) phone = '0' + phone;
-
-                document.getElementById('member-status-box').classList.remove('hidden');
-                document.getElementById('status-name').innerText = user.姓名;
-                document.getElementById('m-name').value = user.姓名;
-                document.getElementById('m-phone').value = phone;
-                if(user.出生日期) {
-                    const d = new Date(user.出生日期);
-                    document.getElementById('m-birth').value = d.toISOString().split('T')[0];
-                }
-                
-                updateIdentityUI();
-                goStep(2);
-            } else {
-                document.getElementById('step-1').classList.remove('hidden');
-            }
+            } catch (e) { document.getElementById('loading').innerHTML = "連線失敗"; }
         }
 
         function updateIdentityUI() {
-            const badge = document.getElementById('identity-badge');
-            const parentSection = document.getElementById('parent-extra');
+            document.getElementById('identity-badge').innerText = `身分：${identityType === 'Parent' ? '家長' : '個人'}`;
+            const parentExtra = document.getElementById('parent-extra');
             const upgradeBox = document.getElementById('upgrade-box');
-            
-            const displayNames = { 'Parent': '家長', 'Individual': '個人', 'Organization': '機關' };
-            badge.innerText = `身分：${displayNames[identityType] || '讀取中'}`;
-
             if (identityType === 'Parent') {
-                parentSection.classList.remove('hidden');
+                parentExtra.classList.remove('hidden');
                 upgradeBox.classList.add('hidden');
-            } else if (identityType === 'Individual') {
-                parentSection.classList.add('hidden');
-                upgradeBox.classList.remove('hidden');
             } else {
-                parentSection.classList.add('hidden');
-                upgradeBox.classList.add('hidden');
+                parentExtra.classList.add('hidden');
+                upgradeBox.classList.remove('hidden');
             }
         }
 
         function switchToParent() {
-            if (confirm("確定要將帳戶類型變更為「家長」嗎？變更後即可在此頁面新增家人/成員資料，方便日後快速報名。")) {
+            if (confirm("確定變更為家長身分嗎？變更後可新增多位學員資料。")) {
                 identityType = 'Parent';
                 updateIdentityUI();
                 addFamilyRow();
@@ -242,18 +133,14 @@
             identityType = id;
             document.querySelectorAll('.id-option').forEach(el => el.classList.remove('active'));
             document.getElementById('id-' + id).classList.add('active');
-            const nextBtn = document.getElementById('next-btn');
-            nextBtn.disabled = false;
-            nextBtn.style.opacity = '1';
+            document.getElementById('next-btn').disabled = false;
+            document.getElementById('next-btn').style.opacity = '1';
         }
 
         function goStep(n) {
             document.getElementById('step-1').classList.add('hidden');
             document.getElementById('step-2').classList.remove('hidden');
-            if (n === 2) {
-                updateIdentityUI();
-                updateMainGrade();
-            }
+            if (n === 2) { updateIdentityUI(); updateMainGrade(); }
         }
 
         function getTaiwanGrade(birth) {
@@ -263,11 +150,7 @@
             if (b.getMonth() + 1 > 9 || (b.getMonth() + 1 === 9 && b.getDate() >= 2)) entryYear++;
             const ay = (new Date().getMonth() + 1 >= 9) ? new Date().getFullYear() : new Date().getFullYear() - 1;
             const g = ay - entryYear + 1;
-            if (g <= 0) return "學齡前";
-            if (g <= 6) return `國小 ${g} 年級`;
-            if (g <= 9) return `國中 ${g-6} 年級`;
-            if (g <= 12) return `高中 ${g-9} 年級`;
-            return "大專/成人";
+            return g <= 0 ? "學齡前" : (g <= 6 ? `國小 ${g} 年級` : (g <= 9 ? `國中 ${g-6} 年級` : (g <= 12 ? `高中 ${g-9} 年級` : "大專/成人")));
         }
 
         function updateMainGrade() {
@@ -280,25 +163,16 @@
 
         function addFamilyRow() {
             const div = document.createElement('div');
-            div.className = 'family-card fade-in shadow-sm';
+            div.className = 'family-card fade-in';
             div.innerHTML = `
-                <div class="flex justify-between mb-4 border-b border-gray-50 pb-2"><span class="text-sm font-bold text-blue-600"><i class="fas fa-user-plus mr-1"></i> 成員資料</span><button type="button" onclick="this.parentElement.parentElement.remove()" class="text-red-400 text-xs hover:text-red-600">移除成員</button></div>
-                <label>家人姓名 *</label><input type="text" class="f-name" required placeholder="學員真實姓名">
-                
+                <div class="flex justify-between mb-4 border-b pb-2"><span class="text-sm font-bold text-blue-600">家人資料</span><button type="button" onclick="this.parentElement.parentElement.remove()" class="text-red-400 text-xs">移除</button></div>
+                <label>姓名 *</label><input type="text" class="f-name" required placeholder="學員姓名">
                 <div class="grid grid-cols-2 gap-4">
-                    <div>
-                        <label>性別</label>
-                        <select class="f-gender"><option value="男">男</option><option value="女">女</option></select>
-                    </div>
-                    <div>
-                        <label>生日 *</label>
-                        <input type="date" class="f-birth" required onchange="const g=getTaiwanGrade(this.value); this.parentElement.parentElement.nextElementSibling.innerText='年級預估：'+g;">
-                    </div>
+                    <div><label>性別</label><select class="f-gender"><option value="男">男</option><option value="女">女</option></select></div>
+                    <div><label>生日 *</label><input type="date" class="f-birth" required onchange="const g=getTaiwanGrade(this.value); this.parentElement.parentElement.nextElementSibling.innerText='年級預估：'+g;"></div>
                 </div>
                 <div class="grade-tag">年級預估：-</div>
-                
-                <label>就讀學校</label>
-                <input type="text" class="f-school" placeholder="例如：某某國小">
+                <label>就讀學校</label><input type="text" class="f-school" placeholder="例如：某某國小">
             `;
             document.getElementById('family-list').appendChild(div);
             div.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -307,7 +181,7 @@
         document.getElementById('reg-form').onsubmit = async (e) => {
             e.preventDefault();
             const btn = document.getElementById('submit-btn');
-            btn.disabled = true; btn.innerText = "正在儲存並同步中...";
+            btn.disabled = true; btn.innerText = "資料儲存中...";
 
             const families = Array.from(document.querySelectorAll('.family-card')).map(card => ({
                 name: card.querySelector('.f-name').value,
@@ -320,7 +194,7 @@
             const payload = {
                 type: 'member_register',
                 lineUserId: lineUser.userId,
-                identityType: identityType,
+                identityType: identityType === 'Parent' ? '家長' : '個人',
                 name: document.getElementById('m-name').value,
                 phone: document.getElementById('m-phone').value,
                 birthDate: document.getElementById('m-birth').value,
@@ -328,22 +202,9 @@
                 familyData: families
             };
 
-            try {
-                const res = await fetch(API_URL, { 
-                    method: 'POST', 
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload) 
-                });
-                const result = await res.json();
-                if (result.status === "success") {
-                    alert("✅ 資料儲存成功！");
-                    window.location.replace('index.html');
-                }
-            } catch (err) {
-                alert("儲存失敗，請確認網路連線。");
-                btn.disabled = false;
-                btn.innerText = "儲存並同步至雲端";
-            }
+            const res = await fetch(API_URL, { method: 'POST', body: JSON.stringify(payload), headers: { 'Content-Type': 'application/json' } });
+            if ((await res.json()).status === "success") { alert("✅ 資料儲存成功！"); window.location.replace('index.html'); }
+            else { alert("儲存失敗"); btn.disabled = false; }
         };
 
         window.onload = initLIFF;
