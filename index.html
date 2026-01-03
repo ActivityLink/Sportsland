@@ -4,37 +4,24 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Sports-Island - 運動探索中心</title>
-    <!-- 引入 LINE LIFF SDK -->
     <script charset="utf-8" src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&display=swap');
-        :root { --line-green: #06C755; --bg-gray: #F0F2F5; --text-main: #333; --text-sub: #666; }
+        :root { --line-green: #06C755; --bg-gray: #F0F2F5; --text-main: #333; }
         body { font-family: 'Noto Sans TC', sans-serif; background-color: var(--bg-gray); margin: 0; display: flex; justify-content: center; -webkit-font-smoothing: antialiased; }
-        
         .page-wrapper { width: 100%; max-width: 640px; background-color: #FFFFFF; min-height: 100vh; position: relative; box-shadow: 0 0 30px rgba(0,0,0,0.05); padding-bottom: 80px; }
-        
-        /* 導覽列 */
         .top-nav { background: rgba(255, 255, 255, 0.98); padding: 12px 20px; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 100; border-bottom: 1px solid #F0F0F0; height: 60px; }
         .user-profile img { width: 34px; height: 34px; border-radius: 50%; border: 1px solid #EEE; }
-
-        /* BANNER 等比不裁切設定 */
         .banner-container { width: 100%; height: auto; background-color: #f3f4f6; overflow: hidden; }
         .banner-img { width: 100%; height: auto; display: block; object-fit: contain; }
-
-        /* 分類 Tabs */
         .tab-container { display: flex; background: white; border-bottom: 1px solid #F0F0F0; position: sticky; top: 60px; z-index: 90; overflow-x: auto; scrollbar-width: none; }
         .tab-item { padding: 16px 20px; font-size: 14px; color: #888; white-space: nowrap; cursor: pointer; border-bottom: 3px solid transparent; transition: 0.2s; }
         .tab-item.active { color: var(--line-green); border-bottom-color: var(--line-green); font-weight: 500; }
-
-        /* 課程卡片 */
         .course-card { background: white; margin: 20px; border-radius: 16px; overflow: hidden; border: 1px solid #F0F0F0; transition: transform 0.1s; }
-        .course-card:active { transform: scale(0.98); }
         .course-img { width: 100%; height: auto; display: block; background: #fafafa; }
         .price-tag { color: var(--line-green); font-weight: 700; font-size: 20px; }
-        
-        /* 詳細說明彈窗 */
         .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 1000; align-items: center; justify-content: center; padding: 20px; }
         .modal-content { background: white; width: 100%; max-width: 500px; border-radius: 20px; max-height: 85vh; overflow-y: auto; position: relative; animation: slideUp 0.3s ease-out; }
         .modal-header { position: sticky; top: 0; background: white; padding: 20px; border-bottom: 1px solid #F5F5F5; display: flex; justify-content: space-between; align-items: center; z-index: 10; }
@@ -42,19 +29,15 @@
         .detail-section { margin-bottom: 24px; }
         .detail-title { font-size: 15px; font-weight: 700; color: #111; margin-bottom: 8px; display: flex; align-items: center; gap: 8px; }
         .detail-title i { color: var(--line-green); font-size: 14px; }
-        .detail-text { font-size: 14px; color: var(--text-sub); line-height: 1.6; white-space: pre-wrap; }
-
+        .detail-text { font-size: 14px; color: #666; line-height: 1.6; white-space: pre-wrap; }
         @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
-
         .loading-spinner { border: 3px solid #f3f3f3; border-top: 3px solid var(--line-green); border-radius: 50%; width: 24px; height: 24px; animation: spin 1s linear infinite; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-
         .btn-outline { border: 1px solid var(--line-green); color: var(--line-green); }
         .btn-solid { background-color: var(--line-green); color: white; }
     </style>
 </head>
 <body>
-
     <div class="page-wrapper">
         <header class="top-nav">
             <div class="font-bold text-lg tracking-tight">Sports-Island</div>
@@ -65,15 +48,10 @@
             <a href="register.html" id="nav-login" class="text-xs text-green-600 font-medium px-4 py-1.5 border border-green-500 rounded-full">登入 / 註冊</a>
         </header>
 
-        <!-- 首頁 BANNER -->
         <div class="banner-container">
-            <img src="https://aiwe.cc/wp-content/uploads/2025/12/3486bc19dc6317e16bf4f1449ec52ae4.jpg" 
-                 class="banner-img" 
-                 alt="Sports-Island Banner"
-                 onerror="this.src='https://placehold.co/1200x675/f3f4f6/999999?text=Sports-Island'">
+            <img src="https://aiwe.cc/wp-content/uploads/2025/12/3486bc19dc6317e16bf4f1449ec52ae4.jpg" class="banner-img" alt="Banner" onerror="this.src='https://placehold.co/1200x675?text=Sports-Island'">
         </div>
 
-        <!-- 課程標籤 -->
         <div class="tab-container">
             <div onclick="switchTab('SingleCourses')" id="tab-SingleCourses" class="tab-item active">單日活動</div>
             <div onclick="switchTab('BatchCourses')" id="tab-BatchCourses" class="tab-item">梯次班</div>
@@ -81,10 +59,8 @@
             <div onclick="switchTab('AfterSchoolCourses')" id="tab-AfterSchoolCourses" class="tab-item">課後班</div>
         </div>
 
-        <!-- 課程列表 -->
         <main id="course-list" class="min-h-[400px] pb-10"></main>
 
-        <!-- 底部導覽 -->
         <nav class="fixed bottom-0 w-full max-w-[640px] bg-white border-t flex justify-around py-3 z-50">
             <a href="index.html" class="flex flex-col items-center text-green-500"><i class="fas fa-compass text-xl"></i><span class="text-[10px] mt-1">探索活動</span></a>
             <a href="#" class="flex flex-col items-center text-gray-300"><i class="fas fa-receipt text-xl"></i><span class="text-[10px] mt-1">我的報名</span></a>
@@ -92,16 +68,13 @@
         </nav>
     </div>
 
-    <!-- 詳細說明彈窗元件 -->
     <div id="detail-modal" class="modal-overlay" onclick="if(event.target === this) closeDetails()">
         <div class="modal-content">
             <div class="modal-header">
                 <h3 id="modal-title" class="text-lg font-bold text-gray-800">課程詳情</h3>
                 <button onclick="closeDetails()" class="text-gray-400 text-xl"><i class="fas fa-times"></i></button>
             </div>
-            <div class="modal-body" id="modal-body">
-                <!-- 內容由 JS 動態填充 -->
-            </div>
+            <div class="modal-body" id="modal-body"></div>
             <div class="p-5 border-t">
                 <button id="modal-book-btn" class="w-full btn-solid py-3 rounded-xl font-bold">立即預約此課程</button>
             </div>
@@ -111,8 +84,7 @@
     <script>
         const API_URL = 'https://aged-rice-2438.wetw-net3.workers.dev/';
         const LIFF_ID = '2008786875-F7ifLsbN';
-        let currentCourses = [];
-        let isLogged = false;
+        let currentCourses = [], isLogged = false;
 
         async function init() {
             try {
@@ -125,42 +97,29 @@
                     document.getElementById('nav-name').innerText = profile.displayName;
                     document.getElementById('nav-avatar').src = profile.pictureUrl;
                 }
-            } catch (e) { console.log("LIFF Init Error"); }
+            } catch (e) {}
             switchTab('SingleCourses');
         }
 
         async function switchTab(sheetName) {
             document.querySelectorAll('.tab-item').forEach(t => t.classList.remove('active'));
-            const target = document.getElementById(`tab-${sheetName}`);
-            if(target) target.classList.add('active');
-            
+            document.getElementById(`tab-${sheetName}`).classList.add('active');
             const list = document.getElementById('course-list');
             list.innerHTML = '<div class="p-20 flex justify-center"><div class="loading-spinner"></div></div>';
-            
             try {
                 const res = await fetch(`${API_URL}?sheet=${sheetName}&_t=${Date.now()}`);
                 const result = await res.json();
                 currentCourses = result.data || [];
                 renderCourses(currentCourses);
-            } catch(e) {
-                list.innerHTML = '<div class="p-20 text-center text-red-400 font-medium">連線異常，請稍後再試。</div>';
-            }
+            } catch(e) { list.innerHTML = '<div class="p-20 text-center text-red-400 font-medium">載入失敗</div>'; }
         }
 
         function renderCourses(data) {
             const list = document.getElementById('course-list');
-            if (data.length === 0) {
-                list.innerHTML = '<div class="p-20 text-center text-gray-400 italic">目前無進行中的活動</div>';
-                return;
-            }
-
-            list.innerHTML = data.map((c, index) => {
-                const displayPrice = c.memberPrice || c.price || 0;
-                const imgUrl = c.coverImage || 'https://placehold.co/800x450/f9f9f9/cccccc?text=Sports-Island';
-                
-                return `
+            if (data.length === 0) { list.innerHTML = '<div class="p-20 text-center text-gray-400 italic">目前無進行中的活動</div>'; return; }
+            list.innerHTML = data.map(c => `
                 <div class="course-card">
-                    <img src="${imgUrl}" class="course-img" onerror="this.src='https://placehold.co/800x450/f9f9f9/cccccc?text=Sports-Island'">
+                    <img src="${c.coverImage || 'https://placehold.co/800x450?text=Sports-Island'}" class="course-img" onerror="this.src='https://placehold.co/800x450?text=Sports-Island'">
                     <div class="p-6">
                         <div class="flex justify-between items-start mb-2">
                             <h3 class="text-lg font-bold text-gray-800">${c.courseName}</h3>
@@ -171,7 +130,7 @@
                             <span><i class="fas fa-map-marker-alt w-5 text-green-500"></i> ${c.venueName || '指定場地'}</span>
                         </div>
                         <div class="flex justify-between items-center pt-4 border-t border-gray-50">
-                            <div class="price-tag">$${displayPrice} <span class="text-[10px] text-gray-300 font-normal">TWD</span></div>
+                            <div class="price-tag">$${c.memberPrice || c.price || 0} <span class="text-[10px] text-gray-300 font-normal">TWD</span></div>
                             <div class="flex gap-2">
                                 <button onclick="showDetails('${c.courseId}')" class="btn-outline px-3 py-1.5 rounded-full text-xs font-bold transition-all hover:bg-green-50">詳細說明</button>
                                 <button onclick="startBooking('${c.courseId}')" class="btn-solid px-3 py-1.5 rounded-full text-xs font-bold shadow-md shadow-green-100 transition-all hover:opacity-90">立即預約</button>
@@ -179,60 +138,29 @@
                         </div>
                     </div>
                 </div>
-                `;
-            }).join('');
+            `).join('');
         }
 
-        // 呈現詳細說明 (AF-AI 欄位)
         function showDetails(courseId) {
-            const course = currentCourses.find(c => c.courseId === courseId);
-            if (!course) return;
-
-            document.getElementById('modal-title').innerText = course.courseName;
-            
-            // 抓取 AF (highlights), AG (content), AH (notes), AI (targetAudience)
-            const html = `
-                <div class="detail-section">
-                    <div class="detail-title"><i class="fas fa-star"></i> 課程亮點 (AF)</div>
-                    <div class="detail-text">${course.highlights || '暫無資料'}</div>
-                </div>
-                <div class="detail-section">
-                    <div class="detail-title"><i class="fas fa-info-circle"></i> 課程內容 (AG)</div>
-                    <div class="detail-text">${course.content || '暫無資料'}</div>
-                </div>
-                <div class="detail-section">
-                    <div class="detail-title"><i class="fas fa-exclamation-triangle"></i> 注意事項 (AH)</div>
-                    <div class="detail-text">${course.notes || '暫無資料'}</div>
-                </div>
-                <div class="detail-section">
-                    <div class="detail-title"><i class="fas fa-users"></i> 適合對象 (AI)</div>
-                    <div class="detail-text">${course.targetAudience || '暫無資料'}</div>
-                </div>
+            const c = currentCourses.find(item => item.courseId === courseId);
+            if (!c) return;
+            document.getElementById('modal-title').innerText = c.courseName;
+            document.getElementById('modal-body').innerHTML = `
+                <div class="detail-section"><div class="detail-title"><i class="fas fa-star"></i> 課程亮點 (AF)</div><div class="detail-text">${c.highlights || '暫無資料'}</div></div>
+                <div class="detail-section"><div class="detail-title"><i class="fas fa-info-circle"></i> 課程內容 (AG)</div><div class="detail-text">${c.content || '暫無資料'}</div></div>
+                <div class="detail-section"><div class="detail-title"><i class="fas fa-exclamation-triangle"></i> 注意事項 (AH)</div><div class="detail-text">${c.notes || '暫無資料'}</div></div>
+                <div class="detail-section"><div class="detail-title"><i class="fas fa-users"></i> 適合對象 (AI)</div><div class="detail-text">${c.targetAudience || '暫無資料'}</div></div>
             `;
-            
-            document.getElementById('modal-body').innerHTML = html;
             document.getElementById('modal-book-btn').onclick = () => { closeDetails(); startBooking(courseId); };
             document.getElementById('detail-modal').style.display = 'flex';
-            document.body.style.overflow = 'hidden'; // 禁止底層捲動
         }
 
-        function closeDetails() {
-            document.getElementById('detail-modal').style.display = 'none';
-            document.body.style.overflow = 'auto';
-        }
+        function closeDetails() { document.getElementById('detail-modal').style.display = 'none'; }
 
-        // 進入預約流程
-        function startBooking(courseId) {
-            if (!isLogged) {
-                if (confirm("預約課程需要先進行登入或註冊，是否前往會員中心？")) {
-                    window.location.href = 'register.html';
-                }
-                return;
-            }
-            // 導向預約頁面
-            window.location.href = `booking.html?id=${courseId}`;
+        function startBooking(id) {
+            if (!isLogged) { if (confirm("預約需要先登入，是否前往會員中心？")) window.location.href = 'register.html'; return; }
+            window.location.href = `booking.html?id=${id}`;
         }
-
         window.onload = init;
     </script>
 </body>
