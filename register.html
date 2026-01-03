@@ -130,6 +130,7 @@
         const API_URL = 'https://aged-rice-2438.wetw-net3.workers.dev/';
         const LIFF_ID = '2008786875-F7ifLsbN';
         let lineUser = {}, identityType = '';
+        let existingMemberId = ''; // 儲存現有會員ID
 
         function navigateTo(page) {
             const base = window.location.href.split('?')[0].split('#')[0];
@@ -151,8 +152,10 @@
                     
                     if (result.status === "exists") {
                         const u = result.data;
+                        existingMemberId = u["會員ID"] || '';
                         identityType = u["註冊身分"] || u.identityType || '個人';
                         
+                        // 填入現有資料
                         document.getElementById('m-name').value = u["姓名"] || u.name || '';
                         document.getElementById('m-phone').value = u["聯絡電話"] || u.phone || '';
                         document.getElementById('m-gender').value = u["性別"] || u.gender || '';
@@ -343,23 +346,23 @@
             btn.innerHTML = `<i class="fas fa-spinner fa-spin mr-2"></i> 資料同步中...`;
 
             // 獲取所有表單資料，如果為空則填入預設值
-            const mName = document.getElementById('m-name').value || '未填寫';
-            const mPhone = document.getElementById('m-phone').value || '0';
+            const mName = document.getElementById('m-name').value.trim() || '未填寫';
+            const mPhone = document.getElementById('m-phone').value.trim() || '0';
             const mGender = document.getElementById('m-gender').value || '未填寫';
             const mBirth = document.getElementById('m-birth').value || '1970-01-01';
-            const mSchool = document.getElementById('m-school').value || '0';
+            const mSchool = document.getElementById('m-school').value.trim() || '0';
             const mGrade = getTaiwanGrade(mBirth) || '社會人士';
             
             // 機關資料
-            const oName = identityType === '機關' ? (document.getElementById('o-name').value || '0') : '0';
-            const oTax = identityType === '機關' ? (document.getElementById('o-tax').value || '0') : '0';
+            const oName = identityType === '機關' ? (document.getElementById('o-name').value.trim() || '0') : '0';
+            const oTax = identityType === '機關' ? (document.getElementById('o-tax').value.trim() || '0') : '0';
             
             // 建立家人資料（學員名單）
             const familyData = Array.from(document.querySelectorAll('.family-card')).map(card => {
-                const name = card.querySelector('.f-name').value || '未填寫';
+                const name = card.querySelector('.f-name').value.trim() || '未填寫';
                 const gender = card.querySelector('.f-gender').value || '未填寫';
                 const birth = card.querySelector('.f-birth').value || '1970-01-01';
-                const school = card.querySelector('.f-school').value || '0';
+                const school = card.querySelector('.f-school').value.trim() || '0';
                 const grade = getTaiwanGrade(birth) || '社會人士';
                 
                 return {
@@ -371,20 +374,19 @@
                 };
             });
 
-            // 生成會員ID - 使用時間戳和隨機數確保唯一性
+            // 生成會員ID - 如果已有則使用現有，否則生成新的
             const generateMemberId = () => {
+                if (existingMemberId) return existingMemberId;
                 const timestamp = Date.now();
                 const random = Math.floor(Math.random() * 10000);
                 return `M-${timestamp}${random}`;
             };
 
-            // 建立完整的 payload - 包含所有資料庫欄位
+            // 建立完整的 payload - 嚴格按照資料庫欄位順序和名稱
             const payload = {
                 type: 'member_register',
-                lineUserId: lineUser.userId || '0',
-                identityType: identityType || '個人',
                 
-                // 會員基本資料 - 對應資料庫所有欄位
+                // 資料庫所有欄位，按照順序
                 會員ID: generateMemberId(),
                 LINE_UID: lineUser.userId || '0',
                 "註冊身分": identityType || '個人',
@@ -394,41 +396,55 @@
                 出生日期: mBirth,
                 就讀學校: mSchool,
                 目前年級: mGrade,
-                // 機關相關
                 機關名稱: oName,
                 統一編號: oTax,
-                // 家人/學員資料
-                familyData: familyData.length > 0 ? familyData : [],
-                // 系統欄位
                 建立時間: new Date().toISOString(),
-                更新時間: new Date().toISOString()
+                更新時間: new Date().toISOString(),
+                
+                // 額外傳遞的參數
+                lineUserId: lineUser.userId || '0',
+                identityType: identityType || '個人',
+                
+                // 家人/學員資料
+                familyData: familyData.length > 0 ? familyData : []
             };
 
-            // 確保所有必要欄位都有值
-            const requiredFields = [
+            // 確保所有欄位都有值（安全檢查）
+            const databaseFields = [
                 '會員ID', 'LINE_UID', '註冊身分', '姓名', '聯絡電話', 
                 '性別', '出生日期', '就讀學校', '目前年級',
                 '機關名稱', '統一編號', '建立時間', '更新時間'
             ];
 
-            requiredFields.forEach(field => {
-                if (!payload[field]) {
+            databaseFields.forEach(field => {
+                if (!payload[field] && payload[field] !== '0') {
                     payload[field] = field === '統一編號' ? '0' : 
                                    field.includes('時間') ? new Date().toISOString() : 
-                                   field === 'LINE_UID' ? '0' : '未填寫';
+                                   field === '會員ID' ? generateMemberId() : 
+                                   '未填寫';
                 }
             });
 
-            console.log('提交的資料:', payload); // 調試用
+            console.log('提交的完整資料:', JSON.stringify(payload, null, 2));
 
             try {
                 const res = await fetch(API_URL, {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
                     body: JSON.stringify(payload)
                 });
+                
+                if (!res.ok) {
+                    throw new Error(`HTTP error! status: ${res.status}`);
+                }
+                
                 const result = await res.json();
-                if(result.status === "success") {
+                console.log('API回應:', result);
+                
+                if(result.status === "success" || result.success) {
                     alert("✅ 會員資料同步成功！");
                     navigateTo('index.html');
                 } else {
@@ -437,8 +453,8 @@
                     btn.innerText = "重新儲存";
                 }
             } catch(err) {
-                console.error("API 錯誤:", err);
-                alert("連線超時，請檢查網路後再試");
+                console.error("API 錯誤詳細資訊:", err);
+                alert("連線超時或發生錯誤，請檢查網路後再試\n錯誤訊息: " + err.message);
                 btn.disabled = false;
                 btn.innerText = "重新儲存";
             }
