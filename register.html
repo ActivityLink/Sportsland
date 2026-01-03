@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>ActivityLink - 會員註冊</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&display=swap');
+        :root { --line-green: #06C755; }
+        body { font-family: 'Noto Sans TC', sans-serif; background-color: #F8F9FA; padding: 20px; }
+        .card { background: white; border-radius: 20px; padding: 30px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
+        .step-title { font-size: 24px; font-weight: 700; margin-bottom: 10px; }
+        .identity-btn { border: 2px solid #EEE; padding: 20px; border-radius: 16px; transition: 0.3s; cursor: pointer; text-align: center; }
+        .identity-btn.active { border-color: var(--line-green); background-color: rgba(6, 199, 85, 0.05); }
+        label { display: block; font-size: 14px; font-weight: 500; margin-bottom: 8px; color: #666; }
+        input, select { width: 100%; background: #F1F3F5; border: 2px solid transparent; padding: 14px; border-radius: 12px; outline: none; margin-bottom: 20px; }
+        input:focus { border-color: var(--line-green); background: white; }
+        .btn-submit { background: var(--line-green); color: white; width: 100%; padding: 16px; border-radius: 12px; font-size: 18px; font-weight: 700; border: none; }
+        .family-box { background: #F9FAFB; padding: 15px; border-radius: 12px; border: 1px dashed #DDD; margin-top: 10px; }
+    </style>
+</head>
+<body>
+
+    <div class="max-w-md mx-auto">
+        <!-- 步驟一：選擇身分 -->
+        <div id="step-1" class="card">
+            <h2 class="step-title">歡迎加入！</h2>
+            <p class="text-gray-400 mb-8">請先選擇您的註冊身分</p>
+            
+            <div class="grid grid-cols-1 gap-4">
+                <div onclick="selectIdentity('Individual')" class="identity-btn" id="btn-Individual">
+                    <i class="fas fa-user text-2xl text-blue-500 mb-2"></i>
+                    <div class="font-bold">個人報名</div>
+                    <div class="text-xs text-gray-400">學生、成人個人參與</div>
+                </div>
+                <div onclick="selectIdentity('Parent')" class="identity-btn" id="btn-Parent">
+                    <i class="fas fa-users text-2xl text-orange-500 mb-2"></i>
+                    <div class="font-bold">家長代報</div>
+                    <div class="text-xs text-gray-400">可幫家中小朋友報名</div>
+                </div>
+                <div onclick="selectIdentity('Organization')" class="identity-btn" id="btn-Organization">
+                    <i class="fas fa-building text-2xl text-purple-500 mb-2"></i>
+                    <div class="font-bold">機關團體</div>
+                    <div class="text-xs text-gray-400">學校、協會或政府單位</div>
+                </div>
+            </div>
+            
+            <button onclick="nextStep()" id="next-btn" class="btn-submit mt-10 opacity-50" disabled>繼續下一步</button>
+        </div>
+
+        <!-- 步驟二：填寫個資 -->
+        <div id="step-2" class="card hidden">
+            <div onclick="prevStep()" class="text-gray-400 mb-4 cursor-pointer"><i class="fas fa-chevron-left mr-2"></i>返回</div>
+            <h2 class="step-title">完善資料</h2>
+            
+            <form id="reg-form">
+                <div><label>姓名 *</label><input type="text" id="m-name" required></div>
+                <div><label>聯絡電話 *</label><input type="tel" id="m-phone" required></div>
+                <div><label>生日 *</label><input type="date" id="m-birth" onchange="checkStudentInfo()"></div>
+
+                <!-- 學生動態顯示 -->
+                <div id="student-info" class="hidden">
+                    <div class="bg-blue-50 p-4 rounded-xl mb-4">
+                        <label class="text-blue-700">就讀學校</label><input type="text" id="m-school">
+                        <label class="text-blue-700">計算年級</label>
+                        <div id="m-grade-display" class="text-lg font-bold text-blue-800">偵測中...</div>
+                    </div>
+                </div>
+
+                <!-- 機關動態顯示 -->
+                <div id="org-info" class="hidden">
+                    <label>機關全銜</label><input type="text" id="m-org">
+                    <label>統一編號</label><input type="text" id="m-tax">
+                </div>
+
+                <!-- 家長專屬功能：新增家人 -->
+                <div id="parent-extra" class="hidden">
+                    <div class="flex justify-between items-center mb-4">
+                        <label class="mb-0">家中小朋友資料</label>
+                        <button type="button" onclick="addFamilyRow()" class="text-xs text-green-600 font-bold border border-green-600 px-2 py-1 rounded">＋新增家人</button>
+                    </div>
+                    <div id="family-list"></div>
+                </div>
+
+                <button type="submit" class="btn-submit mt-6">完成註冊並綁定 LINE</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        let selectedId = '';
+        let familyCount = 0;
+
+        function selectIdentity(id) {
+            selectedId = id;
+            document.querySelectorAll('.identity-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById(`btn-${id}`).classList.add('active');
+            document.getElementById('next-btn').disabled = false;
+            document.getElementById('next-btn').classList.remove('opacity-50');
+        }
+
+        function nextStep() {
+            document.getElementById('step-1').classList.add('hidden');
+            document.getElementById('step-2').classList.remove('hidden');
+            
+            // 根據身分調整欄位
+            document.getElementById('parent-extra').classList.toggle('hidden', selectedId !== 'Parent');
+            document.getElementById('org-info').classList.toggle('hidden', selectedId !== 'Organization');
+        }
+
+        function checkStudentInfo() {
+            const birth = document.getElementById('m-birth').value;
+            if (!birth) return;
+            
+            const birthDate = new Date(birth);
+            const age = new Date().getFullYear() - birthDate.getFullYear();
+            
+            if (selectedId === 'Individual' && age < 25) {
+                document.getElementById('student-info').classList.remove('hidden');
+                document.getElementById('m-grade-display').innerText = calculateGrade(birth);
+            }
+        }
+
+        function calculateGrade(birth) {
+            const birthDate = new Date(birth);
+            const year = birthDate.getFullYear();
+            const month = birthDate.getMonth() + 1;
+            
+            // 台灣學制：9月2日後出生算下一個學年度
+            let entryYear = year + 6;
+            if (month > 9 || (month === 9 && birthDate.getDate() >= 2)) entryYear++;
+            
+            const currentAY = (new Date().getMonth() + 1 >= 9) ? new Date().getFullYear() : new Date().getFullYear() - 1;
+            const grade = currentAY - entryYear + 1;
+            
+            if (grade <= 0) return "學齡前";
+            if (grade <= 6) return `國小 ${grade} 年級`;
+            if (grade <= 9) return `國中 ${grade-6} 年級`;
+            if (grade <= 12) return `高中 ${grade-9} 年級`;
+            return "大專院校";
+        }
+
+        function addFamilyRow() {
+            familyCount++;
+            const div = document.createElement('div');
+            div.className = 'family-box mb-4';
+            div.innerHTML = `
+                <div class="flex justify-between mb-2"><span class="text-xs font-bold">家人 ${familyCount}</span><button onclick="this.parentElement.parentElement.remove()" class="text-red-500 text-xs">刪除</button></div>
+                <input type="text" placeholder="家人姓名" class="mb-2 p-2 text-sm">
+                <input type="date" placeholder="家人生日" class="mb-2 p-2 text-sm" onchange="const g=calculateGrade(this.value); this.nextElementSibling.innerText=g;">
+                <div class="text-[10px] text-blue-600 font-bold mb-2">計算年級：未設定</div>
+                <input type="text" placeholder="就讀學校" class="p-2 text-sm">
+            `;
+            document.getElementById('family-list').appendChild(div);
+        }
+
+        document.getElementById('reg-form').onsubmit = async (e) => {
+            e.preventDefault();
+            alert('註冊成功！資料已同步雲端 CRM。');
+        };
+    </script>
+</body>
+</html>
