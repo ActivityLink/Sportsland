@@ -7,158 +7,193 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&display=swap');
-        :root { --line-green: #06C755; }
-        body { font-family: 'Noto Sans TC', sans-serif; background-color: #F8F9FA; padding: 20px; }
-        .card { background: white; border-radius: 20px; padding: 30px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
-        .step-title { font-size: 24px; font-weight: 700; margin-bottom: 10px; }
-        .identity-btn { border: 2px solid #EEE; padding: 20px; border-radius: 16px; transition: 0.3s; cursor: pointer; text-align: center; }
-        .identity-btn.active { border-color: var(--line-green); background-color: rgba(6, 199, 85, 0.05); }
-        label { display: block; font-size: 14px; font-weight: 500; margin-bottom: 8px; color: #666; }
-        input, select { width: 100%; background: #F1F3F5; border: 2px solid transparent; padding: 14px; border-radius: 12px; outline: none; margin-bottom: 20px; }
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&display=swap');
+        :root { --line-green: #06C755; --bg-gray: #F0F2F5; }
+        body { font-family: 'Noto Sans TC', sans-serif; background-color: var(--bg-gray); margin: 0; display: flex; justify-content: center; }
+        
+        .container { width: 100%; max-width: 640px; background: white; min-height: 100vh; padding: 30px 20px; box-shadow: 0 0 15px rgba(0,0,0,0.05); }
+        
+        /* LINE OA 風格單選按鈕 */
+        .id-card { border: 1px solid #E6E6E6; border-radius: 12px; padding: 20px; margin-bottom: 12px; cursor: pointer; transition: 0.2s; position: relative; }
+        .id-card.active { border-color: var(--line-green); background: #F0FAF3; }
+        .id-card.active::after { content: '\f058'; family: 'Font Awesome 6 Free'; position: absolute; right: 20px; top: 50%; transform: translateY(-50%); color: var(--line-green); font-weight: 900; }
+
+        label { display: block; font-size: 15px; color: #555; margin-bottom: 8px; }
+        input, select { width: 100%; background: #F7F9FB; border: 1px solid #E9EEF2; border-radius: 10px; padding: 12px 14px; font-size: 16px; outline: none; margin-bottom: 15px; }
         input:focus { border-color: var(--line-green); background: white; }
-        .btn-submit { background: var(--line-green); color: white; width: 100%; padding: 16px; border-radius: 12px; font-size: 18px; font-weight: 700; border: none; }
-        .family-box { background: #F9FAFB; padding: 15px; border-radius: 12px; border: 1px dashed #DDD; margin-top: 10px; }
+
+        .btn-main { background: var(--line-green); color: white; width: 100%; padding: 15px; border-radius: 10px; font-size: 17px; font-weight: 500; border: none; cursor: pointer; margin-top: 20px; }
+        .family-item { background: #F8F9FA; padding: 20px; border-radius: 12px; border: 1px solid #EEE; margin-bottom: 15px; }
     </style>
 </head>
 <body>
 
-    <div class="max-w-md mx-auto">
-        <!-- 步驟一：選擇身分 -->
-        <div id="step-1" class="card">
-            <h2 class="step-title">歡迎加入！</h2>
-            <p class="text-gray-400 mb-8">請先選擇您的註冊身分</p>
+    <div class="container">
+        <!-- 步驟 1: 選擇身分 -->
+        <div id="step-1">
+            <h2 class="text-2xl font-bold mb-2">您好！</h2>
+            <p class="text-gray-400 mb-8">請選擇身分開始註冊</p>
             
-            <div class="grid grid-cols-1 gap-4">
-                <div onclick="selectIdentity('Individual')" class="identity-btn" id="btn-Individual">
-                    <i class="fas fa-user text-2xl text-blue-500 mb-2"></i>
-                    <div class="font-bold">個人報名</div>
-                    <div class="text-xs text-gray-400">學生、成人個人參與</div>
-                </div>
-                <div onclick="selectIdentity('Parent')" class="identity-btn" id="btn-Parent">
-                    <i class="fas fa-users text-2xl text-orange-500 mb-2"></i>
-                    <div class="font-bold">家長代報</div>
-                    <div class="text-xs text-gray-400">可幫家中小朋友報名</div>
-                </div>
-                <div onclick="selectIdentity('Organization')" class="identity-btn" id="btn-Organization">
-                    <i class="fas fa-building text-2xl text-purple-500 mb-2"></i>
-                    <div class="font-bold">機關團體</div>
-                    <div class="text-xs text-gray-400">學校、協會或政府單位</div>
-                </div>
+            <div onclick="setID('Individual')" class="id-card" id="id-Individual">
+                <div class="text-lg font-medium">個人註冊</div>
+                <div class="text-sm text-gray-400">學生、成人個人參與活動</div>
             </div>
-            
-            <button onclick="nextStep()" id="next-btn" class="btn-submit mt-10 opacity-50" disabled>繼續下一步</button>
+            <div onclick="setID('Parent')" class="id-card" id="id-Parent">
+                <div class="text-lg font-medium">家長註冊</div>
+                <div class="text-sm text-gray-400">可幫家中小朋友報名</div>
+            </div>
+            <div onclick="setID('Organization')" class="id-card" id="id-Organization">
+                <div class="text-lg font-medium">機關團體</div>
+                <div class="text-sm text-gray-400">學校、協會或政府單位</div>
+            </div>
+
+            <button onclick="goStep(2)" id="next-btn" class="btn-main opacity-50 cursor-not-allowed" disabled>繼續下一步</button>
         </div>
 
-        <!-- 步驟二：填寫個資 -->
-        <div id="step-2" class="card hidden">
-            <div onclick="prevStep()" class="text-gray-400 mb-4 cursor-pointer"><i class="fas fa-chevron-left mr-2"></i>返回</div>
-            <h2 class="step-title">完善資料</h2>
-            
+        <!-- 步驟 2: 填寫資料 -->
+        <div id="step-2" class="hidden">
+            <div onclick="goStep(1)" class="text-gray-400 mb-4 cursor-pointer text-sm"><i class="fas fa-chevron-left mr-1"></i> 返回</div>
+            <h2 class="text-xl font-bold mb-6">完善個資檔案</h2>
+
             <form id="reg-form">
-                <div><label>姓名 *</label><input type="text" id="m-name" required></div>
-                <div><label>聯絡電話 *</label><input type="tel" id="m-phone" required></div>
-                <div><label>生日 *</label><input type="date" id="m-birth" onchange="checkStudentInfo()"></div>
+                <label>姓名 *</label>
+                <input type="text" id="m-name" required placeholder="您的真實姓名">
 
-                <!-- 學生動態顯示 -->
-                <div id="student-info" class="hidden">
-                    <div class="bg-blue-50 p-4 rounded-xl mb-4">
-                        <label class="text-blue-700">就讀學校</label><input type="text" id="m-school">
-                        <label class="text-blue-700">計算年級</label>
-                        <div id="m-grade-display" class="text-lg font-bold text-blue-800">偵測中...</div>
-                    </div>
+                <label>聯絡電話 *</label>
+                <input type="tel" id="m-phone" required placeholder="09XX-XXX-XXX">
+
+                <label>出生日期 *</label>
+                <input type="date" id="m-birth" required onchange="handleBirthChange()">
+
+                <!-- 個人(學生)動態欄位 -->
+                <div id="student-section" class="hidden bg-blue-50 p-4 rounded-xl mb-4 border border-blue-100">
+                    <label class="text-blue-700">就讀學校</label>
+                    <input type="text" id="m-school" placeholder="例如：某某國小">
+                    <div class="text-sm text-blue-600">系統估計年級：<span id="m-grade-text" class="font-bold">-</span></div>
                 </div>
 
-                <!-- 機關動態顯示 -->
-                <div id="org-info" class="hidden">
-                    <label>機關全銜</label><input type="text" id="m-org">
-                    <label>統一編號</label><input type="text" id="m-tax">
+                <!-- 機關動態欄位 -->
+                <div id="org-section" class="hidden">
+                    <label>機關全銜</label>
+                    <input type="text" id="m-org" placeholder="例如：某某協會">
+                    <label>統一編號</label>
+                    <input type="text" id="m-tax" placeholder="8位數字">
                 </div>
 
-                <!-- 家長專屬功能：新增家人 -->
-                <div id="parent-extra" class="hidden">
+                <!-- 家長動態欄位: 新增家人 -->
+                <div id="parent-section" class="hidden mt-8">
                     <div class="flex justify-between items-center mb-4">
-                        <label class="mb-0">家中小朋友資料</label>
-                        <button type="button" onclick="addFamilyRow()" class="text-xs text-green-600 font-bold border border-green-600 px-2 py-1 rounded">＋新增家人</button>
+                        <label class="mb-0 text-gray-800 font-medium">家人資料 (學員)</label>
+                        <button type="button" onclick="addFamily()" class="text-sm text-green-600 font-medium">+ 新增家人</button>
                     </div>
                     <div id="family-list"></div>
                 </div>
 
-                <button type="submit" class="btn-submit mt-6">完成註冊並綁定 LINE</button>
+                <button type="submit" id="submit-btn" class="btn-main">完成註冊並綁定 LINE</button>
             </form>
         </div>
     </div>
 
     <script>
-        let selectedId = '';
-        let familyCount = 0;
+        const API_URL = 'https://aged-rice-2438.wetw-net3.workers.dev/';
+        let identity = '', familyCount = 0;
 
-        function selectIdentity(id) {
-            selectedId = id;
-            document.querySelectorAll('.identity-btn').forEach(b => b.classList.remove('active'));
-            document.getElementById(`btn-${id}`).classList.add('active');
-            document.getElementById('next-btn').disabled = false;
-            document.getElementById('next-btn').classList.remove('opacity-50');
+        function setID(id) {
+            identity = id;
+            document.querySelectorAll('.id-card').forEach(c => c.classList.remove('active'));
+            document.getElementById('id-' + id).classList.add('active');
+            const btn = document.getElementById('next-btn');
+            btn.disabled = false; btn.classList.remove('opacity-50', 'cursor-not-allowed');
         }
 
-        function nextStep() {
-            document.getElementById('step-1').classList.add('hidden');
-            document.getElementById('step-2').classList.remove('hidden');
+        function goStep(n) {
+            document.getElementById('step-1').classList.toggle('hidden', n !== 1);
+            document.getElementById('step-2').classList.toggle('hidden', n !== 2);
             
-            // 根據身分調整欄位
-            document.getElementById('parent-extra').classList.toggle('hidden', selectedId !== 'Parent');
-            document.getElementById('org-info').classList.toggle('hidden', selectedId !== 'Organization');
-        }
-
-        function checkStudentInfo() {
-            const birth = document.getElementById('m-birth').value;
-            if (!birth) return;
-            
-            const birthDate = new Date(birth);
-            const age = new Date().getFullYear() - birthDate.getFullYear();
-            
-            if (selectedId === 'Individual' && age < 25) {
-                document.getElementById('student-info').classList.remove('hidden');
-                document.getElementById('m-grade-display').innerText = calculateGrade(birth);
+            if (n === 2) {
+                document.getElementById('parent-section').classList.toggle('hidden', identity !== 'Parent');
+                document.getElementById('org-section').classList.toggle('hidden', identity !== 'Organization');
             }
         }
 
-        function calculateGrade(birth) {
-            const birthDate = new Date(birth);
-            const year = birthDate.getFullYear();
-            const month = birthDate.getMonth() + 1;
-            
-            // 台灣學制：9月2日後出生算下一個學年度
-            let entryYear = year + 6;
-            if (month > 9 || (month === 9 && birthDate.getDate() >= 2)) entryYear++;
-            
+        // 計算年級 (台灣學制: 9/2 基準)
+        function getGrade(birth) {
+            if (!birth) return "-";
+            const b = new Date(birth);
+            let entryYear = b.getFullYear() + 6;
+            if (b.getMonth() + 1 > 9 || (b.getMonth() + 1 === 9 && b.getDate() >= 2)) entryYear++;
             const currentAY = (new Date().getMonth() + 1 >= 9) ? new Date().getFullYear() : new Date().getFullYear() - 1;
-            const grade = currentAY - entryYear + 1;
-            
-            if (grade <= 0) return "學齡前";
-            if (grade <= 6) return `國小 ${grade} 年級`;
-            if (grade <= 9) return `國中 ${grade-6} 年級`;
-            if (grade <= 12) return `高中 ${grade-9} 年級`;
-            return "大專院校";
+            const g = currentAY - entryYear + 1;
+            if (g <= 0) return "學齡前";
+            if (g <= 6) return `國小 ${g} 年級`;
+            if (g <= 9) return `國中 ${g-6} 年級`;
+            if (g <= 12) return `高中 ${g-9} 年級`;
+            return "大專/成人";
         }
 
-        function addFamilyRow() {
+        function handleBirthChange() {
+            const val = document.getElementById('m-birth').value;
+            const age = new Date().getFullYear() - new Date(val).getFullYear();
+            const section = document.getElementById('student-section');
+            if (identity === 'Individual' && age < 25) {
+                section.classList.remove('hidden');
+                document.getElementById('m-grade-text').innerText = getGrade(val);
+            } else {
+                section.classList.add('hidden');
+            }
+        }
+
+        function addFamily() {
             familyCount++;
             const div = document.createElement('div');
-            div.className = 'family-box mb-4';
+            div.className = 'family-item';
             div.innerHTML = `
-                <div class="flex justify-between mb-2"><span class="text-xs font-bold">家人 ${familyCount}</span><button onclick="this.parentElement.parentElement.remove()" class="text-red-500 text-xs">刪除</button></div>
-                <input type="text" placeholder="家人姓名" class="mb-2 p-2 text-sm">
-                <input type="date" placeholder="家人生日" class="mb-2 p-2 text-sm" onchange="const g=calculateGrade(this.value); this.nextElementSibling.innerText=g;">
-                <div class="text-[10px] text-blue-600 font-bold mb-2">計算年級：未設定</div>
-                <input type="text" placeholder="就讀學校" class="p-2 text-sm">
+                <div class="flex justify-between mb-4"><span class="text-xs text-gray-400">成員 ${familyCount}</span><button type="button" onclick="this.parentElement.parentElement.remove()" class="text-red-400 text-xs">移除</button></div>
+                <label>家人姓名</label><input type="text" class="f-name" placeholder="姓名">
+                <label>性別</label><select class="f-gender"><option value="男">男</option><option value="女">女</option></select>
+                <label>生日</label><input type="date" class="f-birth" onchange="const g=getGrade(this.value); this.nextElementSibling.innerText='年級預估：'+g;">
+                <div class="text-[11px] text-blue-500 mb-4">年級預估：-</div>
+                <label>就讀學校</label><input type="text" class="f-school">
             `;
             document.getElementById('family-list').appendChild(div);
         }
 
         document.getElementById('reg-form').onsubmit = async (e) => {
             e.preventDefault();
-            alert('註冊成功！資料已同步雲端 CRM。');
+            const btn = document.getElementById('submit-btn');
+            btn.disabled = true; btn.innerText = "資料寫入中...";
+
+            // 收集家人資料
+            const familyData = Array.from(document.querySelectorAll('.family-item')).map(item => ({
+                name: item.querySelector('.f-name').value,
+                gender: item.querySelector('.f-gender').value,
+                birth: item.querySelector('.f-birth').value,
+                school: item.querySelector('.f-school').value,
+                grade: getGrade(item.querySelector('.f-birth').value)
+            }));
+
+            const payload = {
+                type: 'member_register',
+                lineUserId: 'U' + Math.random().toString(36).substr(2, 9), // 模擬 LINE ID
+                identityType: identity,
+                name: document.getElementById('m-name').value,
+                phone: document.getElementById('m-phone').value,
+                gender: (identity === 'Organization' ? 'N/A' : '不限'), // 基礎性別暫不細分
+                birthDate: document.getElementById('m-birth').value,
+                schoolName: document.getElementById('m-school').value,
+                currentGrade: getGrade(document.getElementById('m-birth').value),
+                orgName: document.getElementById('m-org').value,
+                taxId: document.getElementById('m-tax').value,
+                familyData: familyData
+            };
+
+            try {
+                const res = await fetch(API_URL, { method: 'POST', body: JSON.stringify(payload) });
+                if ((await res.json()).status === "success") {
+                    alert("🎉 註冊成功！歡迎加入 ActivityLink。");
+                    window.location.href = 'booking.html';
+                }
+            } catch (err) { alert("註冊失敗"); btn.disabled = false; }
         };
     </script>
 </body>
