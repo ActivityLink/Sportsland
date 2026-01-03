@@ -3,73 +3,116 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Sports-Island - 預約課程</title>
+    <title>Sports-Island - 預約中心</title>
     <script charset="utf-8" src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700;900&display=swap');
         :root { --line-green: #06C755; --bg-gray: #F7F9FB; }
         body { font-family: 'Noto Sans TC', sans-serif; background-color: var(--bg-gray); margin: 0; display: flex; justify-content: center; -webkit-font-smoothing: antialiased; }
-        .page-wrapper { width: 100%; max-width: 640px; background: #FFFFFF; min-height: 100vh; position: relative; padding-bottom: 100px; box-shadow: 0 0 20px rgba(0,0,0,0.03); }
-        .course-card { background: #FAFBFC; padding: 20px; border-bottom: 1px solid #F0F0F0; display: flex; gap: 15px; align-items: center; }
+        .page-wrapper { width: 100%; max-width: 640px; background: #FFFFFF; min-height: 100vh; position: relative; padding-bottom: 120px; box-shadow: 0 0 20px rgba(0,0,0,0.03); }
+        .step-header { padding: 30px 24px 20px 24px; border-bottom: 1px solid #F0F0F0; }
+        .course-card { background: #FAFBFC; padding: 20px; border-radius: 12px; margin: 20px; display: flex; gap: 15px; align-items: center; border: 1px solid #F0F0F0; }
         .member-option { border: 1px solid #EEE; border-radius: 16px; padding: 20px; margin: 12px 20px; cursor: pointer; transition: 0.2s; display: flex; align-items: center; gap: 15px; }
         .member-option.active { border-color: var(--line-green); background: #F0FAF3; }
         .check-icon { width: 24px; height: 24px; border: 2px solid #DDD; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; }
         .active .check-icon { background: var(--line-green); border-color: var(--line-green); }
-        .btn-main { background: var(--line-green); color: white; width: calc(100% - 40px); margin: 20px; padding: 16px; border-radius: 12px; font-weight: 500; position: fixed; bottom: 0; max-width: 600px; z-index: 100; }
-        .btn-main:disabled { background: #DDD; cursor: not-allowed; }
+        .footer-action { position: fixed; bottom: 0; width: 100%; max-width: 640px; background: white; padding: 20px; border-top: 1px solid #EEE; z-index: 100; }
+        .btn-main { background: var(--line-green); color: white; width: 100%; padding: 16px; border-radius: 12px; font-weight: 700; font-size: 17px; box-shadow: 0 4px 12px rgba(6, 199, 85, 0.2); }
+        .btn-main:disabled { background: #DDD; cursor: not-allowed; box-shadow: none; }
         .loading-screen { position: fixed; inset: 0; background: white; z-index: 1000; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+        .info-card { margin: 0 20px; background: #F9FAFB; border-radius: 16px; padding: 24px; }
+        .info-row { display: flex; justify-content: space-between; margin-bottom: 12px; font-size: 14px; }
+        .info-label { color: #888; }
+        .info-val { font-weight: 500; color: #333; }
     </style>
 </head>
 <body>
     <div id="loading" class="loading-screen">
         <div class="animate-spin rounded-full h-10 w-10 border-b-2 border-[#06C755] mb-4"></div>
-        <p class="text-gray-400 text-sm">正在同步您的家庭成員名單...</p>
+        <p class="text-gray-400 text-sm">正在獲取報名資訊...</p>
     </div>
 
     <div class="page-wrapper">
-        <div class="p-6 border-b"><h1 class="text-xl font-bold">請選取報名人</h1><p class="text-xs text-gray-400 mt-1">選取要參加此活動的成員</p></div>
-        <div id="course-info" class="course-card">
-            <div class="w-16 h-16 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0"><img id="c-img" src="" class="w-full h-full object-cover"></div>
-            <div><div id="c-name" class="font-bold text-gray-800">載入課程中...</div><div id="c-price" class="text-green-600 font-bold mt-1 text-sm">$0</div></div>
+        <div class="step-header">
+            <h1 id="step-title" class="text-xl font-black">Step 01. 請選取報名人</h1>
+            <p id="step-desc" class="text-xs text-gray-400 mt-1">請選擇要參加此課程的學員</p>
         </div>
-        <div id="member-list" class="mt-4"></div>
-        <div class="px-6 py-4 text-center"><a href="register.html" class="text-sm text-blue-500 underline"><i class="fas fa-user-plus mr-1"></i> 名單不正確？前往中心補填資料</a></div>
-        <button id="book-btn" class="btn-main shadow-lg" disabled onclick="submitBooking()">確認報名資料</button>
+        
+        <div id="course-summary" class="course-card">
+            <img id="c-img" src="" class="w-16 h-16 rounded object-cover bg-gray-200">
+            <div>
+                <div id="c-name" class="font-bold text-gray-800">讀取中...</div>
+                <div id="c-price-box" class="text-green-600 text-sm font-bold mt-1"></div>
+            </div>
+        </div>
+
+        <div id="view-member-list">
+            <div id="member-list" class="mt-2"></div>
+            <div class="px-6 py-6 text-center">
+                <a href="register.html" class="text-sm text-blue-500 underline font-medium"><i class="fas fa-user-plus mr-1"></i> 名單不正確？前往中心修改</a>
+            </div>
+        </div>
+
+        <div id="view-confirm" class="hidden">
+            <div class="info-card border border-dashed border-gray-300">
+                <div class="info-row"><span class="info-label">參加學員</span><span id="res-name" class="info-val"></span></div>
+                <div class="info-row"><span class="info-label">聯繫電話</span><span id="res-phone" class="info-val"></span></div>
+                <div class="info-row"><span class="info-label">原價/會員價</span><span id="res-price" class="info-val"></span></div>
+                <div class="info-row"><span class="info-label">早鳥優待</span><span id="res-early" class="info-val font-bold"></span></div>
+                <div class="info-row border-t pt-4 mt-2">
+                    <span class="info-label font-bold text-gray-800">應付金額</span>
+                    <span id="res-total" class="text-2xl font-black text-green-600"></span>
+                </div>
+            </div>
+            <div class="px-8 mt-6 text-[11px] text-gray-400 leading-relaxed">
+                * 點擊預約後訂單狀態為 confirmed。請於 24 小時內完成付款。
+            </div>
+        </div>
+
+        <div class="footer-action">
+            <button id="next-btn" class="btn-main" disabled onclick="handleAction()">下一步：確認細節</button>
+        </div>
     </div>
 
     <script>
         const API_URL = 'https://aged-rice-2438.wetw-net3.workers.dev/';
         const LIFF_ID = '2008786875-F7ifLsbN';
-        let selectedMember = null, courseData = null, candidates = [];
+        let currentStep = 1;
+        let selectedMember = null, courseData = null, candidates = [], mainUser = null;
 
         async function init() {
-            const courseId = new URLSearchParams(window.location.search).get('id');
-            if(!courseId) { alert("參數錯誤"); return; }
+            const id = new URLSearchParams(window.location.search).get('id');
+            if(!id) { alert("無效的課程 ID"); return; }
             try {
                 await liff.init({ liffId: LIFF_ID });
                 if(!liff.isLoggedIn()) { liff.login(); return; }
                 const profile = await liff.getProfile();
+                
                 const [cRes, mRes] = await Promise.all([
-                    fetch(`${API_URL}?sheet=SingleCourses&id=${courseId}`),
+                    fetch(`${API_URL}?sheet=SingleCourses&id=${id}`),
                     fetch(`${API_URL}?type=member_check&lineUserId=${profile.userId}`)
                 ]);
+                
                 const cResult = await cRes.json();
                 const mResult = await mRes.json();
+                
                 courseData = (cResult.data || [])[0];
                 if(courseData) {
                     document.getElementById('c-name').innerText = courseData.courseName;
-                    document.getElementById('c-price').innerText = `$${courseData.memberPrice || 0}`;
-                    document.getElementById('c-img').src = courseData.coverImage || 'https://placehold.co/100?text=S-I';
+                    document.getElementById('c-price-box').innerText = `費用 $${courseData.memberPrice || 0}`;
+                    document.getElementById('c-img').src = courseData.coverImage || 'https://placehold.co/100?text=SI';
                 }
+
                 if(mResult.status === "exists") {
-                    candidates.push({ name: mResult.data.name, info: "帳戶本人", grade: mResult.data["目前年級"] || "成人" });
-                    if(mResult.families) mResult.families.forEach(f => candidates.push({ name: f["家人姓名"] || f.name, info: "家庭成員", grade: f["目前年級"] || f.grade }));
+                    mainUser = mResult.data;
+                    candidates.push({ name: mainUser.name, info: "本人", grade: mainUser.currentGrade || "成人" });
+                    if(mResult.families) mResult.families.forEach(f => candidates.push({ name: f.name || f["家人姓名"], info: "家人", grade: f.grade || f["目前年級"] }));
                     renderList();
-                } else { alert("請先完成註冊"); window.location.replace('register.html'); }
+                } else { window.location.replace('register.html'); }
                 document.getElementById('loading').style.display = 'none';
-            } catch (e) { document.getElementById('loading').innerHTML = "載入失敗"; }
+            } catch (e) { document.getElementById('loading').innerText = "載入失敗"; }
         }
 
         function renderList() {
@@ -77,7 +120,7 @@
                 <div class="member-option" onclick="selectMember(${i})" id="m-${i}">
                     <div class="check-icon"><i class="fas fa-check text-[10px]"></i></div>
                     <div class="flex-1">
-                        <div class="font-bold text-gray-800">${m.name}</div>
+                        <div class="font-bold text-gray-800 text-lg">${m.name}</div>
                         <div class="text-[11px] text-gray-400 mt-0.5">${m.info} | ${m.grade}</div>
                     </div>
                 </div>`).join('');
@@ -87,16 +130,63 @@
             selectedMember = candidates[i];
             document.querySelectorAll('.member-option').forEach(el => el.classList.remove('active'));
             document.getElementById('m-'+i).classList.add('active');
-            document.getElementById('book-btn').disabled = false;
+            document.getElementById('next-btn').disabled = false;
         }
 
-        async function submitBooking() {
-            const btn = document.getElementById('book-btn');
-            btn.disabled = true; btn.innerText = "預約傳送中...";
-            const payload = { type: 'course_booking', courseId: courseData.courseId, courseName: courseData.courseName, enrolleeName: selectedMember.name, enrolleeGrade: selectedMember.grade, lineUserId: liff.getContext().userId };
+        function handleAction() {
+            if (currentStep === 1) {
+                currentStep = 2;
+                document.getElementById('step-title').innerText = "Step 02. 確認預約細節";
+                document.getElementById('view-member-list').classList.add('hidden');
+                document.getElementById('view-confirm').classList.remove('hidden');
+                
+                // 早鳥判定邏輯
+                const now = new Date();
+                let isEarly = false;
+                let finalAmt = courseData.memberPrice || 0;
+                if (courseData.earlyBirdPrice && courseData.earlyBirdEnd) {
+                    if (now <= new Date(courseData.earlyBirdEnd)) {
+                        isEarly = true;
+                        finalAmt = courseData.earlyBirdPrice;
+                    }
+                }
+                
+                document.getElementById('res-name').innerText = selectedMember.name;
+                document.getElementById('res-phone').innerText = mainUser.phone;
+                document.getElementById('res-price').innerText = `$${courseData.memberPrice}`;
+                document.getElementById('res-early').innerText = isEarly ? "適用早鳥優惠" : "不適用";
+                document.getElementById('res-early').className = isEarly ? "info-val text-blue-600" : "info-val text-gray-400";
+                document.getElementById('res-total').innerText = `$${finalAmt}`;
+                document.getElementById('next-btn').innerText = "確認資料並預約";
+                
+                selectedMember.finalAmt = finalAmt;
+                selectedMember.isEarly = isEarly;
+            } else {
+                submitFinalBooking();
+            }
+        }
+
+        async function submitFinalBooking() {
+            const btn = document.getElementById('next-btn');
+            btn.disabled = true; btn.innerText = "訂單成立中...";
+            
+            const payload = { 
+                type: 'course_booking', 
+                courseId: courseData.courseId, 
+                courseName: courseData.courseName, 
+                enrolleeName: selectedMember.name, 
+                phone: mainUser.phone,
+                amount: selectedMember.finalAmt,
+                isEarlyBird: selectedMember.isEarly,
+                lineUserId: liff.getContext().userId 
+            };
+            
             const res = await fetch(API_URL, { method: 'POST', body: JSON.stringify(payload) });
-            if((await res.json()).status === "success") { alert("🎉 預約成功！我們將會與您聯繫。"); window.location.replace('index.html'); }
-            else { alert("預約失敗"); btn.disabled = false; }
+            const result = await res.json();
+            if(result.status === "success") { 
+                alert("✅ 預約已送出！編號：" + result.bookingId); 
+                window.location.replace('index.html'); 
+            } else { alert("預約失敗"); btn.disabled = false; }
         }
         window.onload = init;
     </script>
