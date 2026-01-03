@@ -3,90 +3,58 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>ActivityLink - 會員註冊</title>
+    <title>ActivityLink - 會員中心</title>
+    <!-- 引入 LINE LIFF SDK -->
+    <script charset="utf-8" src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&display=swap');
+        :root { --line-green: #06C755; --bg-gray: #F7F9FB; --border-color: #EBEBEB; }
+        body { font-family: 'Noto Sans TC', sans-serif; background-color: var(--bg-gray); color: #333; margin: 0; display: flex; justify-content: center; }
         
-        :root { 
-            --line-green: #06C755; 
-            --bg-gray: #F7F9FB;
-            --text-main: #333333;
-            --text-sub: #8E8E8E;
-            --border-color: #EBEBEB;
-            --marker-blue: #2563eb;
-        }
-
-        body { 
-            font-family: 'Noto Sans TC', sans-serif; 
-            background-color: var(--bg-gray); 
-            color: var(--text-main);
-            margin: 0;
-            display: flex;
-            justify-content: center;
-            -webkit-font-smoothing: antialiased;
-        }
-
-        .container {
-            width: 100%;
-            max-width: 640px;
-            background: #FFFFFF;
-            min-height: 100vh;
-            padding: 40px 25px;
-            box-shadow: 0 0 20px rgba(0,0,0,0.03);
-            position: relative;
-        }
-
-        .title { font-size: 24px; font-weight: 500; color: #111; margin-bottom: 8px; }
-        .subtitle { font-size: 15px; color: var(--text-sub); margin-bottom: 35px; }
-
-        /* 身分卡片：LINE OA 風格 */
-        .id-option {
-            border: 1px solid var(--border-color);
-            border-radius: 12px;
-            padding: 24px;
-            margin-bottom: 15px;
-            cursor: pointer;
-            transition: 0.2s;
-            display: flex;
-            align-items: center;
-            gap: 20px;
-        }
+        .container { width: 100%; max-width: 640px; background: #FFFFFF; min-height: 100vh; padding: 40px 25px; box-shadow: 0 0 20px rgba(0,0,0,0.03); }
+        
+        .id-option { border: 1px solid var(--border-color); border-radius: 12px; padding: 24px; margin-bottom: 15px; cursor: pointer; transition: 0.2s; display: flex; align-items: center; gap: 20px; }
         .id-option.active { border-color: var(--line-green); background: #F0FAF3; }
-        .id-option.active .check-icon { color: var(--line-green); opacity: 1; }
-        .check-icon { opacity: 0; transition: 0.2s; }
+        .check-icon { color: var(--line-green); opacity: 0; }
+        .active .check-icon { opacity: 1; }
 
-        /* 表單元素優化：高度提高與文字放大 */
-        label { display: flex; align-items: center; font-size: 16px; color: #555; margin-bottom: 10px; font-weight: 400; }
-        .col-tag { display: inline-block; width: 26px; height: 26px; background: var(--marker-blue); color: white; border-radius: 4px; text-align: center; line-height: 26px; font-size: 11px; font-weight: 700; margin-right: 12px; flex-shrink: 0; }
-        
-        input, select, textarea { width: 100%; border: 1px solid #DDE2E8; border-radius: 8px; padding: 14px 16px; font-size: 16px; outline: none; transition: 0.2s; background: #FFF; font-weight: 400; }
-        input:focus { border-color: var(--line-green); }
+        label { display: block; font-size: 16px; color: #555; margin-bottom: 10px; }
+        input, select { width: 100%; background: #F8F9FA; border: 1px solid #E9EEF2; border-radius: 10px; padding: 14px 16px; font-size: 16px; outline: none; margin-bottom: 20px; }
+        input:focus { border-color: var(--line-green); background: white; }
 
-        .btn-main { background: var(--line-green); color: white; width: 100%; padding: 16px; border-radius: 12px; font-size: 17px; font-weight: 500; border: none; cursor: pointer; margin-top: 25px; }
-        .btn-main:active { opacity: 0.8; }
-        
+        .btn-main { background: var(--line-green); color: white; width: 100%; padding: 16px; border-radius: 12px; font-size: 17px; font-weight: 500; border: none; cursor: pointer; }
         .family-box { background: #FAFBFC; padding: 25px; border-radius: 12px; border: 1px solid #F0F0F0; margin-bottom: 20px; }
-        .grade-badge { background: #EBF5FF; color: #0066CC; padding: 4px 10px; border-radius: 6px; font-size: 13px; font-weight: 500; display: inline-block; margin-top: -10px; margin-bottom: 20px; }
-
-        .error-msg { background: #FFF5F5; border: 1px solid #FED7D7; color: #C53030; padding: 15px; border-radius: 10px; font-size: 14px; margin-bottom: 20px; display: none; }
+        
+        .loading-screen { position: fixed; inset: 0; background: white; z-index: 100; display: flex; flex-direction: column; align-items: center; justify-content: center; }
     </style>
 </head>
 <body>
 
-    <div class="container">
-        <div id="error-display" class="error-msg"></div>
+    <!-- 載入中畫面 -->
+    <div id="loading" class="loading-screen">
+        <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-[#06C755] mb-4"></div>
+        <p class="text-gray-400 text-sm">LINE 安全登入中...</p>
+    </div>
 
-        <!-- 步驟 1: 身分選擇 -->
-        <div id="step-1">
-            <h2 class="title">歡迎註冊 ActivityLink</h2>
-            <p class="subtitle">首先，請選擇您要註冊的身分類型：</p>
+    <div class="container">
+        <!-- 步驟 1: 選擇身分 -->
+        <div id="step-1" class="hidden">
+            <div class="flex items-center gap-3 mb-10">
+                <img id="user-img" src="" class="w-12 h-12 rounded-full border">
+                <div>
+                    <div class="text-sm text-gray-400">您好，<span id="user-name"></span></div>
+                    <div class="text-lg font-bold">歡迎加入 ActivityLink</div>
+                </div>
+            </div>
+            
+            <p class="text-gray-500 mb-6">請選擇您的註冊身分：</p>
             
             <div onclick="selectId('Individual')" id="id-Individual" class="id-option">
                 <div class="flex-1">
                     <div class="text-[17px] font-medium">個人註冊</div>
-                    <div class="text-[13px] text-gray-400 mt-1">學生本人或成人個人參與活動</div>
+                    <div class="text-[13px] text-gray-400 mt-1">學生本人或成人個人參與</div>
                 </div>
                 <i class="fas fa-check-circle check-icon text-xl"></i>
             </div>
@@ -94,106 +62,125 @@
             <div onclick="selectId('Parent')" id="id-Parent" class="id-option">
                 <div class="flex-1">
                     <div class="text-[17px] font-medium">家長註冊</div>
-                    <div class="text-[13px] text-gray-400 mt-1">可幫家中小朋友報名並管理個資</div>
+                    <div class="text-[13px] text-gray-400 mt-1">可幫小朋友報名並管理家人個資</div>
                 </div>
                 <i class="fas fa-check-circle check-icon text-xl"></i>
             </div>
 
             <div onclick="selectId('Organization')" id="id-Organization" class="id-option">
                 <div class="flex-1">
-                    <div class="text-[17px] font-medium">機關團體單位</div>
-                    <div class="text-[13px] text-gray-400 mt-1">學校、協會或政府機關</div>
+                    <div class="text-[17px] font-medium">機關團體</div>
+                    <div class="text-[13px] text-gray-400 mt-1">學校、協會或政府單位</div>
                 </div>
                 <i class="fas fa-check-circle check-icon text-xl"></i>
             </div>
 
-            <button onclick="goStep(2)" id="next-btn" class="btn-main" disabled style="opacity: 0.5; background: #CCC;">繼續下一步</button>
+            <button onclick="goStep(2)" id="next-btn" class="btn-main opacity-50" disabled>繼續下一步</button>
         </div>
 
         <!-- 步驟 2: 資料填寫 -->
         <div id="step-2" class="hidden">
-            <div onclick="goStep(1)" class="text-gray-400 mb-6 cursor-pointer text-sm flex items-center"><i class="fas fa-arrow-left mr-2"></i> 返回身分選擇</div>
-            <h2 class="title">完善個資檔案</h2>
-            <p class="subtitle">請填寫正確資料，以便於投保與預約聯繫。</p>
+            <div onclick="goStep(1)" class="text-gray-400 mb-6 cursor-pointer text-sm flex items-center"><i class="fas fa-arrow-left mr-2"></i> 返回</div>
+            <h2 class="text-xl font-bold mb-6">完善基本資料</h2>
 
             <form id="reg-form">
                 <label>真實姓名 *</label>
-                <input type="text" id="m-name" required placeholder="請輸入您的真實姓名">
+                <input type="text" id="m-name" required>
 
                 <label>聯絡電話 *</label>
                 <input type="tel" id="m-phone" required placeholder="09XX-XXX-XXX">
 
                 <label>出生日期 *</label>
-                <input type="date" id="m-birth" required onchange="handleMainBirth()">
+                <input type="date" id="m-birth" required onchange="handleBirth()">
 
-                <!-- 學生動態顯示區：生日計算年級 -->
-                <div id="student-section" class="hidden">
-                    <div id="m-grade-badge" class="grade-badge">年級預估：-</div>
+                <div id="student-info" class="hidden bg-blue-50 p-5 rounded-xl mb-5">
+                    <div id="m-grade-text" class="text-blue-700 font-medium mb-4 italic">年級預估：-</div>
                     <label>就讀學校</label>
-                    <input type="text" id="m-school" placeholder="例如：某某國小">
+                    <input type="text" id="m-school">
                 </div>
 
-                <!-- 機關動態顯示區 -->
-                <div id="org-section" class="hidden">
-                    <label>機關名稱 (學校/協會)</label>
-                    <input type="text" id="m-org" placeholder="例如：某某自強協會">
-                    <label>統一編號</label>
-                    <input type="text" id="m-tax" placeholder="8 位數字統編">
+                <div id="org-info" class="hidden">
+                    <label>機關名稱</label><input type="text" id="m-org">
+                    <label>統一編號</label><input type="text" id="m-tax">
                 </div>
 
-                <!-- 家長專區: 家人/小孩管理 -->
                 <div id="parent-section" class="hidden mt-10">
-                    <div class="flex justify-between items-center mb-6 border-b pb-4">
-                        <span class="text-lg font-medium">家人資料 (學員)</span>
-                        <button type="button" onclick="addFamilyRow()" class="text-sm text-green-600 font-medium border border-green-200 px-4 py-1.5 rounded-full">+ 新增成員</button>
+                    <div class="flex justify-between items-center mb-6">
+                        <span class="text-lg font-medium">家人資料 (報名學員)</span>
+                        <button type="button" onclick="addFamilyRow()" class="text-sm text-green-600 border border-green-600 px-3 py-1 rounded-full">+ 新增家人</button>
                     </div>
                     <div id="family-list"></div>
                 </div>
 
-                <button type="submit" id="submit-btn" class="btn-main">完成註冊並綁定 LINE</button>
+                <button type="submit" id="submit-btn" class="btn-main mt-10">確認註冊並綁定 LINE</button>
             </form>
         </div>
     </div>
 
     <script>
         const API_URL = 'https://aged-rice-2438.wetw-net3.workers.dev/';
-        let identityType = '', familyCount = 0;
+        const LIFF_ID = '2008786875-F7ifLsbN';
+        let lineUser = {}, selectedIdentity = '', familyCount = 0;
+
+        // 1. 初始化 LIFF
+        async function initLIFF() {
+            try {
+                await liff.init({ liffId: LIFF_ID });
+                if (!liff.isLoggedIn()) {
+                    liff.login();
+                } else {
+                    const profile = await liff.getProfile();
+                    lineUser = profile;
+                    document.getElementById('user-name').innerText = profile.displayName;
+                    document.getElementById('user-img').src = profile.pictureUrl;
+                    
+                    // 檢查是否已註冊過
+                    checkMemberStatus(profile.userId);
+                }
+            } catch (err) { console.error('LIFF Error', err); }
+        }
+
+        // 2. 檢查會員狀態
+        async function checkMemberStatus(uid) {
+            const res = await fetch(`${API_URL}?type=member_check&lineUserId=${uid}`);
+            const result = await res.json();
+            
+            document.getElementById('loading').style.display = 'none';
+            
+            if (result.status === "exists") {
+                // 已註冊，自動登入並導向
+                alert(`歡迎回來，${result.data.姓名}！`);
+                window.location.href = 'booking.html';
+            } else {
+                // 未註冊，顯示註冊頁
+                document.getElementById('step-1').classList.remove('hidden');
+            }
+        }
 
         function selectId(id) {
-            identityType = id;
+            selectedIdentity = id;
             document.querySelectorAll('.id-option').forEach(el => el.classList.remove('active'));
             document.getElementById('id-' + id).classList.add('active');
             const btn = document.getElementById('next-btn');
-            btn.disabled = false;
-            btn.style.opacity = '1';
-            btn.style.background = 'var(--line-green)';
+            btn.disabled = false; btn.style.opacity = '1'; btn.style.background = 'var(--line-green)';
         }
 
         function goStep(n) {
             document.getElementById('step-1').classList.toggle('hidden', n !== 1);
             document.getElementById('step-2').classList.toggle('hidden', n !== 2);
             if (n === 2) {
-                document.getElementById('parent-section').classList.toggle('hidden', identityType !== 'Parent');
-                document.getElementById('org-section').classList.toggle('hidden', identityType !== 'Organization');
-                document.getElementById('student-section').classList.add('hidden');
+                document.getElementById('parent-section').classList.toggle('hidden', selectedIdentity !== 'Parent');
+                document.getElementById('org-section').classList.toggle('hidden', selectedIdentity !== 'Organization');
             }
         }
 
-        // 台灣學制年級計算 (9/2 為學年劃分)
-        function calculateGrade(birth) {
+        function getGrade(birth) {
             if (!birth) return "";
-            const bDate = new Date(birth);
-            let entryYear = bDate.getFullYear() + 6;
-            // 9月2日(含)以後出生的，晚一學年入學
-            if (bDate.getMonth() + 1 > 9 || (bDate.getMonth() + 1 === 9 && bDate.getDate() >= 2)) entryYear++;
-            
-            const now = new Date();
-            const currentYear = now.getFullYear();
-            const currentMonth = now.getMonth() + 1;
-            // 判斷當前學年度 (9月開始算新學年)
-            const academicYear = (currentMonth >= 9) ? currentYear : currentYear - 1;
-            
-            const g = academicYear - entryYear + 1;
+            const b = new Date(birth);
+            let entryYear = b.getFullYear() + 6;
+            if (b.getMonth() + 1 > 9 || (b.getMonth() + 1 === 9 && b.getDate() >= 2)) entryYear++;
+            const currentYear = new Date().getFullYear();
+            const g = ((new Date().getMonth() + 1 >= 9) ? currentYear : currentYear - 1) - entryYear + 1;
             if (g <= 0) return "學齡前";
             if (g <= 6) return `國小 ${g} 年級`;
             if (g <= 9) return `國中 ${g-6} 年級`;
@@ -201,16 +188,12 @@
             return "大專/成人";
         }
 
-        function handleMainBirth() {
-            const birth = document.getElementById('m-birth').value;
-            if (!birth) return;
-            const age = new Date().getFullYear() - new Date(birth).getFullYear();
-            const section = document.getElementById('student-section');
-            if (identityType === 'Individual' && age < 25) {
-                section.classList.remove('hidden');
-                document.getElementById('m-grade-badge').innerText = "年級預估：" + calculateGrade(birth);
-            } else {
-                section.classList.add('hidden');
+        function handleBirth() {
+            const val = document.getElementById('m-birth').value;
+            const age = new Date().getFullYear() - new Date(val).getFullYear();
+            if (selectedIdentity === 'Individual' && age < 25) {
+                document.getElementById('student-info').classList.remove('hidden');
+                document.getElementById('m-grade-text').innerText = "年級預估：" + getGrade(val);
             }
         }
 
@@ -219,17 +202,14 @@
             const div = document.createElement('div');
             div.className = 'family-box';
             div.innerHTML = `
-                <div class="flex justify-between mb-4 border-b border-gray-50 pb-2">
-                    <span class="text-xs text-gray-400 font-medium">成員 ${familyCount}</span>
-                    <button type="button" onclick="this.parentElement.parentElement.remove()" class="text-red-400 text-xs">移除</button>
-                </div>
-                <label>家人姓名</label><input type="text" class="f-name" required placeholder="真實姓名">
+                <div class="flex justify-between mb-4"><span class="text-xs text-gray-400">成員 ${familyCount}</span><button onclick="this.parentElement.parentElement.remove()" class="text-red-400 text-xs">移除</button></div>
+                <label>姓名</label><input type="text" class="f-name" required>
                 <div class="grid grid-cols-2 gap-4">
                     <div><label>性別</label><select class="f-gender"><option value="男">男</option><option value="女">女</option></select></div>
-                    <div><label>生日</label><input type="date" class="f-birth" required onchange="const g=calculateGrade(this.value); this.parentElement.parentElement.nextElementSibling.innerText='年級預估：'+g;"></div>
+                    <div><label>生日</label><input type="date" class="f-birth" required onchange="const g=getGrade(this.value); this.parentElement.parentElement.nextElementSibling.innerText='年級預估：'+g;"></div>
                 </div>
-                <div class="grade-badge">年級預估：-</div>
-                <label>就讀學校</label><input type="text" class="f-school" placeholder="學校全稱">
+                <div class="text-blue-500 text-xs mb-4">年級預估：-</div>
+                <label>就讀學校</label><input type="text" class="f-school">
             `;
             document.getElementById('family-list').appendChild(div);
         }
@@ -237,52 +217,42 @@
         document.getElementById('reg-form').onsubmit = async (e) => {
             e.preventDefault();
             const btn = document.getElementById('submit-btn');
-            const errDiv = document.getElementById('error-display');
-            btn.disabled = true; btn.innerText = "資料傳送中...";
-            errDiv.style.display = 'none';
+            btn.disabled = true; btn.innerText = "正在儲存會員檔案...";
 
             const families = Array.from(document.querySelectorAll('.family-box')).map(box => ({
                 name: box.querySelector('.f-name').value,
                 gender: box.querySelector('.f-gender').value,
                 birth: box.querySelector('.f-birth').value,
                 school: box.querySelector('.f-school').value,
-                grade: calculateGrade(box.querySelector('.f-birth').value)
+                grade: getGrade(box.querySelector('.f-birth').value)
             }));
 
             const payload = {
                 type: 'member_register',
-                lineUserId: 'U_MOCK_' + Date.now(), // 預留 LIFF 真實 ID 介面
-                identityType: identityType,
+                lineUserId: lineUser.userId,
+                identityType: selectedIdentity,
                 name: document.getElementById('m-name').value,
                 phone: document.getElementById('m-phone').value,
                 birthDate: document.getElementById('m-birth').value,
                 schoolName: document.getElementById('m-school').value || "",
-                currentGrade: calculateGrade(document.getElementById('m-birth').value),
+                currentGrade: getGrade(document.getElementById('m-birth').value),
                 orgName: document.getElementById('m-org').value || "",
                 taxId: document.getElementById('m-tax').value || "",
                 familyData: families
             };
 
-            try {
-                const res = await fetch(API_URL, { 
-                    method: 'POST', 
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload) 
-                });
-                const result = await res.json();
-                if (result.status === "success") {
-                    alert("🎉 註冊成功！");
-                    window.location.href = 'booking.html';
-                } else {
-                    throw new Error(result.message);
-                }
-            } catch (err) {
-                errDiv.innerText = "連線失敗：" + err.message;
-                errDiv.style.display = 'block';
-                btn.disabled = false; btn.innerText = "完成註冊並綁定 LINE";
-                window.scrollTo(0, 0);
+            const res = await fetch(API_URL, { method: 'POST', body: JSON.stringify(payload) });
+            const result = await res.json();
+            if (result.status === "success") {
+                alert("🎉 歡迎加入！註冊已完成。");
+                window.location.href = 'booking.html';
+            } else {
+                alert("註冊失敗");
+                btn.disabled = false;
             }
         };
+
+        window.onload = initLIFF;
     </script>
 </body>
 </html>
