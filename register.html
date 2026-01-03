@@ -17,7 +17,6 @@
             --text-main: #333333;
             --text-sub: #8E8E8E;
             --border-color: #EBEBEB;
-            --marker-blue: #2563eb;
         }
 
         body { 
@@ -32,7 +31,7 @@
 
         .page-wrapper {
             width: 100%;
-            max-width: 640px;
+            max-width: 640px; 
             background: #FFFFFF;
             min-height: 100vh;
             padding: 40px 24px;
@@ -43,7 +42,6 @@
         .title { font-size: 24px; font-weight: 500; color: #111; margin-bottom: 8px; }
         .subtitle { font-size: 15px; color: var(--text-sub); margin-bottom: 35px; }
 
-        /* 身分卡片：LINE OA 風格 */
         .id-option {
             border: 1px solid var(--border-color);
             border-radius: 12px;
@@ -60,41 +58,37 @@
         .id-option.active .check-icon { color: var(--line-green); opacity: 1; }
         .check-icon { opacity: 0; transition: 0.2s; font-size: 20px; }
 
-        /* 表單元素：高度提高、字體放大、不加粗 */
         label { display: flex; align-items: center; font-size: 16px; color: #444; margin-bottom: 10px; font-weight: 400; }
         input, select, textarea { width: 100%; background: #F8F9FA; border: 1px solid #E9EEF2; border-radius: 10px; padding: 14px 16px; font-size: 16px; outline: none; margin-bottom: 20px; transition: border-color 0.2s; font-weight: 400; }
         input:focus { border-color: var(--line-green); background: white; }
 
         .btn-main { background-color: var(--line-green); color: white; width: 100%; padding: 16px; border-radius: 12px; font-size: 17px; font-weight: 500; border: none; cursor: pointer; margin-top: 20px; }
-        .btn-main:disabled { background: #E0E0E0; cursor: not-allowed; opacity: 0.6; }
+        .btn-main:disabled { background: #E0E0E0; cursor: not-allowed; }
 
+        .loading-screen { position: fixed; inset: 0; background: white; z-index: 1000; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+        .error-msg { background: #FFF5F5; border: 1px solid #FED7D7; color: #C53030; padding: 20px; border-radius: 12px; font-size: 14px; margin-bottom: 20px; display: none; line-height: 1.6; }
+        
         .family-box { background: #FAFBFC; padding: 25px; border-radius: 12px; border: 1px solid #F0F0F0; margin-bottom: 20px; }
         .grade-badge { background: #EBF5FF; color: #0066CC; padding: 4px 10px; border-radius: 6px; font-size: 13px; font-weight: 500; display: inline-block; margin-top: -10px; margin-bottom: 20px; }
-
-        .loading-screen { position: fixed; inset: 0; background: white; z-index: 100; display: flex; flex-direction: column; align-items: center; justify-content: center; }
-        .error-msg { background: #FFF5F5; border: 1px solid #FED7D7; color: #C53030; padding: 15px; border-radius: 10px; font-size: 14px; margin-bottom: 20px; display: none; }
-        
-        .back-btn { color: var(--text-sub); font-size: 14px; margin-bottom: 20px; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; }
     </style>
 </head>
 <body>
 
-    <!-- 登入載入中 -->
     <div id="loading" class="loading-screen">
         <div class="animate-spin rounded-full h-10 w-10 border-b-2 border-[#06C755] mb-4"></div>
-        <p class="text-gray-400 text-sm">LINE Login 安全登入中...</p>
+        <p id="loading-text" class="text-gray-400 text-sm">LINE Login 安全登入中...</p>
+        <button id="manual-login-btn" onclick="liff.login()" class="hidden mt-4 text-[#06C755] font-medium border border-[#06C755] px-4 py-2 rounded-lg">手動重新登入</button>
     </div>
 
     <div class="page-wrapper">
         <div id="error-display" class="error-msg"></div>
 
-        <!-- 步驟 1: 選擇身分 -->
         <div id="step-1" class="hidden">
             <div class="flex items-center gap-3 mb-10">
-                <img id="user-img" src="" class="w-12 h-12 rounded-full border shadow-sm" onerror="this.src='https://via.placeholder.com/100'">
+                <img id="user-img" src="https://placehold.co/100x100/eeeeee/999999?text=User" class="w-12 h-12 rounded-full border shadow-sm" onerror="this.src='https://placehold.co/100x100/eeeeee/999999?text=Error'">
                 <div>
                     <div class="text-sm text-gray-400 font-normal">您好，<span id="user-name">LINE 用戶</span></div>
-                    <div class="text-lg font-medium text-gray-800 tracking-tight">歡迎加入 ActivityLink</div>
+                    <div class="text-lg font-medium text-gray-800">歡迎加入 ActivityLink</div>
                 </div>
             </div>
             
@@ -102,72 +96,28 @@
             <p class="subtitle">請選擇您最常使用的報名身分：</p>
             
             <div onclick="selectId('Individual')" id="id-Individual" class="id-option">
-                <div class="flex-1">
-                    <div class="text-[17px] font-medium">個人註冊</div>
-                    <div class="text-[13px] text-gray-400 mt-1">適合成人參與、大專生或學生本人</div>
-                </div>
+                <div class="flex-1 font-medium">個人註冊</div>
                 <i class="fas fa-check-circle check-icon"></i>
             </div>
-
             <div onclick="selectId('Parent')" id="id-Parent" class="id-option">
-                <div class="flex-1">
-                    <div class="text-[17px] font-medium">家長註冊</div>
-                    <div class="text-[13px] text-gray-400 mt-1">可新增、管理家中小朋友個資並代為報名</div>
-                </div>
+                <div class="flex-1 font-medium">家長註冊</div>
                 <i class="fas fa-check-circle check-icon"></i>
             </div>
-
             <div onclick="selectId('Organization')" id="id-Organization" class="id-option">
-                <div class="flex-1">
-                    <div class="text-[17px] font-medium">機關團體單位</div>
-                    <div class="text-[13px] text-gray-400 mt-1">代表學校、協會、政府機關或企業</div>
-                </div>
+                <div class="flex-1 font-medium">機關團體單位</div>
                 <i class="fas fa-check-circle check-icon"></i>
             </div>
 
-            <button onclick="goStep(2)" id="next-btn" class="btn-main" disabled>繼續下一步</button>
+            <button onclick="goStep(2)" id="next-btn" class="btn-main" disabled style="opacity: 0.6;">繼續下一步</button>
         </div>
 
-        <!-- 步驟 2: 詳細資料填寫 -->
         <div id="step-2" class="hidden">
-            <div onclick="goStep(1)" class="back-btn"><i class="fas fa-arrow-left"></i> 返回修改身分</div>
             <h2 class="title">完善個資檔案</h2>
-            <p class="subtitle">資訊將用於報名保險與活動聯絡，請務必正確。</p>
-
+            <p class="subtitle">資訊將用於報名保險與聯繫，請務必正確。</p>
             <form id="reg-form">
-                <label>真實姓名 *</label>
-                <input type="text" id="m-name" required placeholder="您的真實姓名">
-
-                <label>聯絡電話 *</label>
-                <input type="tel" id="m-phone" required placeholder="09XX-XXX-XXX">
-
-                <label>出生日期 *</label>
-                <input type="date" id="m-birth" required onchange="handleMainBirth()">
-
-                <!-- 學生動態顯示區 -->
-                <div id="student-section" class="hidden">
-                    <div id="m-grade-badge" class="grade-badge">年級預估：偵測中...</div>
-                    <label>就讀學校</label>
-                    <input type="text" id="m-school" placeholder="例如：某某國小">
-                </div>
-
-                <!-- 機關動態顯示區 -->
-                <div id="org-section" class="hidden">
-                    <label>機關名稱 (全銜)</label>
-                    <input type="text" id="m-org" placeholder="例如：某某自強協會">
-                    <label>統一編號 (報帳用)</label>
-                    <input type="text" id="m-tax" placeholder="8 位數字統編">
-                </div>
-
-                <!-- 家長專區: 動態管理小孩/家人 -->
-                <div id="parent-section" class="hidden mt-8">
-                    <div class="flex justify-between items-center mb-6 border-b pb-4">
-                        <span class="text-lg font-medium">家人資料 (報名學員)</span>
-                        <button type="button" onclick="addFamilyRow()" class="text-sm text-green-600 border border-green-600 px-3 py-1 rounded-full">+ 新增成員</button>
-                    </div>
-                    <div id="family-list"></div>
-                </div>
-
+                <label>真實姓名 *</label><input type="text" id="m-name" required>
+                <label>聯絡電話 *</label><input type="tel" id="m-phone" required>
+                <label>出生日期 *</label><input type="date" id="m-birth" required>
                 <button type="submit" id="submit-btn" class="btn-main">確認註冊並完成綁定</button>
             </form>
         </div>
@@ -176,59 +126,54 @@
     <script>
         const API_URL = 'https://aged-rice-2438.wetw-net3.workers.dev/';
         const LIFF_ID = '2008786875-F7ifLsbN';
-        let lineProfile = {}, selectedIdentity = '', familyCount = 0;
+        let lineProfile = {}, selectedIdentity = '';
 
-        // 實作指數退避重試
-        async function fetchWithRetry(url, options = {}, retries = 5, backoff = 1000) {
-            try {
-                const response = await fetch(url, options);
-                if (!response.ok) throw new Error(`HTTP ${response.status}`);
-                return await response.json();
-            } catch (err) {
-                if (retries > 0) {
-                    await new Promise(r => setTimeout(r, backoff));
-                    return fetchWithRetry(url, options, retries - 1, backoff * 2);
-                }
-                throw err;
-            }
-        }
-
-        // 初始化 LIFF
         async function initLIFF() {
+            const loading = document.getElementById('loading');
+            const errorDisplay = document.getElementById('error-display');
+            const manualBtn = document.getElementById('manual-login-btn');
+
             try {
+                console.log("LIFF 啟動中...");
                 await liff.init({ liffId: LIFF_ID });
+                
                 if (!liff.isLoggedIn()) {
-                    liff.login();
+                    console.log("未登入，導向 LINE 登入頁面...");
+                    // 在外部瀏覽器打開時執行登入
+                    liff.login({ redirectUri: window.location.href });
+                    // 顯示手動按鈕以防自動跳轉失敗
+                    manualBtn.classList.remove('hidden');
                 } else {
+                    console.log("已登入，取得個人資料...");
                     const profile = await liff.getProfile();
                     lineProfile = profile;
                     document.getElementById('user-name').innerText = profile.displayName;
                     document.getElementById('user-img').src = profile.pictureUrl;
                     
-                    // 檢查資料庫是否有此用戶
                     await checkUserExists(profile.userId);
                 }
             } catch (err) {
-                console.error('LIFF Init Error', err);
-                document.getElementById('error-display').innerText = "LINE 登入連線失敗，請嘗試於 LINE App 內開啟。";
-                document.getElementById('error-display').style.display = 'block';
-                document.getElementById('loading').style.display = 'none';
+                console.error("LIFF 初始化錯誤:", err);
+                loading.style.display = 'none';
+                errorDisplay.innerHTML = `<strong>登入過程發生異常</strong><br>請確認是否於 LINE 環境開啟，或檢查 LIFF ID 設定。<br><small>${err.message}</small>`;
+                errorDisplay.style.display = 'block';
             }
         }
 
         async function checkUserExists(uid) {
             try {
-                const result = await fetchWithRetry(`${API_URL}?type=member_check&lineUserId=${uid}`);
-                document.getElementById('loading').style.display = 'none';
+                const res = await fetch(`${API_URL}?type=member_check&lineUserId=${uid}`);
+                if (!res.ok) throw new Error("後端連線異常");
+                const result = await res.json();
                 
+                document.getElementById('loading').style.display = 'none';
                 if (result.status === "exists") {
-                    // 已註冊，直接去報名頁
-                    window.location.href = 'booking.html';
+                    window.location.href = 'index.html';
                 } else {
-                    // 未註冊，顯示註冊第一步
                     document.getElementById('step-1').classList.remove('hidden');
                 }
             } catch (e) {
+                console.error("API 錯誤:", e);
                 document.getElementById('loading').style.display = 'none';
                 document.getElementById('error-display').innerText = "連線伺服器失敗，請稍後再試。";
                 document.getElementById('error-display').style.display = 'block';
@@ -240,111 +185,13 @@
             document.querySelectorAll('.id-option').forEach(el => el.classList.remove('active'));
             document.getElementById('id-' + id).classList.add('active');
             const btn = document.getElementById('next-btn');
-            btn.disabled = false;
-            btn.style.opacity = '1';
-            btn.style.background = 'var(--line-green)';
+            btn.disabled = false; btn.style.opacity = '1';
         }
 
         function goStep(n) {
-            document.getElementById('step-1').classList.toggle('hidden', n !== 1);
-            document.getElementById('step-2').classList.toggle('hidden', n !== 2);
-            if (n === 2) {
-                document.getElementById('parent-section').classList.toggle('hidden', selectedIdentity !== 'Parent');
-                document.getElementById('org-info').classList.toggle('hidden', selectedIdentity !== 'Organization');
-            }
+            document.getElementById('step-1').classList.add('hidden');
+            document.getElementById('step-2').classList.remove('hidden');
         }
-
-        // 台灣學制年級計算
-        function calculateTaiwanGrade(birth) {
-            if (!birth) return "";
-            const bDate = new Date(birth);
-            let entryYear = bDate.getFullYear() + 6;
-            if (bDate.getMonth() + 1 > 9 || (bDate.getMonth() + 1 === 9 && bDate.getDate() >= 2)) entryYear++;
-            const now = new Date();
-            const academicYear = (now.getMonth() + 1 >= 9) ? now.getFullYear() : now.getFullYear() - 1;
-            const g = academicYear - entryYear + 1;
-            if (g <= 0) return "學齡前";
-            if (g <= 6) return `國小 ${g} 年級`;
-            if (g <= 9) return `國中 ${g-6} 年級`;
-            if (g <= 12) return `高中 ${g-9} 年級`;
-            return "大專/成人";
-        }
-
-        function handleMainBirth() {
-            const birth = document.getElementById('m-birth').value;
-            const age = new Date().getFullYear() - new Date(birth).getFullYear();
-            const section = document.getElementById('student-info');
-            if (selectedIdentity === 'Individual' && age < 25) {
-                section.classList.remove('hidden');
-                document.getElementById('m-grade-badge').innerText = "年級預估：" + calculateTaiwanGrade(birth);
-            } else {
-                section.classList.add('hidden');
-            }
-        }
-
-        function addFamilyRow() {
-            familyCount++;
-            const div = document.createElement('div');
-            div.className = 'family-box';
-            div.innerHTML = `
-                <div class="flex justify-between mb-4 border-b border-gray-50 pb-2 text-sm text-gray-400">
-                    <span>成員 ${familyCount}</span>
-                    <button type="button" onclick="this.parentElement.parentElement.remove()" class="text-red-400">移除</button>
-                </div>
-                <label>姓名</label><input type="text" class="f-name" required placeholder="真實姓名">
-                <div class="grid grid-cols-2 gap-4">
-                    <div><label>性別</label><select class="f-gender"><option value="男">男</option><option value="女">女</option></select></div>
-                    <div><label>生日</label><input type="date" class="f-birth" required onchange="const g=calculateTaiwanGrade(this.value); this.parentElement.nextElementSibling.innerText='年級預估：'+g;"></div>
-                </div>
-                <div class="grade-badge">年級預估：-</div>
-                <label>就讀學校</label><input type="text" class="f-school" placeholder="學校全銜">
-            `;
-            document.getElementById('family-list').appendChild(div);
-        }
-
-        document.getElementById('reg-form').onsubmit = async (e) => {
-            e.preventDefault();
-            const btn = document.getElementById('submit-btn');
-            btn.disabled = true; btn.innerText = "資料儲存中...";
-
-            const families = Array.from(document.querySelectorAll('.family-box')).map(box => ({
-                name: box.querySelector('.f-name').value,
-                gender: box.querySelector('.f-gender').value,
-                birth: box.querySelector('.f-birth').value,
-                school: box.querySelector('.f-school').value,
-                grade: calculateTaiwanGrade(box.querySelector('.f-birth').value)
-            }));
-
-            const payload = {
-                type: 'member_register',
-                lineUserId: lineProfile.userId,
-                identityType: selectedIdentity,
-                name: document.getElementById('m-name').value,
-                phone: document.getElementById('m-phone').value,
-                birthDate: document.getElementById('m-birth').value,
-                schoolName: document.getElementById('m-school').value || "",
-                currentGrade: calculateTaiwanGrade(document.getElementById('m-birth').value),
-                orgName: document.getElementById('m-org').value || "",
-                taxId: document.getElementById('m-tax').value || "",
-                familyData: families
-            };
-
-            try {
-                const result = await fetchWithRetry(API_URL, { 
-                    method: 'POST', 
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload) 
-                });
-                if (result.status === "success") {
-                    alert("🎉 註冊成功！");
-                    window.location.href = 'booking.html';
-                }
-            } catch (err) {
-                alert("儲存失敗：" + err.message);
-                btn.disabled = false;
-                btn.innerText = "確認註冊並完成綁定";
-            }
-        };
 
         window.onload = initLIFF;
     </script>
