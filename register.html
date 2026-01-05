@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>會員註冊</title>
+  <title>會員中心</title>
 
   <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
   <script src="https://cdn.tailwindcss.com"></script>
@@ -21,67 +21,99 @@
       width:100%; padding:18px;
       border-radius:16px; font-weight:900;
     }
+    .btn-edit {
+      background:#EBF5FF; color:#0066CC;
+      padding:10px 24px; border-radius:12px; font-weight:700; font-size:14px;
+    }
     /* 載入中遮罩 */
     #loading {
-      position: fixed; inset: 0; background: rgba(255,255,255,0.8);
-      display: flex; align-items: center; justify-content: center; z-index: 50;
+      position: fixed; inset: 0; background: white;
+      display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 100;
     }
   </style>
 </head>
 
 <body class="flex justify-center">
 
-<div id="loading"><p class="font-bold text-gray-400">讀取會員資料中...</p></div>
+<!-- 載入中遮罩 -->
+<div id="loading">
+  <div class="animate-spin rounded-full h-10 w-10 border-b-2 border-green-500 mb-4"></div>
+  <p class="font-bold text-gray-400 text-sm">正在核對會員身分...</p>
+</div>
 
 <div class="w-full max-w-[640px] bg-white min-h-screen p-6">
 
-  <h2 class="text-xl font-black mb-6">會員個人檔案管理</h2>
+  <!-- 狀態 A：已註冊（精簡顯示） -->
+  <div id="view-exists" class="hidden">
+    <h2 class="text-xl font-black mb-2">您好，歡迎回來</h2>
+    <p class="text-gray-400 text-sm mb-10 font-bold">您已完成會員註冊，可點擊下方進行資料更新</p>
+    
+    <div class="flex items-center justify-between p-6 bg-gray-50 rounded-2xl border border-gray-100 mb-8">
+      <div class="flex items-center gap-4">
+        <div class="w-12 h-12 bg-green-100 text-green-600 rounded-full flex items-center justify-center">
+          <i class="fas fa-user text-xl"></i>
+        </div>
+        <div>
+          <div class="text-xs text-gray-400 font-bold">目前登入會員</div>
+          <div id="summary-name" class="font-black text-gray-800 text-lg">載入中...</div>
+        </div>
+      </div>
+      <button onclick="showEditForm()" class="btn-edit active:scale-95 transition-transform">編輯資料</button>
+    </div>
+  </div>
 
-  <form id="reg-form">
+  <!-- 狀態 B：未註冊或編輯中 -->
+  <div id="view-form" class="hidden">
+    <div class="flex items-center gap-3 mb-6">
+       <h2 id="form-title" class="text-xl font-black">會員個人檔案管理</h2>
+    </div>
 
-    <label>姓名</label>
-    <input id="m-name">
+    <form id="reg-form">
+      <label>姓名</label>
+      <input id="m-name" placeholder="請輸入真實姓名" required>
 
-    <label>聯絡電話</label>
-    <input id="m-phone">
+      <label>聯絡電話</label>
+      <input id="m-phone" placeholder="0912345678" required>
 
-    <label>性別</label>
-    <select id="m-gender">
-      <option value="">未填</option>
-      <option value="男">男</option>
-      <option value="女">女</option>
-    </select>
+      <label>性別</label>
+      <select id="m-gender">
+        <option value="">請選擇</option>
+        <option value="男">男</option>
+        <option value="女">女</option>
+      </select>
 
-    <label>出生日期</label>
-    <input type="date" id="m-birth">
+      <label>出生日期</label>
+      <input type="date" id="m-birth">
 
-    <label>就讀學校</label>
-    <input id="m-school">
+      <label>就讀學校 (非學生請填 0)</label>
+      <input id="m-school" placeholder="範例：中山國小">
 
-    <hr class="my-6">
+      <hr class="my-6">
 
-    <label>機關名稱</label>
-    <input id="o-name">
+      <label>機關名稱 (無則填 0)</label>
+      <input id="o-name">
 
-    <label>統一編號</label>
-    <input id="o-tax">
+      <label>統一編號 (無則填 0)</label>
+      <input id="o-tax">
 
-    <button class="btn-main mt-8" id="submit-btn">儲存變更</button>
-
-  </form>
+      <button type="submit" class="btn-main mt-8" id="submit-btn">確認儲存</button>
+      <button type="button" id="cancel-btn" onclick="checkStatus()" class="w-full text-gray-400 text-sm font-bold mt-4 hidden">取消返回</button>
+    </form>
+  </div>
 </div>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
 <script>
 /* ========= 基本設定 ========= */
 const API_URL = 'https://aged-rice-2438.wetw-net3.workers.dev/';
 const LIFF_ID = '2008786875-F7ifLsbN';
 let lineUser = {};
+let isRegistered = false;
 
-/* ========= 工具：處理 0 或空值 ========= */
+/* ========= 工具 ========= */
 function v0(v) {
   return v && v.toString().trim() !== '' ? v.toString().trim() : '0';
 }
-// 讀取時，如果是 '0' 則顯示空字串
 function f0(v) {
   return (v === '0' || !v) ? '' : v;
 }
@@ -100,7 +132,51 @@ function getTaiwanGrade(birth) {
   return '社會人士';
 }
 
-/* ========= 送出資料 ========= */
+/* ========= 介面控制 ========= */
+function showEditForm() {
+  document.getElementById('view-exists').classList.add('hidden');
+  document.getElementById('view-form').classList.remove('hidden');
+  document.getElementById('form-title').innerText = "編輯您的會員資料";
+  document.getElementById('cancel-btn').classList.remove('hidden');
+}
+
+async function checkStatus() {
+  document.getElementById('loading').style.display = 'flex';
+  try {
+    const res = await fetch(`${API_URL}?type=member_check&lineUserId=${lineUser.userId}&_t=${Date.now()}`);
+    const result = await res.json();
+
+    if (result.status === "exists") {
+      isRegistered = true;
+      const u = result.data;
+      document.getElementById('summary-name').innerText = f0(u.name);
+      
+      // 填入表單
+      document.getElementById('m-name').value = f0(u.name);
+      document.getElementById('m-phone').value = f0(u.phone);
+      document.getElementById('m-gender').value = f0(u.gender);
+      document.getElementById('m-school').value = f0(u.school);
+      document.getElementById('o-name').value = f0(u.orgName);
+      document.getElementById('o-tax').value = f0(u.taxId);
+      if(u.birthDate) document.getElementById('m-birth').value = u.birthDate.split('T')[0];
+
+      document.getElementById('view-exists').classList.remove('hidden');
+      document.getElementById('view-form').classList.add('hidden');
+    } else {
+      isRegistered = false;
+      document.getElementById('view-exists').classList.add('hidden');
+      document.getElementById('view-form').classList.remove('hidden');
+      document.getElementById('form-title').innerText = "歡迎首次註冊中心會員";
+      document.getElementById('cancel-btn').classList.add('hidden');
+    }
+  } catch (e) {
+    console.error(e);
+  } finally {
+    document.getElementById('loading').style.display = 'none';
+  }
+}
+
+/* ========= 送出 ========= */
 document.getElementById('reg-form').addEventListener('submit', async function (e) {
   e.preventDefault();
   const btn = document.getElementById('submit-btn');
@@ -127,49 +203,25 @@ document.getElementById('reg-form').addEventListener('submit', async function (e
       body: JSON.stringify(payload)
     });
     const result = await res.json();
-    alert('✅ 資料已成功同步');
+    alert('✅ 資料已成功同步至中心');
+    checkStatus(); // 儲存後重新整理身分狀態
   } catch (err) {
-    console.error(err);
     alert('❌ 送出失敗');
   } finally {
     btn.disabled = false;
-    btn.innerText = '儲存變更';
+    btn.innerText = '確認儲存';
   }
 });
 
-/* ========= LIFF 初始化與自動讀取資料 ========= */
+/* ========= 初始化 ========= */
 (async () => {
-  try {
-    await liff.init({ liffId: LIFF_ID });
-    if (!liff.isLoggedIn()) {
-      liff.login();
-      return;
-    }
-    lineUser = await liff.getProfile();
-
-    // 🔑 關鍵：向 API 請求現有資料
-    const res = await fetch(`${API_URL}?type=member_check&lineUserId=${lineUser.userId}&_t=${Date.now()}`);
-    const result = await res.json();
-
-    if (result.status === "exists") {
-      const u = result.data;
-      // 將後台傳回的英文 Key 對應到前端欄位 (參考 code.gs mapHeaderToKey)
-      document.getElementById('m-name').value = f0(u.name);
-      document.getElementById('m-phone').value = f0(u.phone);
-      document.getElementById('m-gender').value = f0(u.gender);
-      document.getElementById('m-school').value = f0(u.school);
-      document.getElementById('o-name').value = f0(u.orgName);
-      document.getElementById('o-tax').value = f0(u.taxId);
-      
-      if(u.birthDate) {
-        document.getElementById('m-birth').value = u.birthDate.split('T')[0];
-      }
-    }
-  } catch (err) {
-    console.error("LIFF/Data Fetch Error:", err);
-  } finally {
-    document.getElementById('loading').style.display = 'none';
+  await liff.init({ liffId: LIFF_ID });
+  if (!liff.isLoggedIn()) {
+    liff.login();
+    return;
   }
+  lineUser = await liff.getProfile();
+  checkStatus();
 })();
 </script>
 
