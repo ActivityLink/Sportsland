@@ -21,10 +21,17 @@
       width:100%; padding:18px;
       border-radius:16px; font-weight:900;
     }
+    /* 載入中遮罩 */
+    #loading {
+      position: fixed; inset: 0; background: rgba(255,255,255,0.8);
+      display: flex; align-items: center; justify-content: center; z-index: 50;
+    }
   </style>
 </head>
 
 <body class="flex justify-center">
+
+<div id="loading"><p class="font-bold text-gray-400">讀取會員資料中...</p></div>
 
 <div class="w-full max-w-[640px] bg-white min-h-screen p-6">
 
@@ -59,7 +66,7 @@
     <label>統一編號</label>
     <input id="o-tax">
 
-    <button class="btn-main mt-8">儲存</button>
+    <button class="btn-main mt-8" id="submit-btn">儲存變更</button>
 
   </form>
 </div>
@@ -70,9 +77,13 @@ const API_URL = 'https://aged-rice-2438.wetw-net3.workers.dev/';
 const LIFF_ID = '2008786875-F7ifLsbN';
 let lineUser = {};
 
-/* ========= 工具 ========= */
+/* ========= 工具：處理 0 或空值 ========= */
 function v0(v) {
   return v && v.toString().trim() !== '' ? v.toString().trim() : '0';
+}
+// 讀取時，如果是 '0' 則顯示空字串
+function f0(v) {
+  return (v === '0' || !v) ? '' : v;
 }
 
 function getTaiwanGrade(birth) {
@@ -89,34 +100,25 @@ function getTaiwanGrade(birth) {
   return '社會人士';
 }
 
-/* ========= 送出 ========= */
+/* ========= 送出資料 ========= */
 document.getElementById('reg-form').addEventListener('submit', async function (e) {
   e.preventDefault();
-
-  /* 🔑 全部先抓成區域變數（這一步最重要） */
-  const name   = document.getElementById('m-name').value;
-  const phone  = document.getElementById('m-phone').value;
-  const gender = document.getElementById('m-gender').value;
-  const birth  = document.getElementById('m-birth').value;
-  const school = document.getElementById('m-school').value;
-  const org    = document.getElementById('o-name').value;
-  const tax    = document.getElementById('o-tax').value;
+  const btn = document.getElementById('submit-btn');
+  btn.disabled = true;
+  btn.innerText = '儲存中...';
 
   const payload = {
     type: 'member_register',
     lineUserId: lineUser.userId || '0',
-
-    姓名: v0(name),
-    聯絡電話: v0(phone),
-    性別: v0(gender),
-    出生日期: v0(birth),
-    就讀學校: v0(school),
-    目前年級: getTaiwanGrade(birth),
-    機關名稱: v0(org),
-    統一編號: v0(tax)
+    姓名: v0(document.getElementById('m-name').value),
+    聯絡電話: v0(document.getElementById('m-phone').value),
+    性別: v0(document.getElementById('m-gender').value),
+    出生日期: v0(document.getElementById('m-birth').value),
+    就讀學校: v0(document.getElementById('m-school').value),
+    目前年級: getTaiwanGrade(document.getElementById('m-birth').value),
+    機關名稱: v0(document.getElementById('o-name').value),
+    統一編號: v0(document.getElementById('o-tax').value)
   };
-
-  console.log('payload', payload);
 
   try {
     const res = await fetch(API_URL, {
@@ -124,25 +126,50 @@ document.getElementById('reg-form').addEventListener('submit', async function (e
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload)
     });
-
     const result = await res.json();
-    console.log(result);
-    alert('✅ 已送出');
-
+    alert('✅ 資料已成功同步');
   } catch (err) {
     console.error(err);
     alert('❌ 送出失敗');
+  } finally {
+    btn.disabled = false;
+    btn.innerText = '儲存變更';
   }
 });
 
-/* ========= LIFF ========= */
+/* ========= LIFF 初始化與自動讀取資料 ========= */
 (async () => {
-  await liff.init({ liffId: LIFF_ID });
-  if (!liff.isLoggedIn()) {
-    liff.login();
-    return;
+  try {
+    await liff.init({ liffId: LIFF_ID });
+    if (!liff.isLoggedIn()) {
+      liff.login();
+      return;
+    }
+    lineUser = await liff.getProfile();
+
+    // 🔑 關鍵：向 API 請求現有資料
+    const res = await fetch(`${API_URL}?type=member_check&lineUserId=${lineUser.userId}&_t=${Date.now()}`);
+    const result = await res.json();
+
+    if (result.status === "exists") {
+      const u = result.data;
+      // 將後台傳回的英文 Key 對應到前端欄位 (參考 code.gs mapHeaderToKey)
+      document.getElementById('m-name').value = f0(u.name);
+      document.getElementById('m-phone').value = f0(u.phone);
+      document.getElementById('m-gender').value = f0(u.gender);
+      document.getElementById('m-school').value = f0(u.school);
+      document.getElementById('o-name').value = f0(u.orgName);
+      document.getElementById('o-tax').value = f0(u.taxId);
+      
+      if(u.birthDate) {
+        document.getElementById('m-birth').value = u.birthDate.split('T')[0];
+      }
+    }
+  } catch (err) {
+    console.error("LIFF/Data Fetch Error:", err);
+  } finally {
+    document.getElementById('loading').style.display = 'none';
   }
-  lineUser = await liff.getProfile();
 })();
 </script>
 
