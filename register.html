@@ -30,6 +30,11 @@
       position: fixed; inset: 0; background: white;
       display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 100;
     }
+    .line-profile-badge {
+      display: flex; align-items: center; gap: 10px; background: #FFFFFF;
+      padding: 10px 16px; border-radius: 50px; border: 1px solid #E2E8F0;
+      margin-bottom: 24px;
+    }
   </style>
 </head>
 
@@ -43,19 +48,34 @@
 
 <div class="w-full max-w-[640px] bg-white min-h-screen p-6">
 
-  <!-- 狀態 A：已註冊（精簡顯示） -->
+  <!-- 1. LINE 登入狀態顯示 (不論註冊與否都會顯示) -->
+  <div id="line-status" class="hidden">
+    <div class="line-profile-badge shadow-sm">
+      <img id="line-avatar" src="" class="w-8 h-8 rounded-full border border-green-200">
+      <div class="flex flex-col">
+        <span class="text-[10px] text-gray-400 font-bold leading-none">已透過 LINE 登入</span>
+        <span id="line-name" class="text-xs font-black text-gray-700">載入中...</span>
+      </div>
+      <div class="ml-auto flex items-center gap-1 text-[10px] text-green-500 font-bold">
+        <div class="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse"></div>
+        連線中
+      </div>
+    </div>
+  </div>
+
+  <!-- 狀態 A：已註冊過（精簡顯示） -->
   <div id="view-exists" class="hidden">
     <h2 class="text-xl font-black mb-2">您好，歡迎回來</h2>
-    <p class="text-gray-400 text-sm mb-10 font-bold">您已完成會員註冊，可點擊下方進行資料更新</p>
+    <p class="text-gray-400 text-sm mb-10 font-bold">您已完成中心會員註冊，可點擊編輯更新資料</p>
     
     <div class="flex items-center justify-between p-6 bg-gray-50 rounded-2xl border border-gray-100 mb-8">
       <div class="flex items-center gap-4">
-        <div class="w-12 h-12 bg-green-100 text-green-600 rounded-full flex items-center justify-center">
-          <i class="fas fa-user text-xl"></i>
+        <div class="w-12 h-12 bg-green-500 text-white rounded-full flex items-center justify-center shadow-md shadow-green-100">
+          <i class="fas fa-id-card text-xl"></i>
         </div>
         <div>
-          <div class="text-xs text-gray-400 font-bold">目前登入會員</div>
-          <div id="summary-name" class="font-black text-gray-800 text-lg">載入中...</div>
+          <div class="text-xs text-gray-400 font-bold">中心註冊姓名</div>
+          <div id="summary-name" class="font-black text-gray-800 text-lg">---</div>
         </div>
       </div>
       <button onclick="showEditForm()" class="btn-edit active:scale-95 transition-transform">編輯資料</button>
@@ -108,7 +128,6 @@
 const API_URL = 'https://aged-rice-2438.wetw-net3.workers.dev/';
 const LIFF_ID = '2008786875-F7ifLsbN';
 let lineUser = {};
-let isRegistered = false;
 
 /* ========= 工具 ========= */
 function v0(v) {
@@ -143,15 +162,15 @@ function showEditForm() {
 async function checkStatus() {
   document.getElementById('loading').style.display = 'flex';
   try {
+    // 呼叫 API 檢查註冊狀態
     const res = await fetch(`${API_URL}?type=member_check&lineUserId=${lineUser.userId}&_t=${Date.now()}`);
     const result = await res.json();
 
     if (result.status === "exists") {
-      isRegistered = true;
       const u = result.data;
       document.getElementById('summary-name').innerText = f0(u.name);
       
-      // 填入表單
+      // 預填表單
       document.getElementById('m-name').value = f0(u.name);
       document.getElementById('m-phone').value = f0(u.phone);
       document.getElementById('m-gender').value = f0(u.gender);
@@ -163,7 +182,7 @@ async function checkStatus() {
       document.getElementById('view-exists').classList.remove('hidden');
       document.getElementById('view-form').classList.add('hidden');
     } else {
-      isRegistered = false;
+      // 未註冊則直接顯示表單
       document.getElementById('view-exists').classList.add('hidden');
       document.getElementById('view-form').classList.remove('hidden');
       document.getElementById('form-title').innerText = "歡迎首次註冊中心會員";
@@ -176,12 +195,12 @@ async function checkStatus() {
   }
 }
 
-/* ========= 送出 ========= */
+/* ========= 送出資料 ========= */
 document.getElementById('reg-form').addEventListener('submit', async function (e) {
   e.preventDefault();
   const btn = document.getElementById('submit-btn');
   btn.disabled = true;
-  btn.innerText = '儲存中...';
+  btn.innerText = '正在處理同步...';
 
   const payload = {
     type: 'member_register',
@@ -203,8 +222,8 @@ document.getElementById('reg-form').addEventListener('submit', async function (e
       body: JSON.stringify(payload)
     });
     const result = await res.json();
-    alert('✅ 資料已成功同步至中心');
-    checkStatus(); // 儲存後重新整理身分狀態
+    alert('✅ 會員資料已同步成功');
+    checkStatus(); 
   } catch (err) {
     alert('❌ 送出失敗');
   } finally {
@@ -215,13 +234,23 @@ document.getElementById('reg-form').addEventListener('submit', async function (e
 
 /* ========= 初始化 ========= */
 (async () => {
-  await liff.init({ liffId: LIFF_ID });
-  if (!liff.isLoggedIn()) {
-    liff.login();
-    return;
+  try {
+    await liff.init({ liffId: LIFF_ID });
+    if (!liff.isLoggedIn()) {
+      liff.login();
+      return;
+    }
+    lineUser = await liff.getProfile();
+
+    // 🔑 顯示登入者的 LINE 資訊 (LOGO 與名稱)
+    document.getElementById('line-avatar').src = lineUser.pictureUrl || 'https://cdn-icons-png.flaticon.com/512/3135/3135715.png';
+    document.getElementById('line-name').innerText = lineUser.displayName;
+    document.getElementById('line-status').classList.remove('hidden');
+
+    checkStatus();
+  } catch (err) {
+    console.error("LIFF Init Error:", err);
   }
-  lineUser = await liff.getProfile();
-  checkStatus();
 })();
 </script>
 
