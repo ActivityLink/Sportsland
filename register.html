@@ -10,39 +10,39 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;700;900&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;800&display=swap');
 
     :root{
       --line:#06C755;
-      --text-1:#111111; /* 主文 */
-      --text-2:#222222; /* 次文 */
-      --text-3:#333333; /* 說明 */
+      --text-1:#111;
+      --text-2:#222;
+      --text-3:#333;
       --bg:#F7F9FB;
-      --card:#FFFFFF;
+      --card:#fff;
       --border:#E2E8F0;
     }
 
-    body { font-family: "Noto Sans TC", sans-serif; background:var(--bg); color:var(--text-1); }
+    body{ font-family:"Noto Sans TC", sans-serif; background:var(--bg); color:var(--text-1); }
 
-    /* ✅ 全站文字加大＋不灰 */
-    .t-title{ font-size:22px; font-weight:900; color:var(--text-1); }
-    .t-sub{ font-size:15px; font-weight:800; color:var(--text-3); }
-    .t-label{ font-size:14px; font-weight:900; color:var(--text-2); letter-spacing:.2px; }
-    .t-meta{ font-size:14px; font-weight:800; color:var(--text-2); }
+    /* ✅ 文字清楚但不會全加粗 */
+    .t-title{ font-size:22px; font-weight:800; color:var(--text-1); }
+    .t-sub{ font-size:15px; font-weight:500; color:var(--text-3); }
+    .t-label{ font-size:14px; font-weight:700; color:var(--text-2); letter-spacing:.2px; }
+    .t-meta{ font-size:14px; font-weight:500; color:var(--text-2); }
 
-    input, select {
+    input, select{
       width:100%;
       padding:16px;
       border-radius:14px;
       border:1.5px solid var(--border);
-      background:#FFFFFF;
-      margin-bottom:14px;
+      background:#fff;
+      margin-bottom:12px;
       font-size:16px;
-      font-weight:700;
+      font-weight:500;
       color:var(--text-1);
       outline:none;
     }
-    input::placeholder{ color:#666; font-weight:700; }
+    input::placeholder{ color:#666; font-weight:400; }
     input:focus, select:focus{ border-color:var(--line); box-shadow:0 0 0 3px rgba(6,199,85,.12); }
 
     .btn-main{
@@ -51,21 +51,21 @@
       width:100%;
       padding:18px;
       border-radius:18px;
-      font-weight:900;
+      font-weight:800;
       font-size:18px;
     }
     .btn-edit{
       background:#EAF2FF;
       color:#1246B7;
-      padding:12px 18px;
+      padding:12px 16px;
       border-radius:14px;
-      font-weight:900;
+      font-weight:700;
       font-size:15px;
       border:1px solid #CFE0FF;
     }
     .btn-mini{
       font-size:14px;
-      font-weight:900;
+      font-weight:700;
       padding:10px 14px;
       border-radius:14px;
       border:1px solid #CFE0FF;
@@ -74,7 +74,7 @@
     }
     .btn-danger{
       font-size:14px;
-      font-weight:900;
+      font-weight:700;
       padding:10px 14px;
       border-radius:14px;
       border:1px solid #FECACA;
@@ -82,40 +82,14 @@
       color:#BE123C;
     }
 
-    /* 載入中遮罩 */
+    /* Loading */
     #loading{
       position:fixed; inset:0; background:white;
       display:flex; flex-direction:column; align-items:center; justify-content:center;
       z-index:100;
     }
 
-    .line-profile-badge{
-      display:flex; align-items:center; gap:12px; background:var(--card);
-      padding:12px 16px; border-radius:999px; border:1px solid var(--border);
-      margin-bottom:18px;
-      box-shadow:0 6px 20px rgba(0,0,0,.05);
-    }
-
-    /* 成員卡 */
-    .member-card{
-      background:var(--card);
-      border:1px solid #E5E7EB;
-      border-radius:20px;
-      padding:18px;
-      display:flex; align-items:center; justify-content:space-between;
-      margin-bottom:12px;
-    }
-    .tag{
-      font-size:12px;
-      font-weight:900;
-      padding:6px 12px;
-      border-radius:999px;
-      background:#EAFBF0;
-      color:#0F7A34;
-      border:1px solid #BBF7D0;
-    }
-
-    /* ✅ 返回列 */
+    /* Topbar Back */
     .topbar{
       position:sticky;
       top:0;
@@ -133,14 +107,44 @@
       border:1px solid var(--border);
       background:#fff;
       color:var(--text-1);
-      font-weight:900;
+      font-weight:700;
       font-size:15px;
+    }
+
+    /* LINE badge */
+    .line-profile-badge{
+      display:flex; align-items:center; gap:12px; background:var(--card);
+      padding:12px 16px; border-radius:999px; border:1px solid var(--border);
+      margin-bottom:16px;
+      box-shadow:0 6px 18px rgba(0,0,0,.05);
+    }
+
+    /* cards */
+    .member-card{
+      background:var(--card);
+      border:1px solid #E5E7EB;
+      border-radius:20px;
+      padding:18px;
+      display:flex; align-items:center; justify-content:space-between;
+      margin-bottom:12px;
+      box-shadow:0 8px 22px rgba(0,0,0,.04);
+    }
+
+    /* ✅ 本人/成員標籤不同色 */
+    .tag-self{
+      font-size:12px; font-weight:700;
+      padding:6px 12px; border-radius:999px;
+      background:#EAFBF0; color:#0F7A34; border:1px solid #BBF7D0;
+    }
+    .tag-member{
+      font-size:12px; font-weight:700;
+      padding:6px 12px; border-radius:999px;
+      background:#EEF2FF; color:#3730A3; border:1px solid #C7D2FE;
     }
   </style>
 </head>
 
 <body class="flex justify-center">
-  <!-- 載入中遮罩 -->
   <div id="loading">
     <div class="animate-spin rounded-full h-10 w-10 border-b-2 border-green-500 mb-4"></div>
     <p class="t-sub">正在核對會員身分...</p>
@@ -148,15 +152,12 @@
 
   <div class="w-full max-w-[640px] bg-white min-h-screen p-6">
 
-    <!-- ✅ 返回列 -->
     <div class="topbar">
       <button class="back-btn" onclick="goBack()">
-        <i class="fas fa-chevron-left"></i>
-        返回
+        <i class="fas fa-chevron-left"></i> 返回
       </button>
     </div>
 
-    <!-- LINE 登入狀態 -->
     <div id="line-status" class="hidden">
       <div class="line-profile-badge">
         <img id="line-avatar" src="" class="w-10 h-10 rounded-full border border-green-200">
@@ -165,8 +166,7 @@
           <span id="line-name" class="t-sub" style="font-size:16px;">載入中...</span>
         </div>
         <div class="ml-auto flex items-center gap-2 t-meta" style="color:#0F7A34;">
-          <div class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-          連線中
+          <div class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div> 連線中
         </div>
       </div>
     </div>
@@ -177,7 +177,7 @@
       <p class="t-sub mb-6">已註冊者將顯示所有成員列表，可編輯更新</p>
 
       <div class="flex items-center justify-between p-6 bg-white rounded-2xl border border-gray-100 mb-4"
-           style="box-shadow:0 10px 30px rgba(0,0,0,.05);">
+           style="box-shadow:0 10px 28px rgba(0,0,0,.05);">
         <div>
           <div class="t-label" style="font-size:13px;">中心註冊姓名</div>
           <div id="summary-name" class="t-title" style="font-size:24px;">---</div>
@@ -194,7 +194,7 @@
       </div>
     </div>
 
-    <!-- 表單（註冊/編輯） -->
+    <!-- 表單 -->
     <div id="view-form" class="hidden">
       <h2 id="form-title" class="t-title mb-2">會員個人檔案管理</h2>
       <p class="t-sub mb-6">請填寫正確資料以便報名/預約使用</p>
@@ -217,7 +217,7 @@
         <input type="date" id="m-birth">
 
         <div class="t-label mb-2">就讀學校（非學生請填 0）</div>
-        <input id="m-school" placeholder="範例：中山國小">
+        <input id="m-school" placeholder="範例：中山國小 / 0">
 
         <hr class="my-6">
 
@@ -236,9 +236,10 @@
         <div id="family-rows"></div>
 
         <button type="submit" class="btn-main mt-8" id="submit-btn">確認儲存</button>
+
         <button type="button" id="cancel-btn" onclick="checkStatus()"
                 class="w-full mt-4"
-                style="font-weight:900; font-size:16px; color:#111; display:none;">
+                style="font-weight:700; font-size:16px; color:#111; display:none;">
           取消返回
         </button>
       </form>
@@ -257,28 +258,32 @@ let cachedFamilies = [];
 function goBack(){
   const u = new URL(location.href);
   const from = u.searchParams.get('from');
-  if (from) {
-    location.href = new URL(from, location.href).toString();
-    return;
-  }
-  if (history.length > 1) {
-    history.back();
-    return;
-  }
+  if (from) { location.href = new URL(from, location.href).toString(); return; }
+  if (history.length > 1) { history.back(); return; }
   location.href = new URL('index.html', location.href).toString();
 }
 
 /* ========= 工具 ========= */
-function v0(v) { return v && v.toString().trim() !== '' ? v.toString().trim() : '0'; }
-function f0(v) { return (v === '0' || !v) ? '' : v; }
+function v0(v){ return v && v.toString().trim() !== '' ? v.toString().trim() : '0'; }
+function f0(v){ return (v === '0' || !v) ? '' : v; }
 
-function getTaiwanGrade(birth) {
-  if (!birth) return '0';
-  const b = new Date(birth);
+/* ✅ 避免 Safari/時區解析 YYYY-MM-DD 出現偏移：用本地日期 */
+function parseLocalYMD(ymd){
+  const [y,m,d] = (ymd||'').split('-').map(n => parseInt(n,10));
+  if(!y || !m || !d) return null;
+  return new Date(y, m-1, d);
+}
+
+function getTaiwanGrade(birthYmd) {
+  if (!birthYmd) return '0';
+  const b = parseLocalYMD(birthYmd);
+  if (!b) return '0';
+
   const entry = b.getFullYear() + 6;
   const now = new Date();
   const ay = now.getFullYear();
   const g = ay - entry + 1;
+
   if (g <= 0) return '學齡前';
   if (g <= 6) return `國小${g}`;
   if (g <= 9) return `國中${g-6}`;
@@ -304,7 +309,7 @@ function renderMemberList(user, families) {
     role: '本人',
     name: f0(user.name) || '未填',
     gender: f0(user.gender) || '未填',
-    birthDate: user.birthDate ? String(user.birthDate).split('T')[0] : '',
+    birthDate: (user.birthDate || '').toString().split('T')[0], // GS 會回 yyyy-MM-dd，這行兼容舊資料
     grade: f0(user.grade) || '',
   });
 
@@ -313,7 +318,7 @@ function renderMemberList(user, families) {
       role: '成員',
       name: f0(f.name) || '未填',
       gender: f0(f.gender) || '未填',
-      birthDate: f.birthDate ? String(f.birthDate).split('T')[0] : '',
+      birthDate: (f.birthDate || '').toString().split('T')[0],
       grade: f0(f.grade) || '',
     });
   });
@@ -322,7 +327,7 @@ function renderMemberList(user, families) {
     <div class="member-card">
       <div>
         <div class="flex items-center gap-3 mb-2">
-          <span class="tag">${m.role}</span>
+          <span class="${m.role==='本人' ? 'tag-self' : 'tag-member'}">${m.role}</span>
           <div class="t-title" style="font-size:20px;">${m.name}</div>
         </div>
         <div class="t-meta">
@@ -336,17 +341,17 @@ function renderMemberList(user, families) {
   `).join('');
 }
 
-/* ===== 家人成員列（新增/刪除/編輯） ===== */
+/* ===== 家人成員列 ===== */
 function addFamilyRow(prefill = {}) {
   const wrap = document.getElementById('family-rows');
 
   const row = document.createElement('div');
   row.className = "p-4 rounded-2xl border border-gray-100 bg-white mb-3";
-  row.style.boxShadow = "0 8px 22px rgba(0,0,0,.05)";
+  row.style.boxShadow = "0 8px 20px rgba(0,0,0,.04)";
 
-  const birth = prefill.birthDate ? String(prefill.birthDate).split('T')[0] : (prefill.birth || '');
+  const birth = (prefill.birthDate || prefill.birth || '').toString().split('T')[0];
   const grade = prefill.grade || (birth ? getTaiwanGrade(birth) : '');
-  const school = prefill.school || '0';
+  const school = (prefill.school && prefill.school !== '0') ? prefill.school : '0';
 
   row.innerHTML = `
     <div class="flex items-center justify-between mb-2">
@@ -375,7 +380,6 @@ function addFamilyRow(prefill = {}) {
   `;
 
   wrap.appendChild(row);
-
   row.querySelector('.f-gender').value = prefill.gender || '';
 
   row.querySelector('.f-birth').addEventListener('change', (ev) => {
@@ -402,7 +406,11 @@ async function checkStatus() {
   try {
     const res = await fetch(`${API_URL}?type=member_check&lineUserId=${encodeURIComponent(lineUser.userId)}&_t=${Date.now()}`);
     const raw = await res.json();
-    const result = raw?.data || raw; // 兼容有/無 worker 包裝
+
+    // 兼容兩種回傳：
+    // 1) 直接 GAS：{status:"exists"...}
+    // 2) Worker 包裝：{status:"ok", data:{...gas...}}
+    const result = raw?.data ? raw.data : raw;
 
     if (result.status === "exists") {
       const u = result.data || {};
@@ -411,14 +419,16 @@ async function checkStatus() {
 
       document.getElementById('summary-name').innerText = f0(u.name) || '---';
 
-      // 預填表單
+      // 預填表單（GS 已回 yyyy-MM-dd，不會少一天）
       document.getElementById('m-name').value = f0(u.name);
       document.getElementById('m-phone').value = f0(u.phone);
       document.getElementById('m-gender').value = f0(u.gender);
       document.getElementById('m-school').value = f0(u.school);
       document.getElementById('o-name').value = f0(u.orgName);
       document.getElementById('o-tax').value = f0(u.taxId);
-      if (u.birthDate) document.getElementById('m-birth').value = String(u.birthDate).split('T')[0];
+
+      const bd = (u.birthDate || '').toString().split('T')[0];
+      if (bd) document.getElementById('m-birth').value = bd;
 
       renderMemberList(u, families);
 
@@ -442,6 +452,7 @@ async function checkStatus() {
 /* ===== 送出（本人 + 家人） ===== */
 document.getElementById('reg-form').addEventListener('submit', async function (e) {
   e.preventDefault();
+
   const btn = document.getElementById('submit-btn');
   btn.disabled = true;
   btn.innerText = '正在處理同步...';
@@ -453,6 +464,7 @@ document.getElementById('reg-form').addEventListener('submit', async function (e
     const school = v0(block.querySelector('.f-school').value);
     const grade = v0(block.querySelector('.f-grade').value || getTaiwanGrade(birth));
 
+    // 全空就跳過
     if (name === '0' && gender === '0' && birth === '0' && school === '0' && grade === '0') return null;
 
     return {
@@ -464,15 +476,18 @@ document.getElementById('reg-form').addEventListener('submit', async function (e
     };
   }).filter(Boolean);
 
+  const birthSelf = v0(document.getElementById('m-birth').value);
+
   const payload = {
     type: 'member_register',
     lineUserId: lineUser.userId || '0',
+    註冊身分: '個人會員',
     姓名: v0(document.getElementById('m-name').value),
     聯絡電話: v0(document.getElementById('m-phone').value),
     性別: v0(document.getElementById('m-gender').value),
-    出生日期: v0(document.getElementById('m-birth').value),
+    出生日期: birthSelf,
     就讀學校: v0(document.getElementById('m-school').value),
-    目前年級: getTaiwanGrade(document.getElementById('m-birth').value),
+    目前年級: getTaiwanGrade(birthSelf),
     機關名稱: v0(document.getElementById('o-name').value),
     統一編號: v0(document.getElementById('o-tax').value),
     familyData
@@ -481,7 +496,7 @@ document.getElementById('reg-form').addEventListener('submit', async function (e
   try {
     const res = await fetch(API_URL, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type':'application/json' },
       body: JSON.stringify(payload)
     });
     await res.json();
