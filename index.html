@@ -310,26 +310,26 @@ async function warmupMemberProfile(){
     if (!uid) return;
 
     const res = await fetch(`${API_URL}?type=member_check&lineUserId=${encodeURIComponent(uid)}&_t=${Date.now()}`);
-    const rawText = await res.text();
+    const text = await res.text();
 
-    // 若回 HTML，直接視為 unknown（避免 JSON parse 爆）
-    if (/<html|<!doctype html/i.test(rawText)) {
-      memberStatus = 'unknown';
-      memberData = null;
-      familyData = [];
+    if (/<html|<!doctype html/i.test(text)) {
+      memberStatus = 'unknown'; memberData = null; familyData = [];
       return;
     }
 
-    let raw;
-    try { raw = JSON.parse(rawText); } catch(e){ raw = null; }
+    let raw = null;
+    try { raw = JSON.parse(text); } catch(e) {}
 
-    const result = raw?.data ? raw.data : raw;
+    // ✅ 正確解包：
+    // - 若 worker 有包 success/data：取 raw.data
+    // - 否則 raw 本身就是 {status:'exists', data:{}, families:[]}
+    const payload = (raw && raw.status === 'success' && raw.data) ? raw.data : raw;
 
-    if (result && result.status === 'exists'){
+    if (payload && payload.status === 'exists') {
       memberStatus = 'exists';
-      memberData = result.data || null;
-      familyData = result.families || [];
-    } else if (result && result.status === 'not_found'){
+      memberData = payload.data || null;
+      familyData = payload.families || [];
+    } else if (payload && payload.status === 'not_found') {
       memberStatus = 'not_found';
       memberData = null;
       familyData = [];
@@ -338,11 +338,13 @@ async function warmupMemberProfile(){
       memberData = null;
       familyData = [];
     }
-  }catch(err){
-    console.warn('member_check failed', err);
+  } catch (err){
     memberStatus = 'unknown';
+    memberData = null;
+    familyData = [];
   }
 }
+
 
 /* ===================== Courses (SAFE switchTab) ===================== */
 async function switchTab(name) {
