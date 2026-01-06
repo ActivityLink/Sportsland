@@ -237,9 +237,12 @@ document.getElementById('reg-form').addEventListener('submit', async function (e
   try {
     await liff.init({ liffId: LIFF_ID });
     if (!liff.isLoggedIn()) {
-      liff.login();
-      return;
-    }
+  liff.login({
+    redirectUri: location.href
+  });
+  return;
+}
+
     lineUser = await liff.getProfile();
 
     // 🔑 顯示登入者的 LINE 資訊 (LOGO 與名稱)
