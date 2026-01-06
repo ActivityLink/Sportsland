@@ -92,6 +92,24 @@
     }
     .btn-outline { border:1.5px solid var(--line-green); color:var(--line-green); }
     .btn-solid { background:var(--line-green); color:#fff; }
+
+    /* ✅ 右上角會員 pill */
+    .user-pill {
+      display:flex; align-items:center; gap:10px;
+      padding:6px 10px;
+      border:2px solid #22c55e;
+      border-radius:999px;
+      background:#fff;
+      cursor:pointer;
+    }
+    .user-pill img{
+      width:28px; height:28px; border-radius:999px;
+      border:1px solid #bbf7d0;
+    }
+    .user-pill .name{
+      font-size:12px; font-weight:900; color:#166534;
+      max-width:110px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+    }
   </style>
 </head>
 
@@ -101,9 +119,23 @@
   <!-- Top -->
   <header class="top-nav">
     <div class="font-black text-xl text-gray-800">Sports-Island</div>
-    <button onclick="navigateTo('register.html')" class="text-xs text-green-600 font-bold px-4 py-1.5 border-2 border-green-500 rounded-full">
+
+    <!-- ✅ 未登入顯示 -->
+    <button id="login-btn"
+      class="text-xs text-green-600 font-bold px-4 py-1.5 border-2 border-green-500 rounded-full"
+      onclick="loginOrOpenMember()">
       登入中心
     </button>
+
+    <!-- ✅ 已登入顯示（頭像＋名稱） -->
+    <div id="user-pill" class="user-pill hidden" onclick="openMemberCenter()">
+      <img id="user-avatar" src="" alt="avatar">
+      <div class="flex flex-col leading-tight">
+        <div class="text-[10px] font-black text-gray-400">已登入</div>
+        <div id="user-name" class="name">---</div>
+      </div>
+      <i class="fas fa-chevron-right text-[10px] text-green-600"></i>
+    </div>
   </header>
 
   <!-- Banner -->
@@ -125,7 +157,9 @@
     <a href="#" onclick="location.reload()" class="flex flex-col items-center text-green-500">
       <i class="fas fa-compass text-xl"></i><span class="text-[10px] font-bold">探索</span>
     </a>
-    <a href="register.html" class="flex flex-col items-center text-gray-300">
+
+    <!-- ✅ 會員：改成走 openMemberCenter() -->
+    <a href="#" onclick="openMemberCenter()" class="flex flex-col items-center text-gray-300">
       <i class="fas fa-user-circle text-xl"></i><span class="text-[10px] font-bold">會員</span>
     </a>
   </nav>
@@ -148,11 +182,15 @@
 </div>
 
 <script>
+/* ========= 基本設定 ========= */
 const API_URL = 'https://aged-rice-2438.wetw-net3.workers.dev/';
+const LIFF_ID = '2008786875-F7ifLsbN';
+let lineProfile = null;
+
 let currentCourses = [];
 let currentSheet = 'SingleCourses';
 
-/* === 核心修正：normalizeCourse === */
+/* === normalizeCourse === */
 function normalizeCourse(c) {
   return {
     courseId: c.courseId || c['課程ID'] || c['ID'] || '',
@@ -160,7 +198,6 @@ function normalizeCourse(c) {
     courseDate: c.courseDate || c['課程日期'] || c['活動日期'] || '',
     memberPrice: c.memberPrice || c['會員價'] || c['價格'] || 0,
     coverImage: c.coverImage || c['封面圖片'] || '',
-
     highlights: c.highlights || c.AF || c['課程亮點'] || '',
     content: c.content || c.AG || c['課程內容'] || '',
     notes: c.notes || c.AH || c['注意事項'] || '',
@@ -169,8 +206,26 @@ function normalizeCourse(c) {
 }
 
 function navigateTo(p) {
-  const base = location.href.split('?')[0];
-  location.href = base.substring(0, base.lastIndexOf('/')+1) + p;
+  location.href = new URL(p, location.href).toString();
+}
+
+/* ✅ 會員中心入口（從 OA 點進來也不會回首頁） */
+function openMemberCenter() {
+  navigateTo('register.html');
+}
+
+/* ✅ 右上角按鈕：未登入時登入；已登入時進會員中心 */
+function loginOrOpenMember() {
+  if (!window.liff) {
+    openMemberCenter();
+    return;
+  }
+  if (liff.isLoggedIn && liff.isLoggedIn()) {
+    openMemberCenter();
+    return;
+  }
+  const cleanUrl = location.origin + location.pathname + location.search;
+  liff.login({ redirectUri: cleanUrl });
 }
 
 async function switchTab(name) {
@@ -184,7 +239,9 @@ async function switchTab(name) {
   try {
     const res = await fetch(`${API_URL}?sheet=${name}`);
     const json = await res.json();
-    currentCourses = (json.data || []).map(normalizeCourse);
+    // 你 Worker 可能包一層 status=ok，這裡兼容兩種
+    const arr = Array.isArray(json.data) ? json.data : (Array.isArray(json.data?.data) ? json.data.data : []);
+    currentCourses = arr.map(normalizeCourse);
     render();
   } catch {
     list.innerHTML = '<div class="p-10 text-center text-red-400">載入失敗</div>';
@@ -238,6 +295,31 @@ function closeDetails() {
 function startBooking(id) {
   navigateTo(`booking.html?id=${id}&type=${currentSheet}`);
 }
+
+/* ✅ 初始化 LIFF：已登入就把右上角改成頭像＋名稱 */
+(async () => {
+  try {
+    await liff.init({ liffId: LIFF_ID });
+
+    if (liff.isLoggedIn()) {
+      lineProfile = await liff.getProfile();
+
+      document.getElementById('user-avatar').src =
+        lineProfile.pictureUrl || 'https://cdn-icons-png.flaticon.com/512/3135/3135715.png';
+      document.getElementById('user-name').innerText = lineProfile.displayName || 'LINE 使用者';
+
+      document.getElementById('login-btn').classList.add('hidden');
+      document.getElementById('user-pill').classList.remove('hidden');
+    } else {
+      // 未登入保留「登入中心」，點擊會 login 並回到本頁
+      document.getElementById('login-btn').classList.remove('hidden');
+      document.getElementById('user-pill').classList.add('hidden');
+    }
+  } catch (e) {
+    // LIFF 失敗也不阻塞首頁
+    console.error(e);
+  }
+})();
 
 switchTab('SingleCourses');
 </script>
