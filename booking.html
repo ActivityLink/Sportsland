@@ -5,514 +5,573 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>課程預約</title>
 
-  <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+  <script charset="utf-8" src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;800&display=swap');
-    :root{ --line:#06C755; --bg:#F7F9FB; --text:#111; --border:#E2E8F0; }
-    body{ font-family:"Noto Sans TC",sans-serif; background:var(--bg); color:var(--text); }
-    .t-title{ font-size:20px; font-weight:800; }
-    .t-sub{ font-size:15px; font-weight:500; color:#222; }
-    .t-label{ font-size:14px; font-weight:700; color:#222; letter-spacing:.2px; }
-    .btn-main{ background:var(--line); color:#fff; padding:16px; border-radius:16px; font-weight:800; font-size:17px; width:100%; }
-    .btn-lite{ background:#EAF2FF; color:#1246B7; padding:12px 14px; border-radius:14px; font-weight:700; border:1px solid #CFE0FF; }
-    input, select, textarea{
-      width:100%; padding:14px; border-radius:14px; border:1.5px solid var(--border);
-      background:#fff; font-size:16px; font-weight:500; color:#111; outline:none;
-    }
-    textarea{ min-height:100px; }
-    input:focus, select:focus, textarea:focus{ border-color:var(--line); box-shadow:0 0 0 3px rgba(6,199,85,.12); }
-    #loading{
-      position:fixed; inset:0; background:white; z-index:100;
-      display:flex; flex-direction:column; align-items:center; justify-content:center;
-    }
+    :root{ --line:#06C755; --text:#111; --bg:#F7F9FB; --card:#fff; --border:#E2E8F0; }
+    body{ font-family:"Noto Sans TC",sans-serif; background:var(--bg); color:var(--text); margin:0; display:flex; justify-content:center; }
+    .wrap{ width:100%; max-width:680px; min-height:100vh; padding:18px 16px 94px; }
+    .card{ background:var(--card); border:1px solid var(--border); border-radius:18px; padding:16px; box-shadow:0 10px 26px rgba(0,0,0,.05); }
+    .title{ font-size:22px; font-weight:800; }
+    .sub{ font-size:15px; font-weight:500; color:#222; }
+    .label{ font-size:14px; font-weight:700; color:#111; }
+    .meta{ font-size:15px; font-weight:500; color:#111; }
+    .btn{ width:100%; padding:16px; border-radius:16px; font-weight:800; font-size:16px; }
+    .btn-main{ background:var(--line); color:#fff; }
+    .btn-ghost{ background:#fff; border:1px solid var(--border); color:#111; padding:12px 14px; border-radius:14px; font-weight:800; }
+    .pill{ display:inline-flex; align-items:center; gap:8px; padding:10px 12px; border:1px solid var(--border); border-radius:999px; background:#fff; }
+    .pill img{ width:28px; height:28px; border-radius:999px; }
 
-    /* Bottom sheet (對象選擇) */
-    .sheet-mask{
-      position:fixed; inset:0; background:rgba(0,0,0,.55); z-index:200;
-      display:none; align-items:flex-end; justify-content:center;
-    }
-    .sheet{
-      width:100%; max-width:640px; background:#fff;
-      border-top-left-radius:22px; border-top-right-radius:22px;
-      padding:14px 14px 18px 14px;
-      box-shadow:0 -10px 30px rgba(0,0,0,.15);
-      max-height:78vh; overflow:auto;
-      animation:up .18s ease-out;
-    }
-    @keyframes up{ from{ transform:translateY(18px); opacity:.7 } to{ transform:translateY(0); opacity:1 } }
-    .pill{ font-size:12px; font-weight:700; padding:6px 12px; border-radius:999px; }
-    .pill-self{ background:#EAFBF0; color:#0F7A34; border:1px solid #BBF7D0; }
-    .pill-member{ background:#EEF2FF; color:#3730A3; border:1px solid #C7D2FE; }
+    .grid2{ display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+    @media (max-width:420px){ .grid2{ grid-template-columns:1fr; } }
+
+    .kv{ border:1px solid #EEF2F7; border-radius:16px; padding:12px; background:#fff; }
+    .kv .k{ font-size:13px; font-weight:800; color:#111; margin-bottom:4px; }
+    .kv .v{ font-size:15px; font-weight:500; color:#111; line-height:1.5; }
+
+    /* collapsible */
+    details{ border:1px solid #EEF2F7; border-radius:16px; background:#fff; overflow:hidden; }
+    summary{ list-style:none; cursor:pointer; padding:12px 14px; display:flex; align-items:center; justify-content:space-between; gap:12px; }
+    summary::-webkit-details-marker{ display:none; }
+    .sum-title{ font-size:14px; font-weight:900; color:#111; }
+    .sum-hint{ font-size:12px; font-weight:700; color:#333; }
+    .detail-body{ padding:0 14px 14px 14px; font-size:15px; font-weight:500; color:#111; line-height:1.65; }
+    .chev{ transition:transform .15s ease; }
+    details[open] .chev{ transform:rotate(180deg); }
+
+    /* modal */
+    .overlay{ position:fixed; inset:0; background:rgba(0,0,0,.65); display:none; align-items:center; justify-content:center; padding:18px; z-index:1000; }
+    .modal{ background:#fff; width:100%; max-width:560px; border-radius:22px; overflow:hidden; max-height:84vh; }
   </style>
 </head>
 
-<body class="flex justify-center">
-  <div id="loading">
-    <div class="animate-spin rounded-full h-10 w-10 border-b-2 border-green-500 mb-4"></div>
-    <div class="t-sub">正在連線與載入課程...</div>
-  </div>
-
-  <div class="w-full max-w-[640px] min-h-screen px-4 pb-28 pt-3">
-
-    <!-- Topbar -->
-    <div class="sticky top-0 z-50 bg-white/90 backdrop-blur border-b border-slate-100 rounded-2xl px-3 py-3 flex items-center gap-3">
-      <button class="btn-lite" id="backBtn">
-        <i class="fas fa-chevron-left mr-1"></i> 返回
-      </button>
-      <div class="flex-1">
-        <div class="t-title" id="courseTitle">課程預約</div>
-        <div class="t-sub" id="courseMeta"></div>
+<body>
+  <div class="wrap">
+    <div class="flex items-center justify-between mb-4">
+      <button class="pill" onclick="goBack()"><i class="fas fa-chevron-left"></i><span class="font-black">返回</span></button>
+      <div id="line-pill" class="pill hidden">
+        <img id="line-avatar" src="" alt="">
+        <div class="font-black text-sm" id="line-name">LINE</div>
       </div>
     </div>
 
-    <!-- 選擇對象 -->
-    <div class="mt-4 bg-white border border-slate-100 rounded-2xl p-4 shadow-sm">
-      <div class="flex items-center justify-between gap-3">
+    <div id="loading" class="card">
+      <div class="flex items-center gap-3">
+        <div class="animate-spin rounded-full h-6 w-6 border-b-2 border-green-500"></div>
         <div>
-          <div class="t-label mb-1">預約對象</div>
-          <div class="t-title" style="font-size:18px" id="whoText">尚未選擇</div>
-          <div class="t-sub" id="whoMeta"></div>
+          <div class="title text-[18px]">資料載入中</div>
+          <div class="sub">正在連線雲端資料...</div>
         </div>
-        <button class="btn-lite" id="changeWhoBtn">更換</button>
       </div>
     </div>
 
-    <!-- 詳細報名資料（A~AN） -->
-    <div class="mt-4 bg-white border border-slate-100 rounded-2xl p-4 shadow-sm">
-      <div class="t-title mb-2" style="font-size:18px;">詳細報名資料</div>
-      <div class="t-sub mb-4">請依課程需求填寫（來自 SingleCourses A～AN）</div>
-      <div id="formFields" class="space-y-4"></div>
-    </div>
+    <div id="content" class="hidden space-y-4">
+      <!-- course header -->
+      <div class="card">
+        <div class="title" id="course-name">課程</div>
+        <div class="meta mt-2" id="course-meta"></div>
+      </div>
 
-    <!-- Submit -->
-    <div class="mt-4">
-      <button class="btn-main" id="submitBtn">確認送出預約</button>
-      <div class="t-sub mt-3" id="hintText"></div>
-    </div>
+      <!-- attendee -->
+      <div class="card">
+        <div class="flex items-start justify-between gap-3">
+          <div>
+            <div class="label">預約對象</div>
+            <div class="title text-[20px] mt-1" id="attendee-name">尚未選擇</div>
+            <div class="meta mt-1" id="attendee-meta"></div>
+          </div>
+          <button class="btn-ghost" onclick="openAttendeeModal()">更換</button>
+        </div>
+      </div>
 
+      <!-- detail -->
+      <div class="card space-y-4">
+        <div>
+          <div class="title text-[18px]">詳細報名資料</div>
+          <div class="sub mt-1">完整呈現 SingleCourses A～AN（課程資料欄位）</div>
+        </div>
+
+        <div id="detail-basic" class="grid2"></div>
+        <div id="detail-price" class="grid2"></div>
+        <div id="detail-quota" class="grid2"></div>
+
+        <div id="detail-rules" class="space-y-2"></div>
+        <div id="detail-long" class="space-y-2"></div>
+
+        <div id="equip-box" class="hidden">
+          <div class="label mb-2">租用設備（可選）</div>
+          <div id="equip-list" class="space-y-2"></div>
+        </div>
+
+        <div>
+          <div class="label mb-2">備註（可選）</div>
+          <textarea id="note" class="w-full p-4 rounded-2xl border border-slate-200 text-[15px] font-medium"
+            rows="3" placeholder="例如：過敏、特殊需求補充"></textarea>
+        </div>
+
+        <div class="text-[12px] font-bold text-slate-600">
+          若未來你要加「自訂必填問題（身高/尺寸/等）」，我可以在這區塊再加「動態表單欄位」。
+        </div>
+      </div>
+
+      <div class="fixed bottom-0 left-0 right-0 flex justify-center">
+        <div class="w-full max-w-[680px] bg-white border-t p-4">
+          <button class="btn btn-main" id="confirm-btn" onclick="confirmBooking()">確認送出預約</button>
+        </div>
+      </div>
+    </div>
   </div>
 
-  <!-- 對象選擇 Bottom Sheet -->
-  <div id="sheetMask" class="sheet-mask" onclick="if(event.target===this)closePicker()">
-    <div class="sheet">
-      <div class="flex items-center justify-between px-2 py-2">
-        <div class="t-title" style="font-size:18px;">選擇預約對象</div>
-        <button class="btn-lite" onclick="closePicker()"><i class="fas fa-xmark"></i></button>
+  <!-- Attendee Modal -->
+  <div id="attendee-overlay" class="overlay" onclick="if(event.target===this)closeAttendeeModal()">
+    <div class="modal">
+      <div class="p-5 border-b flex items-center justify-between">
+        <div class="title text-[18px]">選擇預約對象</div>
+        <button onclick="closeAttendeeModal()"><i class="fas fa-times"></i></button>
       </div>
-      <div id="pickerList" class="mt-2 space-y-2"></div>
+      <div class="p-5 overflow-y-auto" style="max-height:62vh;">
+        <div id="attendee-list" class="space-y-3"></div>
+      </div>
+      <div class="p-5 border-t">
+        <button class="btn btn-main" onclick="applyAttendee()">套用選擇</button>
+      </div>
     </div>
   </div>
 
 <script>
-/* ================== 基本設定 ================== */
 const API_URL = 'https://aged-rice-2438.wetw-net3.workers.dev/';
 const LIFF_ID  = '2008786875-F7ifLsbN';
 
-/* ✅ 防止初始化/彈窗重複跑 */
-if (window.__BOOKING_INITED__) {
-  console.warn('booking already inited');
-} else {
-  window.__BOOKING_INITED__ = true;
-}
-
 let lineUser = null;
-let memberBundle = null; // {status:'exists', data:{...}, families:[...]}
+let memberData = null;  // {status:"exists"/"not_found", data, families}
 let course = null;
 
-let selected = { attendeeType: null, attendeeIndex: 0 }; // self/family
-let pickerOpenedOnce = false;
-let pickerLock = false;
+let selectedAttendee = null;
+let modalEverOpened = false;
 
-/* ================== URL & 返回 ================== */
-const u = new URL(location.href);
-const courseId = u.searchParams.get('id') || '';
-const courseSheet = u.searchParams.get('type') || 'SingleCourses';
-const fromUrl = u.searchParams.get('from') || '';
+function qs(k){ return new URL(location.href).searchParams.get(k) || ''; }
 
-document.getElementById('backBtn').onclick = () => {
-  if (fromUrl) { location.href = fromUrl; return; }
+function goBack(){
+  const from = qs('from');
+  if (from) { location.href = decodeURIComponent(from); return; }
   if (history.length > 1) { history.back(); return; }
   location.href = new URL('index.html', location.href).toString();
-};
-
-/* ================== 工具 ================== */
-function safeText(v){ return (v===null||v===undefined) ? '' : String(v); }
-function isEmpty(v){
-  const s = safeText(v).trim();
-  return (s==='' || s==='0' || s.toLowerCase()==='null' || s.toLowerCase()==='undefined');
-}
-function tryJson(s){
-  try { return JSON.parse(s); } catch { return null; }
 }
 
-/* A~AN 欄位名列表 */
-function makeColLabels_A_to_AN(){
-  const labels = [];
-  // A..Z
-  for (let i=0;i<26;i++){
-    labels.push(String.fromCharCode('A'.charCodeAt(0)+i));
-  }
-  // AA..AN
-  const second = 'A'.charCodeAt(0);
-  for (let i=0;i<14;i++){ // A..N
-    labels.push('A' + String.fromCharCode(second+i));
-  }
-  return labels;
+function safeText(v){
+  if (v === undefined || v === null) return '';
+  const s = String(v).trim();
+  if (!s || s === '0' || s === 'null' || s === 'undefined') return '';
+  return s;
+}
+function nText(v){ const s = safeText(v); return s ? s : ''; }
+
+function escapeHtml(s){
+  return String(s).replace(/[&<>"']/g, m => ({
+    '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
+  }[m]));
+}
+function escNL(s){
+  return escapeHtml(s).replace(/\n/g,'<br>');
 }
 
-/**
- * 將欄位文字解析成題目
- * 支援幾種格式（越通用越好）：
- * 1) "題目|選項1,選項2,選項3" => select
- * 2) "題目\n選項1\n選項2" => radio
- * 3) "題目" => text
- */
-function parseFieldDef(raw, key){
-  const s = safeText(raw).trim();
-  if (!s) return null;
+function showError(msg){
+  document.getElementById('loading').classList.remove('hidden');
+  document.getElementById('loading').innerHTML = `
+    <div class="title text-[18px] text-red-700">雲端連線失敗</div>
+    <div class="sub mt-2 text-red-700">${escapeHtml(msg || '未知錯誤')}</div>
+    <div class="mt-4"><button class="btn btn-ghost" onclick="location.reload()">重試</button></div>
+  `;
+}
 
-  // JSON 支援： {"label":"...","type":"select|radio|text|textarea","options":[...],"required":true}
-  const j = tryJson(s);
-  if (j && j.label) {
-    return {
-      key,
-      label: safeText(j.label),
-      type: j.type || (Array.isArray(j.options) ? 'select' : 'text'),
-      options: Array.isArray(j.options) ? j.options.map(x=>safeText(x)) : [],
-      required: !!j.required,
-      placeholder: safeText(j.placeholder || '')
-    };
-  }
+function kv(label, value){
+  const v = safeText(value);
+  if(!v) return '';
+  return `
+    <div class="kv">
+      <div class="k">${escapeHtml(label)}</div>
+      <div class="v">${escNL(v)}</div>
+    </div>
+  `;
+}
 
-  if (s.includes('|')) {
-    const [label, optStr] = s.split('|');
-    const options = (optStr || '').split(',').map(x=>x.trim()).filter(Boolean);
-    return { key, label: label.trim() || key, type:'select', options, required:false, placeholder:'' };
-  }
+function longBlock(title, value){
+  const v = safeText(value);
+  if(!v) return '';
+  const hint = v.length > 60 ? '點我展開' : '點我查看';
+  return `
+    <details>
+      <summary>
+        <div>
+          <div class="sum-title">${escapeHtml(title)}</div>
+          <div class="sum-hint">${escapeHtml(hint)}</div>
+        </div>
+        <i class="fas fa-chevron-down chev"></i>
+      </summary>
+      <div class="detail-body">${escNL(v)}</div>
+    </details>
+  `;
+}
 
-  if (s.includes('\n')) {
-    const lines = s.split('\n').map(x=>x.trim()).filter(Boolean);
-    if (lines.length >= 2) {
-      const label = lines[0];
-      const options = lines.slice(1);
-      return { key, label, type:'radio', options, required:false, placeholder:'' };
+function normalizeCourse(c){
+  // 兼容 GAS/Worker 回傳 key
+  return {
+    courseId: c.courseId || c['課程ID'] || '',
+    courseName: c.courseName || c['課程名稱'] || '',
+    sportCategory: c.sportCategory || c['運動類別'] || '',
+    ageGroup: c.ageGroup || c['年齡分級'] || '',
+    difficulty: c.difficulty || c['難度等級'] || '',
+    tags: c.tags || c['標籤分類'] || '',
+
+    openDate: c.openDate || c['開放報名日'] || '',
+    closeDate: c.closeDate || c['截止報名日'] || '',
+    courseDate: c.courseDate || c['課程日期'] || '',
+    startTime: c.startTime || c['開始時間'] || '',
+    endTime: c.endTime || c['結束時間'] || '',
+    durationMin: c.durationMin || c['課程時長(分鐘)'] || '',
+
+    coachId: c.coachId || c['教練ID'] || '',
+    coachName: c.coachName || c['教練姓名'] || '',
+
+    venueId: c.venueId || c['場地ID'] || '',
+    venueName: c.venueName || c['場地名稱'] || '',
+    venueArea: c.venueArea || c['場地區域'] || '',
+
+    priceOriginal: c.priceOriginal || c['原價'] || '',
+    priceEarly: c.priceEarly || c['早鳥價'] || '',
+    earlyDeadline: c.earlyDeadline || c['早鳥截止'] || '',
+    memberPrice: c.memberPrice || c['會員價'] || '',
+    friendPrice: c.friendPrice || c['親友價'] || '',
+
+    capacityTotal: c.capacityTotal || c['總名額'] || '',
+    minOpen: c.minOpen || c['最少開班'] || '',
+    enrolled: c.enrolled || c['已報名人數'] || '',
+    remain: c.remain || c['剩餘名額'] || '',
+    waitlist: c.waitlist || c['候補名額'] || '',
+
+    genderLimit: c.genderLimit || c['性別限制'] || '',
+    specialReq: c.specialReq || c['特殊要求'] || '',
+
+    coverImage: c.coverImage || c['封面圖片'] || '',
+    detailImage: c.detailImage || c['詳細圖片'] || '',
+
+    highlights: c.highlights || c['課程亮點'] || '',
+    content: c.content || c['課程內容'] || '',
+    notes: c.notes || c['注意事項'] || '',
+    targetAudience: c.targetAudience || c['適合對象'] || '',
+
+    courseStatus: c.courseStatus || c['課程狀態'] || '',
+    sortWeight: c.sortWeight || c['排序權重'] || '',
+    rentEquipment: c.rentEquipment || c['租用設備'] || ''
+  };
+}
+
+function renderCourse(c0){
+  const c = normalizeCourse(c0);
+  course = c;
+
+  document.getElementById('course-name').innerText = safeText(c.courseName) || '課程';
+  const meta = [
+    safeText(c.courseDate) ? `日期：${safeText(c.courseDate)}` : '',
+    safeText(c.startTime) ? `時間：${safeText(c.startTime)}${safeText(c.endTime)?' - '+safeText(c.endTime):''}` : '',
+    safeText(c.venueName) ? `地點：${safeText(c.venueName)}` : '',
+  ].filter(Boolean).join('　｜　');
+  document.getElementById('course-meta').innerText = meta || '';
+
+  // 基本資料
+  const basic = [
+    kv('運動類別', c.sportCategory),
+    kv('年齡分級', c.ageGroup),
+    kv('難度等級', c.difficulty),
+    kv('標籤分類', c.tags),
+    kv('教練', safeText(c.coachName) ? `${c.coachName}${safeText(c.coachId)?'（'+c.coachId+'）':''}` : ''),
+    kv('場地', safeText(c.venueName) ? `${c.venueName}${safeText(c.venueArea)?'｜'+c.venueArea:''}` : ''),
+    kv('開放報名日', c.openDate),
+    kv('截止報名日', c.closeDate),
+    kv('課程時長(分鐘)', c.durationMin),
+    kv('課程狀態', c.courseStatus),
+  ].filter(Boolean).join('');
+  document.getElementById('detail-basic').innerHTML = basic || kv('提示', '此課程尚未填寫基本資訊');
+
+  // 價格
+  const price = [
+    kv('原價', safeText(c.priceOriginal) ? `$${c.priceOriginal}` : ''),
+    kv('會員價', safeText(c.memberPrice) ? `$${c.memberPrice}` : ''),
+    kv('早鳥價', safeText(c.priceEarly) ? `$${c.priceEarly}` : ''),
+    kv('早鳥截止', c.earlyDeadline),
+    kv('親友價', safeText(c.friendPrice) ? `$${c.friendPrice}` : '')
+  ].filter(Boolean).join('');
+  document.getElementById('detail-price').innerHTML = price || '';
+
+  // 名額
+  const quota = [
+    kv('總名額', c.capacityTotal),
+    kv('最少開班', c.minOpen),
+    kv('已報名人數', c.enrolled),
+    kv('剩餘名額', c.remain),
+    kv('候補名額', c.waitlist),
+  ].filter(Boolean).join('');
+  document.getElementById('detail-quota').innerHTML = quota || '';
+
+  // 規則/限制
+  const rules = [];
+  if (safeText(c.genderLimit)) rules.push(kv('性別限制', c.genderLimit));
+  if (safeText(c.specialReq)) rules.push(kv('特殊要求', c.specialReq));
+  document.getElementById('detail-rules').innerHTML = rules.join('') || '';
+
+  // 長文（用展開/收合，避免畫面不美觀）
+  const longs = [
+    longBlock('課程亮點', c.highlights),
+    longBlock('課程內容', c.content),
+    longBlock('注意事項', c.notes),
+    longBlock('適合對象', c.targetAudience),
+  ].filter(Boolean).join('');
+  document.getElementById('detail-long').innerHTML = longs || kv('說明', '此課程尚未填寫亮點/內容/注意事項/適合對象');
+
+  // 租用設備（勾選）
+  const equipRaw = safeText(c.rentEquipment);
+  const equipBox = document.getElementById('equip-box');
+  const equipList = document.getElementById('equip-list');
+
+  if(equipRaw){
+    const items = equipRaw.split(/[,，、\n]/).map(s=>s.trim()).filter(Boolean);
+    if(items.length){
+      equipBox.classList.remove('hidden');
+      equipList.innerHTML = items.map(x => `
+        <label class="flex items-center gap-3">
+          <input type="checkbox" class="equip" value="${escapeHtml(x)}" style="width:18px;height:18px;">
+          <span class="meta">${escapeHtml(x)}</span>
+        </label>
+      `).join('');
+    } else {
+      equipBox.classList.add('hidden'); equipList.innerHTML = '';
     }
-  }
-
-  return { key, label: s, type:'text', options:[], required:false, placeholder:'' };
-}
-
-/* ================== API 讀取（避免 HTML -> json 爆炸） ================== */
-async function fetchJsonSafe(url, init){
-  const res = await fetch(url, init);
-  const text = await res.text();
-  let json = null;
-  try { json = JSON.parse(text); } catch {}
-  if (!json) {
-    throw new Error('API 回傳非 JSON：' + text.slice(0,120));
-  }
-  return json;
-}
-
-/* ================== 課程與會員載入 ================== */
-async function loadCourse(){
-  if (!courseId) throw new Error('缺少課程 id');
-  const r = await fetchJsonSafe(`${API_URL}?sheet=${encodeURIComponent(courseSheet)}&id=${encodeURIComponent(courseId)}&_t=${Date.now()}`);
-  if (r.status !== 'success') throw new Error(r.message || '課程讀取失敗');
-  const list = r.data || [];
-  if (!list.length) throw new Error('找不到課程資料');
-  course = list[0];
-}
-
-async function loadMember(){
-  const r = await fetchJsonSafe(`${API_URL}?type=member_check&lineUserId=${encodeURIComponent(lineUser.userId)}&_t=${Date.now()}`);
-  memberBundle = r;
-
-  if (r.status !== 'exists') {
-    // 未註冊：導去註冊（保留返回）
-    const back = location.href;
-    const regUrl = new URL('register.html', location.href);
-    regUrl.searchParams.set('from', back);
-    location.href = regUrl.toString();
-    return;
+  } else {
+    equipBox.classList.add('hidden'); equipList.innerHTML = '';
   }
 }
 
-/* ================== UI Render ================== */
-function renderCourse(){
-  const name = course.courseName || course['課程名稱'] || course['活動名稱'] || '課程';
-  const date = course.courseDate || course['課程日期'] || course['活動日期'] || '';
-  document.getElementById('courseTitle').innerText = name;
-  document.getElementById('courseMeta').innerText = date ? `日期：${safeText(date).split('T')[0]}` : '';
-}
+/* ===== attendee ===== */
+function openAttendeeModal(){
+  if(!memberData || memberData.status !== 'exists') return;
 
-function openPicker(){
-  if (pickerLock) return;
-  if (pickerOpenedOnce) return; // ✅ 核心：只自動開一次（避免跑兩次）
-  pickerLock = true;
-  pickerOpenedOnce = true;
+  // 只在第一次自動彈出，後面手動按更換才開（避免你說的「跑兩次」）
+  if(!modalEverOpened) modalEverOpened = true;
 
-  renderPickerList();
-  document.getElementById('sheetMask').style.display = 'flex';
+  const u = memberData.data || {};
+  const families = memberData.families || [];
 
-  setTimeout(()=>{ pickerLock = false; }, 250);
-}
-
-function closePicker(){
-  document.getElementById('sheetMask').style.display = 'none';
-}
-
-function renderPickerList(){
-  const list = document.getElementById('pickerList');
-  const u = memberBundle.data || {};
-  const families = memberBundle.families || [];
-
-  const items = [];
-  items.push({
-    labelType: '本人',
-    pillClass: 'pill pill-self',
-    name: u.name || '未填',
-    meta: `${u.gender ? '性別：'+u.gender : ''}${u.birthDate ? '　生日：'+safeText(u.birthDate).split('T')[0] : ''}`,
-    attendeeType: 'self',
-    attendeeIndex: 0
+  const list = [];
+  list.push({
+    role:'本人',
+    name: safeText(u.name) || '本人',
+    gender: safeText(u.gender) || '',
+    birthDate: (safeText(u.birthDate) || '').split('T')[0],
+    grade: safeText(u.grade) || '',
+    memberId: safeText(u.memberId) || safeText(u['會員ID']) || ''
   });
-
-  families.forEach((f, i) => {
-    items.push({
-      labelType: '成員',
-      pillClass: 'pill pill-member',
-      name: f.name || '未填',
-      meta: `${f.gender ? '性別：'+f.gender : ''}${f.birthDate ? '　生日：'+safeText(f.birthDate).split('T')[0] : ''}`,
-      attendeeType: 'family',
-      attendeeIndex: i
+  families.forEach(f => {
+    list.push({
+      role:'成員',
+      name: safeText(f.name) || '成員',
+      gender: safeText(f.gender) || '',
+      birthDate: (safeText(f.birthDate) || '').split('T')[0],
+      grade: safeText(f.grade) || '',
+      memberId: safeText(u.memberId) || safeText(u['會員ID']) || ''
     });
   });
 
-  list.innerHTML = items.map(it => `
-    <button class="w-full text-left bg-white border border-slate-100 rounded-2xl px-4 py-4 shadow-sm hover:shadow transition"
-      onclick="selectAttendee('${it.attendeeType}', ${it.attendeeIndex});">
-      <div class="flex items-center gap-3 mb-2">
-        <span class="${it.pillClass}">${it.labelType}</span>
-        <div class="t-title" style="font-size:18px;">${it.name}</div>
-      </div>
-      <div class="t-sub">${it.meta || ''}</div>
-    </button>
-  `).join('');
-}
-
-window.selectAttendee = function(attendeeType, attendeeIndex){
-  selected.attendeeType = attendeeType;
-  selected.attendeeIndex = Number(attendeeIndex || 0);
-
-  renderSelectedWho();
-  closePicker();
-};
-
-function renderSelectedWho(){
-  const u = memberBundle.data || {};
-  const families = memberBundle.families || [];
-
-  let who = null;
-  if (selected.attendeeType === 'family') who = families[selected.attendeeIndex];
-  else who = u;
-
-  const name = who?.name || '未填';
-  const gender = who?.gender ? `性別：${who.gender}` : '';
-  const birth = who?.birthDate ? `生日：${safeText(who.birthDate).split('T')[0]}` : '';
-  const grade = who?.grade ? `年級：${who.grade}` : '';
-
-  document.getElementById('whoText').innerText = name;
-  document.getElementById('whoMeta').innerText = [gender, birth, grade].filter(Boolean).join('　');
-}
-
-/* ================== A~AN 詳細報名欄位 ================== */
-function renderFormFields(){
-  const wrap = document.getElementById('formFields');
-  wrap.innerHTML = '';
-
-  const labels = makeColLabels_A_to_AN();
-  const defs = [];
-
-  labels.forEach(k => {
-    if (course && Object.prototype.hasOwnProperty.call(course, k) && !isEmpty(course[k])) {
-      const def = parseFieldDef(course[k], k);
-      if (def) defs.push(def);
-    }
-  });
-
-  if (!defs.length) {
-    wrap.innerHTML = `<div class="t-sub">此課程未設定 A～AN 報名欄位（或欄位為空）。</div>`;
-    return;
-  }
-
-  defs.forEach(def => {
-    const id = `fld_${def.key}`;
-    let html = '';
-
-    if (def.type === 'select') {
-      html = `
-        <div>
-          <div class="t-label mb-2">${def.label}</div>
-          <select id="${id}">
-            <option value="">請選擇</option>
-            ${def.options.map(o=>`<option value="${o}">${o}</option>`).join('')}
-          </select>
-        </div>
-      `;
-    } else if (def.type === 'radio') {
-      html = `
-        <div>
-          <div class="t-label mb-2">${def.label}</div>
-          <div class="space-y-2">
-            ${def.options.map((o, idx)=>`
-              <label class="flex items-center gap-3 bg-white border border-slate-100 rounded-2xl px-4 py-3">
-                <input type="radio" name="${id}" value="${o}" class="w-5 h-5 accent-green-500">
-                <span class="t-sub" style="font-size:16px;">${o}</span>
-              </label>
-            `).join('')}
+  const wrap = document.getElementById('attendee-list');
+  wrap.innerHTML = list.map((p,idx)=>`
+    <label class="block card cursor-pointer" style="box-shadow:none;">
+      <div class="flex items-center gap-3">
+        <input type="radio" name="attendee" value="${idx}" ${idx===0 ? 'checked' : ''} style="width:18px;height:18px;">
+        <div class="flex-1">
+          <div class="font-black text-[16px]">${escapeHtml(p.name)} <span class="text-[12px] font-bold text-slate-600">（${p.role}）</span></div>
+          <div class="meta mt-1">
+            ${p.gender ? `性別：${escapeHtml(p.gender)}` : '' }
+            ${p.birthDate ? `　生日：${escapeHtml(p.birthDate)}` : '' }
+            ${p.grade ? `　年級：${escapeHtml(p.grade)}` : '' }
           </div>
         </div>
-      `;
-    } else if (def.type === 'textarea') {
-      html = `
-        <div>
-          <div class="t-label mb-2">${def.label}</div>
-          <textarea id="${id}" placeholder="${def.placeholder || ''}"></textarea>
-        </div>
-      `;
-    } else {
-      html = `
-        <div>
-          <div class="t-label mb-2">${def.label}</div>
-          <input id="${id}" placeholder="${def.placeholder || ''}">
-        </div>
-      `;
-    }
+      </div>
+    </label>
+  `).join('');
 
-    wrap.insertAdjacentHTML('beforeend', html);
-  });
+  document.getElementById('attendee-overlay').style.display = 'flex';
 }
 
-function collectAnswers(){
-  const labels = makeColLabels_A_to_AN();
-  const answers = {};
-  labels.forEach(k => {
-    const id = `fld_${k}`;
-    const el = document.getElementById(id);
-    if (el) {
-      const v = safeText(el.value).trim();
-      if (v) answers[k] = v;
+function closeAttendeeModal(){
+  document.getElementById('attendee-overlay').style.display = 'none';
+}
+
+function applyAttendee(){
+  const chosen = [...document.querySelectorAll('input[name="attendee"]')].find(r=>r.checked);
+  if(!chosen){ alert('請先選擇預約對象'); return; }
+
+  const idx = parseInt(chosen.value, 10);
+  const u = memberData.data || {};
+  const families = memberData.families || [];
+
+  const list = [];
+  list.push({
+    role:'本人',
+    name: safeText(u.name) || '本人',
+    gender: safeText(u.gender) || '',
+    birthDate: (safeText(u.birthDate) || '').split('T')[0],
+    grade: safeText(u.grade) || '',
+    memberId: safeText(u.memberId) || safeText(u['會員ID']) || ''
+  });
+  families.forEach(f => {
+    list.push({
+      role:'成員',
+      name: safeText(f.name) || '成員',
+      gender: safeText(f.gender) || '',
+      birthDate: (safeText(f.birthDate) || '').split('T')[0],
+      grade: safeText(f.grade) || '',
+      memberId: safeText(u.memberId) || safeText(u['會員ID']) || ''
+    });
+  });
+
+  selectedAttendee = list[idx];
+
+  // 性別限制先擋
+  const gl = safeText(course.genderLimit);
+  if(gl && gl !== '不限'){
+    if(safeText(selectedAttendee.gender) !== gl){
+      alert(`此課程性別限制為「${gl}」，請改選符合的成員`);
       return;
     }
-    // radio
-    const radio = document.querySelector(`input[name="fld_${k}"]:checked`);
-    if (radio) {
-      answers[k] = safeText(radio.value).trim();
-    }
-  });
-  return answers;
+  }
+
+  document.getElementById('attendee-name').innerText = selectedAttendee.name || '已選擇';
+  const meta = [
+    selectedAttendee.gender ? `性別：${selectedAttendee.gender}` : '',
+    selectedAttendee.birthDate ? `生日：${selectedAttendee.birthDate}` : '',
+    selectedAttendee.grade ? `年級：${selectedAttendee.grade}` : '',
+  ].filter(Boolean).join('　');
+  document.getElementById('attendee-meta').innerText = meta;
+
+  closeAttendeeModal();
 }
 
-/* ================== 送出預約 ================== */
-async function submitBooking(){
-  if (!selected.attendeeType) {
-    alert('請先選擇預約對象');
-    pickerOpenedOnce = false; // 允許再開
-    openPicker();
+/* ===== booking submit ===== */
+async function confirmBooking(){
+  if(!selectedAttendee){
+    openAttendeeModal();
     return;
   }
 
-  const btn = document.getElementById('submitBtn');
+  const btn = document.getElementById('confirm-btn');
   btn.disabled = true;
   btn.innerText = '送出中...';
 
-  try {
-    const answers = collectAnswers();
+  try{
+    const equip = [...document.querySelectorAll('.equip')].filter(x=>x.checked).map(x=>x.value);
 
     const payload = {
-      type: 'course_booking',
+      type:'course_booking',
       lineUserId: lineUser.userId,
-      sheet: courseSheet,
-      courseId: courseId,
-      attendeeType: selected.attendeeType,
-      attendeeIndex: selected.attendeeIndex,
-      answers
+      memberId: selectedAttendee.memberId || '',
+
+      attendeeRole: selectedAttendee.role,
+      attendeeName: selectedAttendee.name,
+      attendeeGender: selectedAttendee.gender,
+      attendeeBirthDate: selectedAttendee.birthDate,
+
+      sheet: qs('type') || 'SingleCourses',
+      courseId: qs('id'),
+      rentEquipment: equip,
+      note: document.getElementById('note').value || ''
     };
 
-    const r = await fetchJsonSafe(API_URL, {
+    const res = await fetch(API_URL, {
       method:'POST',
       headers:{ 'Content-Type':'application/json' },
       body: JSON.stringify(payload)
     });
 
-    if (r.status !== 'success') {
-      alert('❌ 預約失敗：' + (r.message || '請稍後再試'));
+    const json = await res.json();
+    if(json.status !== 'success'){
+      alert('❌ 預約失敗：' + (json.message || '未知錯誤'));
       return;
     }
 
-    alert(`✅ 已完成預約\n預約ID：${r.bookingId || ''}`);
-    // 成功後返回
-    document.getElementById('backBtn').click();
+    alert('✅ 預約成功');
+    goBack();
 
-  } catch (err) {
-    alert('❌ 雲端連線失敗：' + String(err.message || err));
-  } finally {
+  }catch(e){
+    console.error(e);
+    alert('❌ 雲端連線失敗：' + (e.message || String(e)));
+  }finally{
     btn.disabled = false;
     btn.innerText = '確認送出預約';
   }
 }
 
-/* ================== 初始化 ================== */
-document.getElementById('changeWhoBtn').onclick = () => {
-  // 手動更換：允許再開
-  pickerOpenedOnce = false;
-  openPicker();
-};
+/}
 
-document.getElementById('submitBtn').onclick = submitBooking;
-
-(async () => {
-  try {
+/* ===== init ===== */
+async function init(){
+  try{
     await liff.init({ liffId: LIFF_ID });
 
-    if (!liff.isLoggedIn()) {
+    if(!liff.isLoggedIn()){
       const clean = location.origin + location.pathname + location.search;
       liff.login({ redirectUri: clean });
       return;
     }
 
     lineUser = await liff.getProfile();
+    document.getElementById('line-avatar').src = lineUser.pictureUrl || 'https://cdn-icons-png.flaticon.com/512/3135/3135715.png';
+    document.getElementById('line-name').innerText = lineUser.displayName || 'LINE';
+    document.getElementById('line-pill').classList.remove('hidden');
 
-    // 先載課程 + 會員
-    await loadCourse();
-    renderCourse();
+    const courseId = qs('id');
+    const sheet = qs('type') || 'SingleCourses';
 
-    await loadMember();
-    // loadMember 可能會 redirect 註冊頁，所以這行之後才繼續
-    if (!memberBundle || memberBundle.status !== 'exists') return;
+    const res = await fetch(`${API_URL}?type=booking_init&lineUserId=${encodeURIComponent(lineUser.userId)}&sheet=${encodeURIComponent(sheet)}&id=${encodeURIComponent(courseId)}&_t=${Date.now()}`);
+    const json = await res.json();
 
-    // ✅ 預設選本人
-    selected.attendeeType = 'self';
-    selected.attendeeIndex = 0;
-    renderSelectedWho();
+    if(json.status !== 'success'){
+      showError(json.message || 'booking_init 失敗');
+      return;
+    }
 
-    // ✅ 渲染 A~AN
-    renderFormFields();
+    const c0 = json.data?.course || null;
+    memberData = json.data?.member || { status:'not_found' };
 
-    // ✅ 自動跳出對象選擇（只會一次，不會跑兩次）
-    openPicker();
+    if(!c0){
+      showError('找不到課程資料，請確認課程ID是否正確。');
+      return;
+    }
 
-  } catch (err) {
-    console.error(err);
-    document.getElementById('hintText').innerText = '載入錯誤：' + String(err.message || err);
-    alert('❌ 載入失敗：' + String(err.message || err));
-  } finally {
-    document.getElementById('loading').style.display = 'none';
+    renderCourse(c0);
+
+    document.getElementById('loading').classList.add('hidden');
+    document.getElementById('content').classList.remove('hidden');
+
+    if(memberData.status === 'not_found'){
+      const back = encodeURIComponent(location.href);
+      location.href = `register.html?from=${back}`;
+      return;
+    }
+
+    // ✅ 只自動彈一次（避免跑兩次）
+    if(!modalEverOpened){
+      openAttendeeModal();
+    }
+
+  }catch(e){
+    console.error(e);
+    showError(e.message || String(e));
   }
-})();
+}
+
+init();
 </script>
 </body>
 </html>
