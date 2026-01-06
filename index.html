@@ -52,7 +52,7 @@
       border:1px solid #F0F0F0;
     }
 
-    /* Detail modal */
+    /* Modal base */
     .modal-overlay{
       display:none; position:fixed; inset:0; background:rgba(0,0,0,0.65);
       z-index:1000; align-items:center; justify-content:center; padding:20px;
@@ -102,6 +102,7 @@
     .t-sub{ font-weight:600; font-size:14px; color:#222; opacity:.9; }
     .t-meta{ font-weight:600; font-size:13px; color:#111; opacity:.85; }
 
+    pre { white-space: pre-wrap; word-break: break-word; }
   </style>
 </head>
 
@@ -145,7 +146,7 @@
     <a href="#" onclick="location.reload()" class="flex flex-col items-center text-green-500">
       <i class="fas fa-compass text-xl"></i><span class="text-[11px] font-black">探索</span>
     </a>
-    <a href="#" onclick="goMemberCenter()" class="flex flex-col items-center text-gray-400">
+    <a href="#" onclick="goMemberCenter()" class="flex flex-col items-center text-gray-500">
       <i class="fas fa-user-circle text-xl"></i><span class="text-[11px] font-black">會員</span>
     </a>
   </nav>
@@ -187,7 +188,7 @@
     </div>
 
     <div class="p-6 border-t space-y-3">
-      <button class="w-full btn-solid py-4 rounded-2xl font-black" onclick="confirmAttendeeAndGo()">
+      <button id="attendee-confirm-btn" class="w-full btn-solid py-4 rounded-2xl font-black" onclick="confirmAttendeeAndGo()">
         確認並前往預約
       </button>
       <button id="go-register-btn" class="w-full btn-outline py-4 rounded-2xl font-black hidden" onclick="goRegisterFromPending()">
@@ -223,11 +224,19 @@ function navigateTo(p) {
   const base = location.href.split('?')[0];
   location.href = base.substring(0, base.lastIndexOf('/')+1) + p;
 }
-
 function getCleanUrl(){
   return location.origin + location.pathname + location.search;
 }
+function escapeHtml(s){
+  return String(s)
+    .replaceAll('&','&amp;')
+    .replaceAll('<','&lt;')
+    .replaceAll('>','&gt;')
+    .replaceAll('"','&quot;')
+    .replaceAll("'","&#039;");
+}
 
+/* ===================== Course normalize ===================== */
 function normalizeCourse(c) {
   return {
     courseId: c.courseId || c['課程ID'] || c['ID'] || '',
@@ -252,12 +261,12 @@ async function initLIFF(){
     if (loggedIn){
       lineUser = await liff.getProfile();
       renderTopRightUser(lineUser);
-      await warmupMemberProfile(); // 有登入就先拉一次會員資料
+      await warmupMemberProfile();
     } else {
       renderTopRightLogin();
     }
   }catch(err){
-    console.warn('LIFF init failed (non-LINE browser?)', err);
+    console.warn('LIFF init failed', err);
     liffReady = false;
     loggedIn = false;
     renderTopRightLogin();
@@ -276,7 +285,6 @@ function renderTopRightLogin(){
 }
 
 function onTopRightClick(){
-  // 未登入 → 走 LIFF login；若非 LIFF 環境 → 直接去 register.html
   if (liffReady){
     if (!liff.isLoggedIn()){
       liff.login({ redirectUri: getCleanUrl() });
@@ -302,15 +310,31 @@ async function warmupMemberProfile(){
     if (!uid) return;
 
     const res = await fetch(`${API_URL}?type=member_check&lineUserId=${encodeURIComponent(uid)}&_t=${Date.now()}`);
-    const raw = await res.json();
-    const result = raw?.data ? raw.data : raw; // 兼容 worker 包裝
+    const rawText = await res.text();
 
-    if (result.status === 'exists'){
+    // 若回 HTML，直接視為 unknown（避免 JSON parse 爆）
+    if (/<html|<!doctype html/i.test(rawText)) {
+      memberStatus = 'unknown';
+      memberData = null;
+      familyData = [];
+      return;
+    }
+
+    let raw;
+    try { raw = JSON.parse(rawText); } catch(e){ raw = null; }
+
+    const result = raw?.data ? raw.data : raw;
+
+    if (result && result.status === 'exists'){
       memberStatus = 'exists';
       memberData = result.data || null;
       familyData = result.families || [];
-    } else {
+    } else if (result && result.status === 'not_found'){
       memberStatus = 'not_found';
+      memberData = null;
+      familyData = [];
+    } else {
+      memberStatus = 'unknown';
       memberData = null;
       familyData = [];
     }
@@ -320,29 +344,73 @@ async function warmupMemberProfile(){
   }
 }
 
-/* ===================== Courses ===================== */
+/* ===================== Courses (SAFE switchTab) ===================== */
 async function switchTab(name) {
   currentSheet = name;
   document.querySelectorAll('.tab-item').forEach(t=>t.classList.remove('active'));
   document.getElementById(`tab-${name}`).classList.add('active');
 
   const list = document.getElementById('course-list');
-  list.innerHTML = '<div class="p-20 text-center text-gray-400 font-bold">讀取中...</div>';
+  list.innerHTML = '<div class="p-20 text-center text-gray-500 font-bold">讀取中...</div>';
+
+  // ✅ 兩種模式都試：避免 Worker / GS 參數差異
+  const urls = [
+    `${API_URL}?sheet=${encodeURIComponent(name)}&_t=${Date.now()}`,
+    `${API_URL}?type=fetch_courses&sheet=${encodeURIComponent(name)}&_t=${Date.now()}`
+  ];
 
   try {
-    const res = await fetch(`${API_URL}?sheet=${name}`);
-    const json = await res.json();
-    currentCourses = (json.data || []).map(normalizeCourse);
-    render();
-  } catch {
-    list.innerHTML = '<div class="p-10 text-center text-red-500 font-bold">載入失敗</div>';
+    let lastText = '';
+
+    for (const u of urls) {
+      const res = await fetch(u, {
+        method: 'GET',
+        headers: { 'Accept': 'application/json' },
+        cache: 'no-store'
+      });
+
+      const text = await res.text();
+      lastText = text || '';
+
+      // 1) 若回 HTML（常見：權限/轉址/CF錯誤頁）
+      if (/<html|<!doctype html/i.test(lastText)) {
+        continue;
+      }
+
+      // 2) 嘗試解析 JSON
+      let json;
+      try { json = JSON.parse(lastText); } catch (e) { continue; }
+
+      // 3) 成功拿到資料
+      currentCourses = (json.data || []).map(normalizeCourse);
+      renderCourses();
+      return;
+    }
+
+    // 兩個都失敗 → 顯示較明確錯誤（協助你定位）
+    list.innerHTML = `
+      <div class="p-8 text-center">
+        <div class="text-red-600 font-black text-lg mb-2">載入失敗</div>
+        <div class="text-gray-700 font-semibold text-sm">
+          API 回傳不是 JSON（可能是權限頁或錯誤頁）
+        </div>
+        <pre class="text-left text-xs mt-4 p-4 bg-gray-50 rounded-xl overflow-auto border" style="max-height:240px;">${escapeHtml(lastText).slice(0, 1200)}</pre>
+      </div>
+    `;
+  } catch (err) {
+    list.innerHTML = `
+      <div class="p-8 text-center">
+        <div class="text-red-600 font-black text-lg mb-2">載入失敗</div>
+        <div class="text-gray-700 font-semibold text-sm">${escapeHtml(String(err))}</div>
+      </div>
+    `;
   }
 }
 
-function render() {
+function renderCourses() {
   const list = document.getElementById('course-list');
   if (!currentCourses.length) {
-    list.innerHTML = '<div class="p-10 text-center text-gray-500 font-bold">目前無活動</div>';
+    list.innerHTML = '<div class="p-10 text-center text-gray-700 font-bold">目前無活動</div>';
     return;
   }
 
@@ -351,7 +419,7 @@ function render() {
       <img src="${c.coverImage || 'https://placehold.co/800x450'}" alt="cover">
       <div class="p-6">
         <h3 class="font-black text-lg text-gray-900">${c.courseName}</h3>
-        <p class="text-sm text-gray-700 mt-2 font-semibold">${c.courseDate || ''}</p>
+        <p class="text-sm text-gray-800 mt-2 font-semibold">${c.courseDate || ''}</p>
         <div class="flex justify-between items-center mt-6">
           <div class="text-green-700 font-black text-xl">$${c.memberPrice}</div>
           <div class="flex gap-2">
@@ -386,13 +454,13 @@ function closeDetails() {
   document.getElementById('detail-modal').style.display='none';
 }
 
-/* ===================== Booking Flow (NEW) ===================== */
+/* ===================== Booking Flow ===================== */
 async function startBookingFlow(courseId){
   const c = currentCourses.find(x => String(x.courseId) === String(courseId));
   pendingCourseId = courseId;
   pendingCourseName = c ? c.courseName : '課程';
 
-  // 1) 必須登入才能選對象
+  // 必須登入才能選對象
   if (liffReady){
     if (!liff.isLoggedIn()){
       liff.login({ redirectUri: getCleanUrl() });
@@ -400,21 +468,19 @@ async function startBookingFlow(courseId){
     }
     if (!lineUser) lineUser = await liff.getProfile();
   } else {
-    // 非 LIFF 環境：就直接帶去會員中心（讓他先註冊/或登入）
     goMemberCenter();
     return;
   }
 
-  // 2) 取會員資料（避免快取不準）
   await warmupMemberProfile();
 
-  // 3) 未註冊：POP 顯示「去註冊」
+  // 未註冊：提示去註冊（POP）
   if (memberStatus !== 'exists'){
     openAttendeeModalAsNotRegistered();
     return;
   }
 
-  // 4) 已註冊：POP 成員列表（本人 + 家人）
+  // 已註冊：POP 選擇成員
   openAttendeeModal();
 }
 
@@ -428,15 +494,11 @@ function openAttendeeModalAsNotRegistered(){
   `;
   document.getElementById('attendee-hint').style.display = 'none';
   document.getElementById('go-register-btn').classList.remove('hidden');
-
-  // 先藏掉「確認並前往預約」避免誤點
-  document.querySelector('#attendee-modal .btn-solid').classList.add('hidden');
-
+  document.getElementById('attendee-confirm-btn').classList.add('hidden');
   document.getElementById('attendee-modal').style.display='flex';
 }
 
 function goRegisterFromPending(){
-  // 記住這次要預約的課程，註冊回來可以繼續
   sessionStorage.setItem('pendingCourseId', pendingCourseId || '');
   sessionStorage.setItem('pendingCourseSheet', currentSheet || '');
   const from = encodeURIComponent(getCleanUrl());
@@ -446,7 +508,7 @@ function goRegisterFromPending(){
 function openAttendeeModal(){
   document.getElementById('attendee-course-name').innerText = pendingCourseName || '課程';
   document.getElementById('go-register-btn').classList.add('hidden');
-  document.querySelector('#attendee-modal .btn-solid').classList.remove('hidden');
+  document.getElementById('attendee-confirm-btn').classList.remove('hidden');
   document.getElementById('attendee-hint').style.display = 'none';
 
   const items = [];
@@ -508,7 +570,6 @@ function confirmAttendeeAndGo(){
   }
   const key = picked.value;
 
-  // 建立要帶去 booking.html 的參數
   let attendeeType = 'self';
   let attendeeName = '';
   let attendeeGender = '';
@@ -533,7 +594,6 @@ function confirmAttendeeAndGo(){
 
   closeAttendeeModal();
 
-  // ✅ 導到 booking.html，並帶上報名對象資訊
   const qs = new URLSearchParams({
     id: pendingCourseId || '',
     type: currentSheet || '',
@@ -547,26 +607,23 @@ function confirmAttendeeAndGo(){
   navigateTo(`booking.html?${qs.toString()}`);
 }
 
-/* ===================== Auto resume after register ===================== */
+/* ===================== Resume pending after register ===================== */
 async function tryResumePendingBooking(){
   const pid = sessionStorage.getItem('pendingCourseId');
   const psheet = sessionStorage.getItem('pendingCourseSheet');
 
   if (pid && psheet){
-    // 清掉避免一直觸發
     sessionStorage.removeItem('pendingCourseId');
     sessionStorage.removeItem('pendingCourseSheet');
 
-    // 切到原本的 sheet
     if (psheet && psheet !== currentSheet){
       await switchTab(psheet);
     }
-    // 觸發預約流程
     startBookingFlow(pid);
   }
 }
 
-/* ===================== Init ===================== */
+/* ===================== Boot ===================== */
 (async function boot(){
   await initLIFF();
   await switchTab('SingleCourses');
