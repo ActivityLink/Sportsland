@@ -233,24 +233,22 @@ document.getElementById('reg-form').addEventListener('submit', async function (e
 });
 
 /* ========= 初始化 ========= */
+<script>
 (async () => {
   try {
-    await liff.init({ liffId: LIFF_ID });
+    await liff.init({
+      liffId: LIFF_ID,
+      withLoginOnExternalBrowser: true // 允許外部瀏覽器也可走 LIFF Login
+    });
 
-    // ❌ 不在 LIFF 環境，直接導回首頁或顯示提示
-    if (!liff.isInClient()) {
-      alert('請透過 LINE 官方帳號進入會員中心');
-      location.href = 'index.html'; // 或你前台首頁
-      return;
-    }
-
-    // ❌ 尚未登入 → 登入後回到當前頁
+    // 尚未登入：登入後回到「此頁（register.html）」而不是回首頁
     if (!liff.isLoggedIn()) {
-      liff.login({ redirectUri: location.href });
+      const cleanUrl = location.origin + location.pathname + location.search;
+      liff.login({ redirectUri: cleanUrl });
       return;
     }
 
-    // ✅ 已登入，正常流程
+    // 已登入：正常取 profile
     lineUser = await liff.getProfile();
 
     document.getElementById('line-avatar').src =
@@ -259,11 +257,12 @@ document.getElementById('reg-form').addEventListener('submit', async function (e
     document.getElementById('line-status').classList.remove('hidden');
 
     checkStatus();
-
   } catch (err) {
     console.error("LIFF Init Error:", err);
   }
 })();
+</script>
+
 
 </script>
 
