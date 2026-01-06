@@ -236,25 +236,35 @@ document.getElementById('reg-form').addEventListener('submit', async function (e
 (async () => {
   try {
     await liff.init({ liffId: LIFF_ID });
-    if (!liff.isLoggedIn()) {
-  liff.login({
-    redirectUri: location.href
-  });
-  return;
-}
 
+    // ❌ 不在 LIFF 環境，直接導回首頁或顯示提示
+    if (!liff.isInClient()) {
+      alert('請透過 LINE 官方帳號進入會員中心');
+      location.href = 'index.html'; // 或你前台首頁
+      return;
+    }
+
+    // ❌ 尚未登入 → 登入後回到當前頁
+    if (!liff.isLoggedIn()) {
+      liff.login({ redirectUri: location.href });
+      return;
+    }
+
+    // ✅ 已登入，正常流程
     lineUser = await liff.getProfile();
 
-    // 🔑 顯示登入者的 LINE 資訊 (LOGO 與名稱)
-    document.getElementById('line-avatar').src = lineUser.pictureUrl || 'https://cdn-icons-png.flaticon.com/512/3135/3135715.png';
+    document.getElementById('line-avatar').src =
+      lineUser.pictureUrl || 'https://cdn-icons-png.flaticon.com/512/3135/3135715.png';
     document.getElementById('line-name').innerText = lineUser.displayName;
     document.getElementById('line-status').classList.remove('hidden');
 
     checkStatus();
+
   } catch (err) {
     console.error("LIFF Init Error:", err);
   }
 })();
+
 </script>
 
 </body>
