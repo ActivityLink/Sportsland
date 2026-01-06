@@ -39,13 +39,9 @@
     .chev{ transition:transform .15s ease; }
     details[open] .chev{ transform:rotate(180deg); }
 
-    /* radio cards */
     .radio-card{ border:1px solid #E5E7EB; border-radius:18px; padding:14px; background:#fff; display:flex; gap:12px; align-items:flex-start; cursor:pointer; }
     .radio-card input{ margin-top:3px; width:18px; height:18px; }
-    .radio-card .h{ font-size:15px; font-weight:900; color:#111; }
-    .radio-card .d{ font-size:13px; font-weight:600; color:#111; opacity:.9; }
 
-    /* modal */
     .overlay{ position:fixed; inset:0; background:rgba(0,0,0,.65); display:none; align-items:center; justify-content:center; padding:18px; z-index:1000; }
     .modal{ background:#fff; width:100%; max-width:560px; border-radius:22px; overflow:hidden; max-height:86vh; }
     .money{ font-size:22px; font-weight:900; }
@@ -75,13 +71,11 @@
     </div>
 
     <div id="content" class="hidden space-y-4">
-      <!-- course header -->
       <div class="card">
         <div class="title" id="course-name">課程</div>
         <div class="meta mt-2" id="course-meta"></div>
       </div>
 
-      <!-- attendee -->
       <div class="card">
         <div class="flex items-start justify-between gap-3">
           <div>
@@ -93,7 +87,6 @@
         </div>
       </div>
 
-      <!-- pricing plan -->
       <div class="card space-y-3">
         <div>
           <div class="title text-[18px]">費用方案</div>
@@ -102,7 +95,6 @@
         <div id="price-plans" class="space-y-2"></div>
       </div>
 
-      <!-- equipment -->
       <div class="card space-y-3" id="equip-section" style="display:none;">
         <div>
           <div class="title text-[18px]">租用設備</div>
@@ -111,7 +103,6 @@
         <div id="equip-list" class="space-y-2"></div>
       </div>
 
-      <!-- details -->
       <div class="card space-y-4">
         <div>
           <div class="title text-[18px]">課程資訊（A～AN）</div>
@@ -121,7 +112,6 @@
         <div id="detail-basic" class="grid2"></div>
         <div id="detail-price" class="grid2"></div>
         <div id="detail-quota" class="grid2"></div>
-        <div id="detail-rules" class="space-y-2"></div>
         <div id="detail-long" class="space-y-2"></div>
 
         <div>
@@ -131,7 +121,6 @@
         </div>
       </div>
 
-      <!-- summary -->
       <div class="card space-y-2">
         <div class="title text-[18px]">金額結算</div>
 
@@ -190,18 +179,21 @@ const LIFF_ID  = '2008786875-F7ifLsbN';
 
 /* ========= 狀態 ========= */
 let lineUser = null;
-let memberData = null; // {status:"exists"/"not_found", data, families}
+let memberData = null;
 let course = null;
 
 let selectedAttendee = null;
 let attendeeCandidates = [];
 let modalOpenedOnce = false;
 
-let selectedPlan = null; // 'EARLY'|'MEMBER'|'FRIEND'|'ORIGINAL'
+let selectedPlan = null;
 let basePrice = 0;
 let equipTotal = 0;
 
-/* ========= URL helper ========= */
+/* ✅ 從 setup 補價格：equipment_list(Global) */
+let equipPriceMap = {};     // { 籃球:100, 排球:100 ... }
+let globalEquipList = [];   // [{name,price},...]
+
 function qs(k){ return new URL(location.href).searchParams.get(k) || ''; }
 
 /* ========= 返回 ========= */
@@ -239,11 +231,11 @@ function fmtMoney(n){
   return '$' + x.toLocaleString('en-US', { maximumFractionDigits: 0 });
 }
 
-/* ========= 日期判斷（避免少一天） ========= */
+/* ========= 日期（避免少一天） ========= */
 function parseLocalYMD(ymd){
   const s = safeText(ymd);
   if(!s) return null;
-  const ymd2 = s.split(' ')[0]; // 兼容 "2026-01-08 12:1"
+  const ymd2 = s.split(' ')[0];
   const [y,m,d] = ymd2.split('-').map(n => parseInt(n,10));
   if(!y || !m || !d) return null;
   return new Date(y, m-1, d);
@@ -258,7 +250,6 @@ function isEarlyBirdAvailable(c){
   const deadline = parseLocalYMD(c.earlyDeadline);
   if(!deadline) return false;
   const t = todayLocal();
-  // 早鳥截止當天仍算可用：t <= deadline
   return t.getTime() <= deadline.getTime();
 }
 
@@ -299,6 +290,53 @@ function longBlock(title, value){
   `;
 }
 
+/* ========= 讀 setup 的 equipment_list(Global) ========= */
+async function loadSetupEquipmentList(){
+  try{
+    const res = await fetch(`${API_URL}?type=config&_t=${Date.now()}`);
+    const raw = await res.json();
+
+    // 兼容 worker 包裝
+    const cfg = raw?.data && raw.status === 'success' ? raw.data : raw;
+
+    // 你可能回：
+    // cfg = { status:"success", data:{ equipment_list:{ Global:"[...]" } } }
+    // 或 cfg = { equipment_list:{ Global:"[...]" } }
+    // 或 cfg = { equipment_list:"[...]" }
+    let equipRaw = null;
+
+    if(cfg?.data?.equipment_list) equipRaw = cfg.data.equipment_list;
+    else if(cfg?.equipment_list) equipRaw = cfg.equipment_list;
+
+    // 如果是 {Global:"[...]"} 或 {global:"[...]"}
+    if(equipRaw && typeof equipRaw === 'object'){
+      equipRaw = equipRaw.Global || equipRaw.global || equipRaw.GLOBAL || '';
+    }
+
+    // 如果是字串 JSON
+    if(typeof equipRaw === 'string' && equipRaw.trim().startsWith('[')){
+      globalEquipList = JSON.parse(equipRaw);
+    } else if(Array.isArray(equipRaw)){
+      globalEquipList = equipRaw;
+    } else {
+      globalEquipList = [];
+    }
+
+    equipPriceMap = {};
+    globalEquipList.forEach(it=>{
+      const name = safeText(it?.name);
+      const price = toNumber(it?.price);
+      if(name) equipPriceMap[name] = price;
+    });
+
+  }catch(e){
+    // setup 失敗不阻斷流程，只是設備價會回到 0
+    console.warn('loadSetupEquipmentList failed:', e);
+    globalEquipList = [];
+    equipPriceMap = {};
+  }
+}
+
 /* ========= 課程 normalize ========= */
 function normalizeCourse(c){
   return {
@@ -331,29 +369,35 @@ function normalizeCourse(c){
     waitlist: c.waitlist || c['候補名額'] || '',
     genderLimit: c.genderLimit || c['性別限制'] || '',
     specialReq: c.specialReq || c['特殊要求'] || '',
-    coverImage: c.coverImage || c['封面圖片'] || '',
-    detailImage: c.detailImage || c['詳細圖片'] || '',
     highlights: c.highlights || c['課程亮點'] || '',
     content: c.content || c['課程內容'] || '',
     notes: c.notes || c['注意事項'] || '',
     targetAudience: c.targetAudience || c['適合對象'] || '',
     courseStatus: c.courseStatus || c['課程狀態'] || '',
-    sortWeight: c.sortWeight || c['排序權重'] || '',
     rentEquipment: c.rentEquipment || c['租用設備'] || ''
   };
 }
 
 /* ========= 設備解析 =========
-支援：
-- 瑜珈墊|50, 跳繩|30
-- 瑜珈墊(50)、跳繩(30)
-- 瑜珈墊, 跳繩  -> price=0
+- 若 course.rentEquipment 有寫：只顯示該課程需要的設備
+- 若 course.rentEquipment 空：顯示 setup 的 global 全部設備
+- 價格補齊：若沒指定價錢，從 equipPriceMap[name] 補
 */
-function parseEquipment(raw){
+function parseEquipmentByCourse(raw){
   const s = safeText(raw);
-  if(!s) return [];
+
+  // 1) 若課程沒有指定，直接用 global
+  if(!s){
+    return (globalEquipList || []).map(it=>({
+      name: safeText(it.name),
+      price: toNumber(it.price)
+    })).filter(x=>x.name);
+  }
+
+  // 2) 有指定：支援多種格式（只寫名稱也行）
   const normalized = s.replaceAll('，', ',').replaceAll('、', ',').replaceAll('\n', ',');
   const parts = normalized.split(',').map(x=>x.trim()).filter(Boolean);
+
   const items = [];
   for(const p of parts){
     let name = p;
@@ -372,12 +416,19 @@ function parseEquipment(raw){
         price = toNumber(m[2]);
       }
     }
+
+    // ✅ 價格補齊：setup 的 equipment_list
+    if(name && (!price || price===0)){
+      const cfgPrice = toNumber(equipPriceMap[name]);
+      if(cfgPrice) price = cfgPrice;
+    }
+
     if(name) items.push({ name, price });
   }
   return items;
 }
 
-/* ========= 渲染課程 & A~AN 資訊 ========= */
+/* ========= 渲染 ========= */
 function renderCourse(c0){
   const c = normalizeCourse(c0);
   course = c;
@@ -390,8 +441,7 @@ function renderCourse(c0){
   ].filter(Boolean).join('　｜　');
   document.getElementById('course-meta').innerText = meta || '';
 
-  // A~AN：用「欄位名 -> 值」方式完整呈現（重點欄位 + 長文）
-  const basic = [
+  document.getElementById('detail-basic').innerHTML = [
     kv('課程ID', c.courseId),
     kv('運動類別', c.sportCategory),
     kv('年齡分級', c.ageGroup),
@@ -405,47 +455,36 @@ function renderCourse(c0){
     kv('課程狀態', c.courseStatus),
     kv('性別限制', c.genderLimit),
     kv('特殊要求', c.specialReq),
-  ].filter(Boolean).join('');
-  document.getElementById('detail-basic').innerHTML = basic || kv('提示','此課程尚未填寫資料');
+  ].filter(Boolean).join('') || kv('提示','此課程尚未填寫資料');
 
-  const price = [
+  document.getElementById('detail-price').innerHTML = [
     kv('原價', toNumber(c.priceOriginal) ? fmtMoney(toNumber(c.priceOriginal)) : ''),
     kv('會員價', toNumber(c.memberPrice) ? fmtMoney(toNumber(c.memberPrice)) : ''),
     kv('早鳥價', toNumber(c.priceEarly) ? fmtMoney(toNumber(c.priceEarly)) : ''),
     kv('早鳥截止', c.earlyDeadline),
     kv('親友價', toNumber(c.friendPrice) ? fmtMoney(toNumber(c.friendPrice)) : ''),
   ].filter(Boolean).join('');
-  document.getElementById('detail-price').innerHTML = price || '';
 
-  const quota = [
+  document.getElementById('detail-quota').innerHTML = [
     kv('總名額', c.capacityTotal),
     kv('最少開班', c.minOpen),
     kv('已報名人數', c.enrolled),
     kv('剩餘名額', c.remain),
     kv('候補名額', c.waitlist),
   ].filter(Boolean).join('');
-  document.getElementById('detail-quota').innerHTML = quota || '';
 
-  const rules = [];
-  if (safeText(c.genderLimit)) rules.push(kv('性別限制', c.genderLimit));
-  if (safeText(c.specialReq)) rules.push(kv('特殊要求', c.specialReq));
-  document.getElementById('detail-rules').innerHTML = rules.join('') || '';
-
-  const longs = [
+  document.getElementById('detail-long').innerHTML = [
     longBlock('課程亮點', c.highlights),
     longBlock('課程內容', c.content),
     longBlock('注意事項', c.notes),
     longBlock('適合對象', c.targetAudience),
-  ].filter(Boolean).join('');
-  document.getElementById('detail-long').innerHTML = longs || kv('說明','此課程尚未填寫亮點/內容/注意事項/適合對象');
+  ].filter(Boolean).join('') || kv('說明','此課程尚未填寫亮點/內容/注意事項/適合對象');
 
-  // 方案 & 設備 UI
   renderPricePlans();
-  renderEquipments();
+  renderEquipments(); // ✅ 會用 setup 補價格
   recalcTotal();
 }
 
-/* ========= 方案渲染 & 判斷 ========= */
 function renderPricePlans(){
   const c = course;
   const earlyOk = isEarlyBirdAvailable(c);
@@ -455,21 +494,18 @@ function renderPricePlans(){
   const friend = toNumber(c.friendPrice);
   const early  = toNumber(c.priceEarly);
 
-  // 提示
   const hint = [];
   if(early && c.earlyDeadline){
     hint.push(earlyOk ? `✅ 早鳥可用（截止：${safeText(c.earlyDeadline).split(' ')[0]}）` : `⛔ 早鳥已過期（截止：${safeText(c.earlyDeadline).split(' ')[0]}）`);
   }
   document.getElementById('price-hint').innerText = hint.join('　') || '請選擇本次報名適用方案';
 
-  // 可用方案列表（優先：早鳥 > 會員 > 親友 > 原價）
   const plans = [];
   if(early && earlyOk) plans.push({ key:'EARLY', title:'早鳥價', price:early, desc:`截止：${safeText(c.earlyDeadline).split(' ')[0]}` });
   if(member) plans.push({ key:'MEMBER', title:'會員價', price:member, desc:'適用會員本人/家人' });
-  if(friend) plans.push({ key:'FRIEND', title:'親友價', price:friend, desc:'適用陪同親友（若有規則請依現場）' });
+  if(friend) plans.push({ key:'FRIEND', title:'親友價', price:friend, desc:'適用陪同親友' });
   if(original) plans.push({ key:'ORIGINAL', title:'原價', price:original, desc:'一般價格' });
 
-  // 如果都沒價
   const wrap = document.getElementById('price-plans');
   if(!plans.length){
     wrap.innerHTML = `<div class="muted">此課程尚未設定價格（原價/會員價/早鳥價/親友價）</div>`;
@@ -478,27 +514,19 @@ function renderPricePlans(){
     return;
   }
 
-  // 預選：早鳥可用就選早鳥，否則選會員，再不行選原價
-  if(!selectedPlan){
-    selectedPlan = plans[0].key;
-  } else {
-    // 如果原本選 EARLY 但早鳥已過期，退回 MEMBER/ORIGINAL
-    if(selectedPlan==='EARLY' && !earlyOk){
-      selectedPlan = plans[0].key;
-    }
-  }
+  if(!selectedPlan) selectedPlan = plans[0].key;
+  if(selectedPlan==='EARLY' && !earlyOk) selectedPlan = plans[0].key;
 
   wrap.innerHTML = plans.map(p=>`
     <label class="radio-card" onclick="setPlan('${p.key}', ${p.price})">
       <input type="radio" name="plan" ${p.key===selectedPlan?'checked':''}>
       <div class="flex-1">
-        <div class="h">${escapeHtml(p.title)}　<span class="text-[16px] font-black">${escapeHtml(fmtMoney(p.price))}</span></div>
-        <div class="d mt-1">${escapeHtml(p.desc || '')}</div>
+        <div class="font-black text-[15px]">${escapeHtml(p.title)}　<span class="text-[16px] font-black">${escapeHtml(fmtMoney(p.price))}</span></div>
+        <div class="text-[13px] font-semibold opacity-90 mt-1">${escapeHtml(p.desc || '')}</div>
       </div>
     </label>
   `).join('');
 
-  // 套用 basePrice
   const nowPlan = plans.find(x=>x.key===selectedPlan) || plans[0];
   basePrice = nowPlan.price;
 }
@@ -506,16 +534,12 @@ function renderPricePlans(){
 function setPlan(key, price){
   selectedPlan = key;
   basePrice = Number(price)||0;
-  // 更新 checked
-  document.querySelectorAll('input[name="plan"]').forEach(r=>r.checked=false);
-  // 這裡用重新 render 讓狀態一致
   renderPricePlans();
   recalcTotal();
 }
 
-/* ========= 設備渲染 ========= */
 function renderEquipments(){
-  const items = parseEquipment(course.rentEquipment);
+  const items = parseEquipmentByCourse(course?.rentEquipment);
   const section = document.getElementById('equip-section');
   const list = document.getElementById('equip-list');
 
@@ -526,18 +550,17 @@ function renderEquipments(){
   }
 
   section.style.display = 'block';
-  list.innerHTML = items.map((it, idx)=>`
+  list.innerHTML = items.map(it=>`
     <label class="radio-card" style="align-items:center;">
       <input type="checkbox" class="equip" data-name="${escapeHtml(it.name)}" data-price="${it.price}" onchange="recalcTotal()">
       <div class="flex-1">
-        <div class="h">${escapeHtml(it.name)}</div>
-        <div class="d mt-1">${it.price ? `加價：${escapeHtml(fmtMoney(it.price))}` : '加價：$0'}</div>
+        <div class="font-black text-[15px]">${escapeHtml(it.name)}</div>
+        <div class="text-[13px] font-semibold opacity-90 mt-1">加價：${escapeHtml(fmtMoney(it.price||0))}</div>
       </div>
     </label>
   `).join('');
 }
 
-/* ========= 結算 ========= */
 function planLabel(k){
   if(k==='EARLY') return '早鳥價';
   if(k==='MEMBER') return '會員價';
@@ -546,7 +569,6 @@ function planLabel(k){
   return '未選擇';
 }
 function recalcTotal(){
-  // equip total
   const equips = [...document.querySelectorAll('.equip')];
   equipTotal = equips.filter(x=>x.checked).reduce((sum, el)=> sum + (Number(el.dataset.price)||0), 0);
 
@@ -558,16 +580,12 @@ function recalcTotal(){
   document.getElementById('sum-total').innerText = fmtMoney(total);
 
   const note = [];
-  if(selectedPlan==='EARLY'){
-    note.push('已套用早鳥價');
-  }
-  if(equipTotal>0){
-    note.push('含設備加價');
-  }
+  if(selectedPlan==='EARLY') note.push('已套用早鳥價');
+  if(equipTotal>0) note.push('含設備加價');
   document.getElementById('sum-note').innerText = note.join('　');
 }
 
-/* ========= 產生候選人 ========= */
+/* ========= 成員 ========= */
 function buildCandidates(){
   const u = memberData?.data || {};
   const families = memberData?.families || [];
@@ -596,8 +614,6 @@ function buildCandidates(){
 
   attendeeCandidates = arr;
 }
-
-/* ========= 對象 modal ========= */
 function openAttendeeModal(forceOpen){
   if(!memberData || memberData.status !== 'exists') return;
   if(!forceOpen && modalOpenedOnce) return;
@@ -610,8 +626,8 @@ function openAttendeeModal(forceOpen){
     <label class="radio-card">
       <input type="radio" name="attendee" value="${idx}" ${idx===0 ? 'checked' : ''}>
       <div class="flex-1">
-        <div class="h">${escapeHtml(p.name)}　<span class="text-[12px] font-bold" style="opacity:.8;">（${p.role}）</span></div>
-        <div class="d mt-1">
+        <div class="font-black text-[15px]">${escapeHtml(p.name)}　<span class="text-[12px] font-bold opacity-80">（${p.role}）</span></div>
+        <div class="text-[13px] font-semibold opacity-90 mt-1">
           ${p.gender ? `性別：${escapeHtml(p.gender)}` : '' }
           ${p.birthDate ? `　生日：${escapeHtml(p.birthDate)}` : '' }
           ${p.grade ? `　年級：${escapeHtml(p.grade)}` : '' }
@@ -623,7 +639,6 @@ function openAttendeeModal(forceOpen){
   document.getElementById('attendee-overlay').style.display = 'flex';
 }
 function closeAttendeeModal(){ document.getElementById('attendee-overlay').style.display = 'none'; }
-
 function applyAttendee(){
   const chosen = [...document.querySelectorAll('input[name="attendee"]')].find(r=>r.checked);
   if(!chosen){ alert('請先選擇預約對象'); return; }
@@ -631,7 +646,6 @@ function applyAttendee(){
   const idx = parseInt(chosen.value, 10);
   selectedAttendee = attendeeCandidates[idx];
 
-  // 性別限制（不限/空就不管）
   const gl = safeText(course?.genderLimit);
   if(gl && gl !== '不限'){
     if(safeText(selectedAttendee.gender) !== gl){
@@ -651,16 +665,10 @@ function applyAttendee(){
   closeAttendeeModal();
 }
 
-/* ========= 送出預約 ========= */
+/* ========= 送出 ========= */
 async function confirmBooking(){
-  if(!selectedAttendee){
-    openAttendeeModal(true);
-    return;
-  }
-  if(!selectedPlan){
-    alert('請先選擇費用方案');
-    return;
-  }
+  if(!selectedAttendee){ openAttendeeModal(true); return; }
+  if(!selectedPlan){ alert('請先選擇費用方案'); return; }
 
   const btn = document.getElementById('confirm-btn');
   btn.disabled = true;
@@ -675,7 +683,6 @@ async function confirmBooking(){
       }));
 
     const total = (Number(basePrice)||0) + (Number(equipTotal)||0);
-    const isEarly = (selectedPlan==='EARLY');
 
     const payload = {
       type:'course_booking',
@@ -690,10 +697,9 @@ async function confirmBooking(){
       sheet: qs('type') || 'SingleCourses',
       courseId: qs('id'),
 
-      // ✅ 新增：費用結算資訊
       pricePlan: selectedPlan,
       basePrice: Number(basePrice)||0,
-      isEarlyBird: isEarly,
+      isEarlyBird: (selectedPlan==='EARLY'),
       equipSelected: equips,
       equipTotal: Number(equipTotal)||0,
       grandTotal: Number(total)||0,
@@ -728,8 +734,10 @@ async function confirmBooking(){
 /* ========= Init ========= */
 async function init(){
   try{
-    await liff.init({ liffId: LIFF_ID });
+    // ✅ 先讀 setup（補設備價格）
+    await loadSetupEquipmentList();
 
+    await liff.init({ liffId: LIFF_ID });
     if(!liff.isLoggedIn()){
       const clean = location.origin + location.pathname + location.search;
       liff.login({ redirectUri: clean });
@@ -743,42 +751,30 @@ async function init(){
 
     const courseId = qs('id');
     const sheet = qs('type') || 'SingleCourses';
-    if(!courseId){
-      showError('缺少課程ID（URL 需帶 id=...）');
-      return;
-    }
+    if(!courseId){ showError('缺少課程ID（URL 需帶 id=...）'); return; }
 
-    // ✅ 單一入口：course + member（避免重複呼叫/彈窗跑兩次）
+    // 你目前用 booking_init：同時拿課程+會員
     const res = await fetch(`${API_URL}?type=booking_init&lineUserId=${encodeURIComponent(lineUser.userId)}&sheet=${encodeURIComponent(sheet)}&id=${encodeURIComponent(courseId)}&_t=${Date.now()}`);
     const json = await res.json();
 
-    if(json.status !== 'success'){
-      showError(json.message || 'booking_init 失敗');
-      return;
-    }
+    if(json.status !== 'success'){ showError(json.message || 'booking_init 失敗'); return; }
 
     const c0 = json.data?.course || null;
     memberData = json.data?.member || { status:'not_found' };
 
-    if(!c0){
-      showError('找不到課程資料，請確認課程ID是否正確。');
-      return;
-    }
+    if(!c0){ showError('找不到課程資料，請確認課程ID是否正確。'); return; }
 
-    // 先渲染課程（含方案/設備/結算）
     renderCourse(c0);
 
     document.getElementById('loading').classList.add('hidden');
     document.getElementById('content').classList.remove('hidden');
 
-    // 未註冊 -> 導到會員中心
     if(memberData.status === 'not_found'){
       const back = encodeURIComponent(location.href);
       location.href = `register.html?from=${back}`;
       return;
     }
 
-    // 自動彈一次選對象（只一次）
     openAttendeeModal(false);
 
   }catch(e){
