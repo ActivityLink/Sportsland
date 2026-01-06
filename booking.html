@@ -83,7 +83,7 @@
             <div class="title text-[20px] mt-1" id="attendee-name">尚未選擇</div>
             <div class="meta mt-1" id="attendee-meta"></div>
           </div>
-          <button class="btn-ghost" onclick="openAttendeeModal()">更換</button>
+          <button class="btn-ghost" onclick="openAttendeeModal(true)">更換</button>
         </div>
       </div>
 
@@ -110,10 +110,6 @@
           <div class="label mb-2">備註（可選）</div>
           <textarea id="note" class="w-full p-4 rounded-2xl border border-slate-200 text-[15px] font-medium"
             rows="3" placeholder="例如：過敏、特殊需求補充"></textarea>
-        </div>
-
-        <div class="text-[12px] font-bold text-slate-600">
-          若未來你要加「自訂必填問題（身高/尺寸/等）」，我可以在這區塊再加「動態表單欄位」。
         </div>
       </div>
 
@@ -142,18 +138,23 @@
   </div>
 
 <script>
+/* ========= 基本設定 ========= */
 const API_URL = 'https://aged-rice-2438.wetw-net3.workers.dev/';
 const LIFF_ID  = '2008786875-F7ifLsbN';
 
+/* ========= 狀態 ========= */
 let lineUser = null;
-let memberData = null;  // {status:"exists"/"not_found", data, families}
+let memberData = null;   // {status:"exists"/"not_found", data, families}
 let course = null;
 
 let selectedAttendee = null;
-let modalEverOpened = false;
+let attendeeCandidates = [];   // modal list cache
+let modalOpenedOnce = false;   // avoid double open
 
+/* ========= URL helper ========= */
 function qs(k){ return new URL(location.href).searchParams.get(k) || ''; }
 
+/* ========= 返回 ========= */
 function goBack(){
   const from = qs('from');
   if (from) { location.href = decodeURIComponent(from); return; }
@@ -161,14 +162,13 @@ function goBack(){
   location.href = new URL('index.html', location.href).toString();
 }
 
+/* ========= 安全字串 ========= */
 function safeText(v){
   if (v === undefined || v === null) return '';
   const s = String(v).trim();
   if (!s || s === '0' || s === 'null' || s === 'undefined') return '';
   return s;
 }
-function nText(v){ const s = safeText(v); return s ? s : ''; }
-
 function escapeHtml(s){
   return String(s).replace(/[&<>"']/g, m => ({
     '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
@@ -178,9 +178,10 @@ function escNL(s){
   return escapeHtml(s).replace(/\n/g,'<br>');
 }
 
+/* ========= UI helpers ========= */
 function showError(msg){
-  document.getElementById('loading').classList.remove('hidden');
-  document.getElementById('loading').innerHTML = `
+  const loading = document.getElementById('loading');
+  loading.innerHTML = `
     <div class="title text-[18px] text-red-700">雲端連線失敗</div>
     <div class="sub mt-2 text-red-700">${escapeHtml(msg || '未知錯誤')}</div>
     <div class="mt-4"><button class="btn btn-ghost" onclick="location.reload()">重試</button></div>
@@ -216,8 +217,8 @@ function longBlock(title, value){
   `;
 }
 
+/* ========= 課程 normalize ========= */
 function normalizeCourse(c){
-  // 兼容 GAS/Worker 回傳 key
   return {
     courseId: c.courseId || c['課程ID'] || '',
     courseName: c.courseName || c['課程名稱'] || '',
@@ -269,6 +270,7 @@ function normalizeCourse(c){
   };
 }
 
+/* ========= 渲染課程 ========= */
 function renderCourse(c0){
   const c = normalizeCourse(c0);
   course = c;
@@ -322,7 +324,7 @@ function renderCourse(c0){
   if (safeText(c.specialReq)) rules.push(kv('特殊要求', c.specialReq));
   document.getElementById('detail-rules').innerHTML = rules.join('') || '';
 
-  // 長文（用展開/收合，避免畫面不美觀）
+  // 長文（展開/收合）
   const longs = [
     longBlock('課程亮點', c.highlights),
     longBlock('課程內容', c.content),
@@ -331,14 +333,21 @@ function renderCourse(c0){
   ].filter(Boolean).join('');
   document.getElementById('detail-long').innerHTML = longs || kv('說明', '此課程尚未填寫亮點/內容/注意事項/適合對象');
 
-  // 租用設備（勾選）
+  // 租用設備：完全不用 regex，避免 Invalid RegExp
   const equipRaw = safeText(c.rentEquipment);
   const equipBox = document.getElementById('equip-box');
   const equipList = document.getElementById('equip-list');
 
-  if(equipRaw){
-    const items = equipRaw.split(/[,，、\n]/).map(s=>s.trim()).filter(Boolean);
-    if(items.length){
+  if (equipRaw) {
+    const items = equipRaw
+      .replaceAll('，', ',')
+      .replaceAll('、', ',')
+      .replaceAll('\n', ',')
+      .split(',')
+      .map(s => s.trim())
+      .filter(Boolean);
+
+    if (items.length) {
       equipBox.classList.remove('hidden');
       equipList.innerHTML = items.map(x => `
         <label class="flex items-center gap-3">
@@ -347,45 +356,57 @@ function renderCourse(c0){
         </label>
       `).join('');
     } else {
-      equipBox.classList.add('hidden'); equipList.innerHTML = '';
+      equipBox.classList.add('hidden');
+      equipList.innerHTML = '';
     }
   } else {
-    equipBox.classList.add('hidden'); equipList.innerHTML = '';
+    equipBox.classList.add('hidden');
+    equipList.innerHTML = '';
   }
 }
 
-/* ===== attendee ===== */
-function openAttendeeModal(){
-  if(!memberData || memberData.status !== 'exists') return;
+/* ========= 產生候選人清單（本人 + 家人） ========= */
+function buildCandidates(){
+  const u = memberData?.data || {};
+  const families = memberData?.families || [];
+  const memberId = safeText(u.memberId) || safeText(u['會員ID']) || '';
 
-  // 只在第一次自動彈出，後面手動按更換才開（避免你說的「跑兩次」）
-  if(!modalEverOpened) modalEverOpened = true;
-
-  const u = memberData.data || {};
-  const families = memberData.families || [];
-
-  const list = [];
-  list.push({
+  const arr = [];
+  arr.push({
     role:'本人',
     name: safeText(u.name) || '本人',
     gender: safeText(u.gender) || '',
     birthDate: (safeText(u.birthDate) || '').split('T')[0],
     grade: safeText(u.grade) || '',
-    memberId: safeText(u.memberId) || safeText(u['會員ID']) || ''
+    memberId
   });
+
   families.forEach(f => {
-    list.push({
+    arr.push({
       role:'成員',
       name: safeText(f.name) || '成員',
       gender: safeText(f.gender) || '',
       birthDate: (safeText(f.birthDate) || '').split('T')[0],
       grade: safeText(f.grade) || '',
-      memberId: safeText(u.memberId) || safeText(u['會員ID']) || ''
+      memberId
     });
   });
 
+  attendeeCandidates = arr;
+}
+
+/* ========= Modal ========= */
+function openAttendeeModal(forceOpen){
+  if(!memberData || memberData.status !== 'exists') return;
+
+  // 非手動觸發：只允許自動開一次（避免你說的「跑兩次」）
+  if(!forceOpen && modalOpenedOnce) return;
+  if(!forceOpen) modalOpenedOnce = true;
+
+  buildCandidates();
+
   const wrap = document.getElementById('attendee-list');
-  wrap.innerHTML = list.map((p,idx)=>`
+  wrap.innerHTML = attendeeCandidates.map((p,idx)=>`
     <label class="block card cursor-pointer" style="box-shadow:none;">
       <div class="flex items-center gap-3">
         <input type="radio" name="attendee" value="${idx}" ${idx===0 ? 'checked' : ''} style="width:18px;height:18px;">
@@ -413,33 +434,10 @@ function applyAttendee(){
   if(!chosen){ alert('請先選擇預約對象'); return; }
 
   const idx = parseInt(chosen.value, 10);
-  const u = memberData.data || {};
-  const families = memberData.families || [];
-
-  const list = [];
-  list.push({
-    role:'本人',
-    name: safeText(u.name) || '本人',
-    gender: safeText(u.gender) || '',
-    birthDate: (safeText(u.birthDate) || '').split('T')[0],
-    grade: safeText(u.grade) || '',
-    memberId: safeText(u.memberId) || safeText(u['會員ID']) || ''
-  });
-  families.forEach(f => {
-    list.push({
-      role:'成員',
-      name: safeText(f.name) || '成員',
-      gender: safeText(f.gender) || '',
-      birthDate: (safeText(f.birthDate) || '').split('T')[0],
-      grade: safeText(f.grade) || '',
-      memberId: safeText(u.memberId) || safeText(u['會員ID']) || ''
-    });
-  });
-
-  selectedAttendee = list[idx];
+  selectedAttendee = attendeeCandidates[idx];
 
   // 性別限制先擋
-  const gl = safeText(course.genderLimit);
+  const gl = safeText(course?.genderLimit);
   if(gl && gl !== '不限'){
     if(safeText(selectedAttendee.gender) !== gl){
       alert(`此課程性別限制為「${gl}」，請改選符合的成員`);
@@ -458,10 +456,10 @@ function applyAttendee(){
   closeAttendeeModal();
 }
 
-/* ===== booking submit ===== */
+/* ========= 送出預約 ========= */
 async function confirmBooking(){
   if(!selectedAttendee){
-    openAttendeeModal();
+    openAttendeeModal(true); // 手動強制開
     return;
   }
 
@@ -512,9 +510,7 @@ async function confirmBooking(){
   }
 }
 
-/}
-
-/* ===== init ===== */
+/* ========= Init ========= */
 async function init(){
   try{
     await liff.init({ liffId: LIFF_ID });
@@ -533,6 +529,12 @@ async function init(){
     const courseId = qs('id');
     const sheet = qs('type') || 'SingleCourses';
 
+    if(!courseId){
+      showError('缺少課程ID（URL 需帶 id=...）');
+      return;
+    }
+
+    // booking_init：由後端一次回 course + member（避免前端重複呼叫造成彈窗跑兩次）
     const res = await fetch(`${API_URL}?type=booking_init&lineUserId=${encodeURIComponent(lineUser.userId)}&sheet=${encodeURIComponent(sheet)}&id=${encodeURIComponent(courseId)}&_t=${Date.now()}`);
     const json = await res.json();
 
@@ -554,16 +556,15 @@ async function init(){
     document.getElementById('loading').classList.add('hidden');
     document.getElementById('content').classList.remove('hidden');
 
+    // 未註冊 -> 導到會員中心（帶 from 回來）
     if(memberData.status === 'not_found'){
       const back = encodeURIComponent(location.href);
       location.href = `register.html?from=${back}`;
       return;
     }
 
-    // ✅ 只自動彈一次（避免跑兩次）
-    if(!modalEverOpened){
-      openAttendeeModal();
-    }
+    // 自動彈一次（只一次）
+    openAttendeeModal(false);
 
   }catch(e){
     console.error(e);
