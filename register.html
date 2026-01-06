@@ -406,7 +406,7 @@ async function checkStatus() {
   try {
     const res = await fetch(`${API_URL}?type=member_check&lineUserId=${encodeURIComponent(lineUser.userId)}&_t=${Date.now()}`);
     const raw = await res.json();
-
+    const result = (raw && raw.status === 'success' && raw.data) ? raw.data : raw;
     // 兼容兩種回傳：
     // 1) 直接 GAS：{status:"exists"...}
     // 2) Worker 包裝：{status:"ok", data:{...gas...}}
