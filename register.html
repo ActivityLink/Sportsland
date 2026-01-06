@@ -7,6 +7,7 @@
 
   <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
   <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
   <style>
     body { font-family: "Noto Sans TC", sans-serif; background:#F7F9FB; }
@@ -14,33 +15,48 @@
     input, select {
       width:100%; padding:14px; border-radius:12px;
       border:1.5px solid #E2E8F0; background:#F8F9FA;
-      margin-bottom:18px;
+      margin-bottom:14px;
     }
-    .btn-main {
-      background:#06C755; color:#fff;
-      width:100%; padding:18px;
-      border-radius:16px; font-weight:900;
-    }
-    .btn-edit {
-      background:#EBF5FF; color:#0066CC;
-      padding:10px 24px; border-radius:12px; font-weight:700; font-size:14px;
-    }
-    /* 載入中遮罩 */
+    .btn-main { background:#06C755; color:#fff; width:100%; padding:18px; border-radius:16px; font-weight:900; }
+    .btn-edit { background:#EBF5FF; color:#0066CC; padding:10px 18px; border-radius:12px; font-weight:800; font-size:14px; }
+
     #loading {
       position: fixed; inset: 0; background: white;
       display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 100;
     }
     .line-profile-badge {
-      display: flex; align-items: center; gap: 10px; background: #FFFFFF;
-      padding: 10px 16px; border-radius: 50px; border: 1px solid #E2E8F0;
-      margin-bottom: 24px;
+      display:flex; align-items:center; gap:10px; background:#fff;
+      padding:10px 16px; border-radius:999px; border:1px solid #E2E8F0;
+      margin-bottom:18px;
+    }
+
+    .member-card{
+      background:#fff; border:1px solid #e5e7eb;
+      border-radius:18px; padding:16px;
+      display:flex; align-items:center; justify-content:space-between;
+      margin-bottom:10px;
+    }
+    .tag{
+      font-size:10px; font-weight:900; padding:4px 10px; border-radius:999px;
+      background:#F0FAF3; color:#16a34a; border:1px solid #bbf7d0;
+    }
+
+    .btn-mini{
+      font-size:12px; font-weight:900;
+      padding:8px 12px; border-radius:12px;
+      border:1px solid #dbeafe; background:#eff6ff; color:#2563eb;
+    }
+
+    .btn-danger{
+      font-size:12px; font-weight:900;
+      padding:8px 12px; border-radius:12px;
+      border:1px solid #fee2e2; background:#fff1f2; color:#e11d48;
     }
   </style>
 </head>
 
 <body class="flex justify-center">
 
-<!-- 載入中遮罩 -->
 <div id="loading">
   <div class="animate-spin rounded-full h-10 w-10 border-b-2 border-green-500 mb-4"></div>
   <p class="font-bold text-gray-400 text-sm">正在核對會員身分...</p>
@@ -48,7 +64,7 @@
 
 <div class="w-full max-w-[640px] bg-white min-h-screen p-6">
 
-  <!-- 1. LINE 登入狀態顯示 -->
+  <!-- LINE 登入狀態 -->
   <div id="line-status" class="hidden">
     <div class="line-profile-badge shadow-sm">
       <img id="line-avatar" src="" class="w-8 h-8 rounded-full border border-green-200">
@@ -63,26 +79,30 @@
     </div>
   </div>
 
-  <!-- 狀態 A：已註冊過 -->
+  <!-- 已註冊 -->
   <div id="view-exists" class="hidden">
-    <h2 class="text-xl font-black mb-2">您好，歡迎回來</h2>
-    <p class="text-gray-400 text-sm mb-10 font-bold">您已完成中心會員註冊，可點擊編輯更新資料</p>
+    <h2 class="text-xl font-black mb-2">會員資料</h2>
+    <p class="text-gray-400 text-sm mb-6 font-bold">已註冊者將顯示所有成員列表，可編輯更新</p>
 
-    <div class="flex items-center justify-between p-6 bg-gray-50 rounded-2xl border border-gray-100 mb-8">
-      <div class="flex items-center gap-4">
-        <div class="w-12 h-12 bg-green-500 text-white rounded-full flex items-center justify-center shadow-md shadow-green-100">
-          <i class="fas fa-id-card text-xl"></i>
-        </div>
-        <div>
-          <div class="text-xs text-gray-400 font-bold">中心註冊姓名</div>
-          <div id="summary-name" class="font-black text-gray-800 text-lg">---</div>
-        </div>
+    <div class="flex items-center justify-between p-5 bg-gray-50 rounded-2xl border border-gray-100 mb-4">
+      <div>
+        <div class="text-xs text-gray-400 font-bold">中心註冊姓名</div>
+        <div id="summary-name" class="font-black text-gray-800 text-lg">---</div>
       </div>
       <button onclick="showEditForm()" class="btn-edit active:scale-95 transition-transform">編輯資料</button>
     </div>
+
+    <!-- ✅ 成員列表（本人 + 家人） -->
+    <div class="mt-4">
+      <div class="flex items-center justify-between mb-3">
+        <div class="font-black text-gray-800">所有成員列表</div>
+        <button class="btn-mini" onclick="showEditForm()">新增/編輯成員</button>
+      </div>
+      <div id="member-list"></div>
+    </div>
   </div>
 
-  <!-- 狀態 B：未註冊或編輯中 -->
+  <!-- 表單（註冊/編輯） -->
   <div id="view-form" class="hidden">
     <div class="flex items-center gap-3 mb-6">
       <h2 id="form-title" class="text-xl font-black">會員個人檔案管理</h2>
@@ -116,27 +136,29 @@
       <label>統一編號 (無則填 0)</label>
       <input id="o-tax">
 
+      <!-- ✅ 家人/成員管理 -->
+      <hr class="my-6">
+      <div class="flex items-center justify-between mb-2">
+        <div class="font-black text-gray-800">家人 / 成員資料</div>
+        <button type="button" class="btn-mini" onclick="addFamilyRow()">新增成員</button>
+      </div>
+      <div id="family-rows"></div>
+
       <button type="submit" class="btn-main mt-8" id="submit-btn">確認儲存</button>
       <button type="button" id="cancel-btn" onclick="checkStatus()" class="w-full text-gray-400 text-sm font-bold mt-4 hidden">取消返回</button>
     </form>
   </div>
 </div>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
-
 <script>
-/* ========= 基本設定 ========= */
 const API_URL = 'https://aged-rice-2438.wetw-net3.workers.dev/';
 const LIFF_ID = '2008786875-F7ifLsbN';
 let lineUser = {};
 
-/* ========= 工具 ========= */
-function v0(v) {
-  return v && v.toString().trim() !== '' ? v.toString().trim() : '0';
-}
-function f0(v) {
-  return (v === '0' || !v) ? '' : v;
-}
+let cachedFamilies = []; // 用來回填家人列
+
+function v0(v) { return v && v.toString().trim() !== '' ? v.toString().trim() : '0'; }
+function f0(v) { return (v === '0' || !v) ? '' : v; }
 
 function getTaiwanGrade(birth) {
   if (!birth) return '0';
@@ -152,29 +174,137 @@ function getTaiwanGrade(birth) {
   return '社會人士';
 }
 
-/* ========= 介面控制 ========= */
 function showEditForm() {
   document.getElementById('view-exists').classList.add('hidden');
   document.getElementById('view-form').classList.remove('hidden');
-  document.getElementById('form-title').innerText = "編輯您的會員資料";
+  document.getElementById('form-title').innerText = "編輯您的會員與成員資料";
   document.getElementById('cancel-btn').classList.remove('hidden');
+
+  // 回填家人成員列
+  renderFamilyRows(cachedFamilies);
 }
 
-/* ========= 會員狀態檢查 ========= */
+/* ===== 成員列表渲染（本人 + 家人） ===== */
+function renderMemberList(user, families) {
+  const list = document.getElementById('member-list');
+  const items = [];
+
+  // 本人
+  items.push({
+    role: '本人',
+    name: f0(user.name) || '未填',
+    gender: f0(user.gender) || '未填',
+    birthDate: user.birthDate ? String(user.birthDate).split('T')[0] : '',
+    grade: f0(user.grade) || '',
+  });
+
+  // 家人
+  (families || []).forEach(f => {
+    items.push({
+      role: f0(f["家人身分"]) || f0(f.familyRole) || '成員',
+      name: f0(f.name) || f0(f["家人姓名"]) || '未填',
+      gender: f0(f.gender) || '未填',
+      birthDate: f.birthDate ? String(f.birthDate).split('T')[0] : (f["生日"] ? String(f["生日"]).split('T')[0] : ''),
+      grade: f0(f.grade) || f0(f["目前年級"]) || '',
+    });
+  });
+
+  list.innerHTML = items.map((m, idx)=>`
+    <div class="member-card">
+      <div>
+        <div class="flex items-center gap-2 mb-1">
+          <span class="tag">${m.role}</span>
+          <div class="font-black text-gray-800">${m.name}</div>
+        </div>
+        <div class="text-xs text-gray-400 font-bold">
+          ${m.gender ? `性別：${m.gender}` : ''} 
+          ${m.birthDate ? `　生日：${m.birthDate}` : ''} 
+          ${m.grade ? `　年級：${m.grade}` : ''}
+        </div>
+      </div>
+      <button class="btn-mini" onclick="showEditForm()">編輯</button>
+    </div>
+  `).join('');
+}
+
+/* ===== 家人成員列（可新增/刪除/編輯） ===== */
+function addFamilyRow(prefill = {}) {
+  const wrap = document.getElementById('family-rows');
+  const row = document.createElement('div');
+  row.className = "p-4 rounded-2xl border border-gray-100 bg-gray-50 mb-3";
+
+  const birth = prefill.birthDate ? String(prefill.birthDate).split('T')[0] : (prefill.birth || '');
+  const grade = prefill.grade || prefill["目前年級"] || (birth ? getTaiwanGrade(birth) : '');
+
+  row.innerHTML = `
+    <div class="flex items-center justify-between mb-2">
+      <div class="font-black text-gray-700 text-sm">成員</div>
+      <button type="button" class="btn-danger" onclick="this.closest('div.p-4').remove()">刪除</button>
+    </div>
+
+    <label>姓名</label>
+    <input class="f-name" value="${prefill.name || prefill['家人姓名'] || ''}" placeholder="成員姓名">
+
+    <label>家人身分</label>
+    <input class="f-role" value="${prefill['家人身分'] || prefill.role || '學生'}" placeholder="例：學生 / 家長">
+
+    <label>性別</label>
+    <select class="f-gender">
+      <option value="">請選擇</option>
+      <option value="男">男</option>
+      <option value="女">女</option>
+    </select>
+
+    <label>出生日期</label>
+    <input type="date" class="f-birth" value="${birth}">
+
+    <label>目前年級</label>
+    <input class="f-grade" value="${grade}" placeholder="例：國小3 / 社會人士">
+  `;
+
+  wrap.appendChild(row);
+
+  // select 預填
+  const sel = row.querySelector('.f-gender');
+  sel.value = prefill.gender || prefill['性別'] || '';
+
+  // 出生日改變時自動更新年級
+  row.querySelector('.f-birth').addEventListener('change', (ev) => {
+    const b = ev.target.value;
+    row.querySelector('.f-grade').value = getTaiwanGrade(b);
+  });
+}
+
+function renderFamilyRows(families) {
+  const wrap = document.getElementById('family-rows');
+  wrap.innerHTML = '';
+  (families || []).forEach(f => addFamilyRow({
+    name: f.name || f['家人姓名'] || '',
+    role: f['家人身分'] || f.role || '學生',
+    gender: f.gender || f['性別'] || '',
+    birthDate: f.birthDate || f.birth || f['生日'] || '',
+    grade: f.grade || f['目前年級'] || ''
+  }));
+}
+
+/* ===== 狀態檢查：未註冊 → 表單；已註冊 → 列表 + 可編輯 ===== */
 async function checkStatus() {
   document.getElementById('loading').style.display = 'flex';
   try {
     const res = await fetch(`${API_URL}?type=member_check&lineUserId=${encodeURIComponent(lineUser.userId)}&_t=${Date.now()}`);
     const raw = await res.json();
 
-    // ✅ Worker 統一包裝：raw.status = ok；真結果在 raw.data
-    const result = raw && raw.data ? raw.data : {};
+    // ✅ Worker 統一包裝：raw.status=ok；真結果在 raw.data
+    const result = raw?.data || {};
 
     if (result.status === "exists") {
       const u = result.data || {};
+      const families = result.families || [];
+      cachedFamilies = families;
+
       document.getElementById('summary-name').innerText = f0(u.name);
 
-      // 預填表單
+      // 預填本人表單
       document.getElementById('m-name').value = f0(u.name);
       document.getElementById('m-phone').value = f0(u.phone);
       document.getElementById('m-gender').value = f0(u.gender);
@@ -183,13 +313,18 @@ async function checkStatus() {
       document.getElementById('o-tax').value = f0(u.taxId);
       if (u.birthDate) document.getElementById('m-birth').value = String(u.birthDate).split('T')[0];
 
+      // ✅ 成員列表渲染
+      renderMemberList(u, families);
+
       document.getElementById('view-exists').classList.remove('hidden');
       document.getElementById('view-form').classList.add('hidden');
     } else {
+      cachedFamilies = [];
       document.getElementById('view-exists').classList.add('hidden');
       document.getElementById('view-form').classList.remove('hidden');
       document.getElementById('form-title').innerText = "歡迎首次註冊中心會員";
       document.getElementById('cancel-btn').classList.add('hidden');
+      renderFamilyRows([]); // 首次註冊清空家人
     }
   } catch (e) {
     console.error(e);
@@ -198,12 +333,30 @@ async function checkStatus() {
   }
 }
 
-/* ========= 送出資料 ========= */
+/* ===== 送出（本人 + 家人） ===== */
 document.getElementById('reg-form').addEventListener('submit', async function (e) {
   e.preventDefault();
   const btn = document.getElementById('submit-btn');
   btn.disabled = true;
   btn.innerText = '正在處理同步...';
+
+  // 收集家人列
+  const familyData = [...document.querySelectorAll('#family-rows > div')].map(block => {
+    const name = v0(block.querySelector('.f-name').value);
+    const role = v0(block.querySelector('.f-role').value);
+    const gender = v0(block.querySelector('.f-gender').value);
+    const birth = v0(block.querySelector('.f-birth').value);
+    const grade = v0(block.querySelector('.f-grade').value || getTaiwanGrade(birth));
+    // 如果全部都是空，就不送
+    if (name === '0' && role === '0' && gender === '0' && birth === '0' && grade === '0') return null;
+    return {
+      姓名: name,
+      家人身分: role === '0' ? '學生' : role,
+      性別: gender === '0' ? '' : gender,
+      出生日期: birth,
+      目前年級: grade
+    };
+  }).filter(Boolean);
 
   const payload = {
     type: 'member_register',
@@ -215,7 +368,8 @@ document.getElementById('reg-form').addEventListener('submit', async function (e
     就讀學校: v0(document.getElementById('m-school').value),
     目前年級: getTaiwanGrade(document.getElementById('m-birth').value),
     機關名稱: v0(document.getElementById('o-name').value),
-    統一編號: v0(document.getElementById('o-tax').value)
+    統一編號: v0(document.getElementById('o-tax').value),
+    familyData: familyData
   };
 
   try {
@@ -235,7 +389,7 @@ document.getElementById('reg-form').addEventListener('submit', async function (e
   }
 });
 
-/* ========= 初始化（登入後回本頁，不回首頁） ========= */
+/* ===== LIFF init：登入後回本頁，避免跳回首頁 ===== */
 (async () => {
   try {
     await liff.init({ liffId: LIFF_ID });
@@ -250,7 +404,7 @@ document.getElementById('reg-form').addEventListener('submit', async function (e
 
     document.getElementById('line-avatar').src =
       lineUser.pictureUrl || 'https://cdn-icons-png.flaticon.com/512/3135/3135715.png';
-    document.getElementById('line-name').innerText = lineUser.displayName;
+    document.getElementById('line-name').innerText = lineUser.displayName || 'LINE 使用者';
     document.getElementById('line-status').classList.remove('hidden');
 
     checkStatus();
