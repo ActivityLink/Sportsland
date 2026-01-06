@@ -1,365 +1,400 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ActivityLink - 系統參數管理</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;900&display=swap');
-        :root { --line-green: #06C755; --sidebar-bg: #111111; }
-        body { font-family: 'Inter', 'PingFang TC', sans-serif; background-color: #F8FAFC; color: #333; }
-        .sidebar { transition: width 0.2s; width: 240px; background-color: var(--sidebar-bg); position: fixed; height: 100%; z-index: 50; }
-        .sidebar.collapsed { width: 64px; }
-        .main-content { transition: margin-left 0.2s; margin-left: 240px; min-height: 100vh; }
-        .main-content.expanded { margin-left: 64px; }
-        .collapsed .nav-text, .collapsed .logo-text { display: none; }
-        .nav-link { color: #A0A0A0; padding: 14px 24px; display: flex; align-items: center; gap: 16px; cursor: pointer; transition: 0.2s; text-decoration: none; }
-        .nav-link:hover { color: white; background-color: rgba(255, 255, 255, 0.05); }
-        .nav-link.active { background-color: var(--line-green); color: white; }
-        label { display: block; font-size: 0.75rem; font-weight: 800; color: #64748B; margin-bottom: 0.5rem; text-transform: uppercase; }
-        input { width: 100%; border: 1px solid #E2E8F0; border-radius: 8px; padding: 12px; font-size: 0.95rem; outline: none; transition: all 0.2s; }
-        input:focus { border-color: var(--line-green); box-shadow: 0 0 0 3px rgba(6, 199, 85, 0.1); }
-        .card { background: white; border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); padding: 32px; margin-bottom: 32px; border: 1px solid #F1F5F9; }
-        .btn-line { padding: 12px 36px; border-radius: 8px; font-weight: 800; cursor: pointer; display: inline-flex; align-items: center; gap: 10px; transition: 0.2s; border: none; }
-        .btn-line-green { background-color: var(--line-green); color: white; }
-        .btn-line-green:hover { background-color: #05b34c; transform: translateY(-1px); }
-        .loading-spinner { border: 3px solid #f3f3f3; border-top: 3px solid var(--line-green); border-radius: 50%; width: 24px; height: 24px; animation: spin 1s linear infinite; display: inline-block; }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        .status-badge { font-size: 10px; font-weight: 900; padding: 4px 12px; border-radius: 20px; text-transform: uppercase; border: 1px solid currentColor; }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ActivityLink - 系統參數管理</title>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;900&display=swap');
+    :root { --line-green:#06C755; --sidebar-bg:#111; }
+    body { font-family:'Inter','PingFang TC',sans-serif; background:#F8FAFC; color:#111; }
+    .sidebar { transition: width .2s; width:240px; background:var(--sidebar-bg); position:fixed; height:100%; z-index:50; }
+    .sidebar.collapsed { width:64px; }
+    .main-content { transition: margin-left .2s; margin-left:240px; min-height:100vh; }
+    .main-content.expanded { margin-left:64px; }
+    .collapsed .nav-text, .collapsed .logo-text { display:none; }
+    .nav-link { color:#A0A0A0; padding:14px 24px; display:flex; align-items:center; gap:16px; cursor:pointer; transition:.2s; text-decoration:none; }
+    .nav-link:hover { color:#fff; background:rgba(255,255,255,.06); }
+    .nav-link.active { background:var(--line-green); color:#fff; }
+    label { display:block; font-size:.72rem; font-weight:800; color:#64748B; margin-bottom:.5rem; text-transform:uppercase; letter-spacing:.06em; }
+    input { width:100%; border:1px solid #E2E8F0; border-radius:10px; padding:12px; font-size:.95rem; outline:none; transition:.2s; background:#fff; }
+    input:focus { border-color:var(--line-green); box-shadow:0 0 0 3px rgba(6,199,85,.12); }
+    .card { background:#fff; border-radius:14px; box-shadow:0 1px 3px rgba(0,0,0,.08); padding:28px; margin-bottom:26px; border:1px solid #F1F5F9; }
+    .btn-line { padding:12px 30px; border-radius:10px; font-weight:900; cursor:pointer; display:inline-flex; align-items:center; gap:10px; transition:.2s; border:none; }
+    .btn-line-green { background:var(--line-green); color:#fff; }
+    .btn-line-green:hover { background:#05b34c; transform: translateY(-1px); }
+    .loading-spinner { border:3px solid #f3f3f3; border-top:3px solid var(--line-green); border-radius:50%; width:22px; height:22px; animation:spin 1s linear infinite; display:inline-block; }
+    @keyframes spin { 0%{transform:rotate(0)} 100%{transform:rotate(360deg)} }
+    .status-badge { font-size:10px; font-weight:900; padding:5px 12px; border-radius:999px; text-transform:uppercase; border:1px solid currentColor; }
+    .hint { font-size:12px; color:#64748B; }
+    .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; }
+  </style>
 </head>
+
 <body>
+  <aside id="sidebar" class="sidebar">
+    <div class="p-8 flex items-center gap-4 mb-6">
+      <div class="w-10 h-10 bg-[#06C755] rounded-lg flex items-center justify-center shadow-lg">
+        <i class="fas fa-link text-white text-lg"></i>
+      </div>
+      <span class="text-xl font-black logo-text text-white tracking-tighter">ActivityLink</span>
+    </div>
 
-    <aside id="sidebar" class="sidebar">
-        <div class="p-8 flex items-center gap-4 mb-6">
-            <div class="w-10 h-10 bg-[#06C755] rounded-lg flex items-center justify-center shadow-lg"><i class="fas fa-link text-white text-lg"></i></div>
-            <span class="text-xl font-black logo-text text-white tracking-tighter">ActivityLink</span>
+    <nav>
+      <a href="index.html" class="nav-link">
+        <i class="fas fa-list-ul w-6 text-center text-lg"></i>
+        <span class="nav-text font-bold">課程內容管理</span>
+      </a>
+      <a href="sys.html" class="nav-link active">
+        <i class="fas fa-cog w-6 text-center text-lg"></i>
+        <span class="nav-text font-bold">系統參數設定</span>
+      </a>
+    </nav>
+  </aside>
+
+  <main id="main-content" class="main-content">
+    <nav class="sticky top-0 z-40 bg-white/80 backdrop-blur-md border-b border-slate-200 px-10 py-5 flex items-center justify-between shadow-sm">
+      <div class="flex items-center gap-8">
+        <button onclick="toggleSidebar()" class="text-slate-400 hover:text-slate-600 bg-transparent border-none cursor-pointer">
+          <i class="fas fa-bars text-xl"></i>
+        </button>
+        <h2 class="text-2xl font-black tracking-tight text-slate-800">系統參數管理</h2>
+      </div>
+      <div id="sync-status" class="status-badge text-slate-400">連線中...</div>
+    </nav>
+
+    <div class="px-10 py-10 max-w-5xl mx-auto">
+      <!-- 0. 提示 -->
+      <div class="card">
+        <div class="flex items-start gap-3">
+          <div class="mt-1 text-emerald-600"><i class="fas fa-circle-info"></i></div>
+          <div>
+            <div class="font-black text-slate-800 mb-2">此頁對應 setup 參數（equipment_list / remittance）</div>
+            <div class="hint leading-relaxed">
+              - 讀取：<span class="mono">GET ?type=config</span><br>
+              - 儲存：<span class="mono">POST type=config_update</span><br>
+              若你 booking 顯示設備加價為 $0，通常是 setup 的 equipment_list 沒正確寫入或讀取失敗。
+            </div>
+          </div>
         </div>
-        <nav>
-            <a href="index.html" class="nav-link"><i class="fas fa-list-ul w-6 text-center text-lg"></i><span class="nav-text font-bold">課程內容管理</span></a>
-            <a href="sys.html" class="nav-link active"><i class="fas fa-cog w-6 text-center text-lg"></i><span class="nav-text font-bold">系統參數設定</span></a>
-        </nav>
-    </aside>
+      </div>
 
-    <main id="main-content" class="main-content">
-        <nav class="sticky top-0 z-40 bg-white/80 backdrop-blur-md border-b border-slate-200 px-10 py-5 flex items-center justify-between shadow-sm">
-            <div class="flex items-center gap-8">
-                <button onclick="toggleSidebar()" class="text-slate-400 hover:text-slate-600 bg-transparent border-none cursor-pointer"><i class="fas fa-bars text-xl"></i></button>
-                <h2 class="text-2xl font-black tracking-tight text-slate-800">系統參數管理</h2>
-            </div>
-            <div id="sync-status" class="status-badge text-slate-400">連線中...</div>
-        </nav>
+      <!-- 1. 匯款資訊 -->
+      <div class="card">
+        <h3 class="text-lg font-black mb-2 flex items-center gap-3">
+          <i class="fas fa-university text-blue-500"></i> 1. 官方匯款帳戶設定
+        </h3>
+        <p class="hint mb-8">會存入 setup：key=<span class="mono">remittance</span>, scope=<span class="mono">Global</span></p>
 
-        <div class="px-10 py-10 max-w-5xl mx-auto">
-            <!-- 1. 匯款資訊 -->
-            <div class="card">
-                <h3 class="text-lg font-black mb-8 flex items-center gap-3"><i class="fas fa-university text-blue-500"></i> 1. 官方匯款帳戶設定 (JSON)</h3>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                    <div><label>銀行名稱</label><input type="text" id="bank-name"></div>
-                    <div><label>銀行代碼</label><input type="text" id="bank-code"></div>
-                    <div><label>受款人戶名</label><input type="text" id="bank-acc-name"></div>
-                    <div><label>轉帳帳號</label><input type="text" id="bank-acc-num"></div>
-                </div>
-            </div>
-
-            <!-- 2. 租借設備 -->
-            <div class="card">
-                <div class="flex justify-between items-center mb-8">
-                    <h3 class="text-lg font-black flex items-center gap-3"><i class="fas fa-tools text-orange-500"></i> 2. 租借設備清單 (JSON Array)</h3>
-                    <button onclick="addEqItem()" class="text-xs bg-slate-100 hover:bg-slate-200 px-4 py-2 rounded-lg font-bold text-slate-600"><i class="fas fa-plus mr-1"></i> 新增項目</button>
-                </div>
-                <div id="eq-container" class="space-y-4">
-                    <!-- JS 動態生成 -->
-                </div>
-            </div>
-
-            <div class="flex justify-end gap-4 mt-10">
-                <button onclick="saveAllSettings()" id="save-btn" class="btn-line btn-line-green px-24 py-5 shadow-2xl font-black text-lg">
-                    儲存並更新雲端試算表
-                </button>
-            </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+          <div><label>銀行名稱</label><input type="text" id="bank-name" placeholder="例：玉山銀行"></div>
+          <div><label>銀行代碼</label><input type="text" id="bank-code" placeholder="例：808"></div>
+          <div><label>受款人戶名</label><input type="text" id="bank-acc-name" placeholder="例：運動島有限公司"></div>
+          <div><label>轉帳帳號</label><input type="text" id="bank-acc-num" placeholder="例：1234-5678-9012"></div>
         </div>
-    </main>
+      </div>
 
-    <script>
-        const API_URL = 'https://aged-rice-2438.wetw-net3.workers.dev/';
-        let eqList = [];
+      <!-- 2. 租借設備 -->
+      <div class="card">
+        <div class="flex justify-between items-center mb-2">
+          <h3 class="text-lg font-black flex items-center gap-3">
+            <i class="fas fa-tools text-orange-500"></i> 2. 租借設備清單
+          </h3>
+          <button onclick="addEqItem()" class="text-xs bg-slate-100 hover:bg-slate-200 px-4 py-2 rounded-lg font-bold text-slate-700">
+            <i class="fas fa-plus mr-1"></i> 新增項目
+          </button>
+        </div>
 
-        // 側邊欄切換函數
-        function toggleSidebar() {
-            const sidebar = document.getElementById('sidebar');
-            const mainContent = document.getElementById('main-content');
-            sidebar.classList.toggle('collapsed');
-            mainContent.classList.toggle('expanded');
-        }
+        <p class="hint mb-6">
+          會存入 setup：key=<span class="mono">equipment_list</span>, scope=<span class="mono">Global</span><br>
+          格式：<span class="mono">[{"name":"籃球","price":100},{"name":"排球","price":100}]</span>
+        </p>
 
-        async function loadConfig() {
-    const status = document.getElementById('sync-status');
-    try {
-        // 添加調試信息
-        console.log('正在請求配置數據...');
-        const response = await fetch(`${API_URL}?type=config&_t=${Date.now()}`, {
-            headers: {
-                'Content-Type': 'application/json'
-            }
-        });
-        
-        if (!response.ok) {
-            throw new Error(`HTTP 錯誤! 狀態碼: ${response.status}`);
-        }
-        
-        const result = await response.json();
-        console.log("Cloud Config 原始響應:", result);
-        
-        // 提取配置數據
-        let configData = [];
-        
-        // 優先使用 data 屬性，這是修改後 GAS 返回的格式
-        if (result && result.data && Array.isArray(result.data)) {
-            configData = result.data;
-        } else if (result && result.config && Array.isArray(result.config)) {
-            // 備用：使用舊格式的 config 屬性
-            configData = result.config;
-        }
-        
-        console.log("提取的 configData:", configData);
-        
-        // 初始化變數
-        let bankData = {};
-        let eqListData = [];
-        
-        // 遍歷配置數據，分類處理
-        configData.forEach(item => {
-            if (!item) return;
-            
-            console.log("處理項目:", item);
-            
-            // 檢查項目類型
-            const itemType = (item.type || '').toLowerCase().trim();
-            const options = item.options || '';
-            
-            if (!options) return;
-            
-            try {
-                // 解析 JSON 選項
-                const parsedOptions = JSON.parse(options);
-                
-                if (itemType === 'remittance' || itemType === '匯款資訊' || itemType === 'bank') {
-                    bankData = parsedOptions;
-                    console.log("找到匯款資訊:", bankData);
-                } else if (itemType === 'equipment_list' || itemType === 'equipment' || itemType === '設備清單') {
-                    eqListData = Array.isArray(parsedOptions) ? parsedOptions : [];
-                    console.log("找到設備清單:", eqListData);
-                }
-            } catch (e) {
-                console.error("解析 JSON 失敗:", options, "錯誤:", e);
-            }
-        });
-        
-        // 填充匯款資訊表單
-        console.log("要填充的銀行資料:", bankData);
-        
-        // 支援多種可能的欄位名稱
-        if (bankData) {
-            const bankNameInput = document.getElementById('bank-name');
-            const bankCodeInput = document.getElementById('bank-code');
-            const bankAccNameInput = document.getElementById('bank-acc-name');
-            const bankAccNumInput = document.getElementById('bank-acc-num');
-            
-            // 優先使用標準欄位名稱，後備使用可能的中文或其他名稱
-            bankNameInput.value = bankData.bankName || bankData['銀行名稱'] || bankData.bank_name || '';
-            bankCodeInput.value = bankData.bankCode || bankData['銀行代碼'] || bankData.bank_code || '';
-            bankAccNameInput.value = bankData.accountName || bankData['戶名'] || bankData.accName || bankData.account_name || '';
-            bankAccNumInput.value = bankData.accountNumber || bankData['帳號'] || bankData.accNumber || bankData.account_number || '';
-            
-            console.log("填充後的銀行名稱:", bankNameInput.value);
-            console.log("填充後的銀行代碼:", bankCodeInput.value);
-        } else {
-            console.warn("未找到銀行資料");
-        }
-        
-        // 更新設備列表
-        eqList = eqListData;
-        renderEq();
-        
-        // 更新狀態顯示
-        status.innerText = "連線正常";
-        status.style.color = '#10B981'; // green-500
-        status.style.borderColor = '#10B981';
-        
-    } catch (error) {
-        console.error('載入配置時發生錯誤:', error);
-        status.innerText = "連線失敗";
-        status.style.color = '#EF4444'; // red-500
-        status.style.borderColor = '#EF4444';
-        
-        // 顯示錯誤信息
-        const eqContainer = document.getElementById('eq-container');
-        if (eqContainer) {
-            eqContainer.innerHTML = `
-                <div class="p-6 bg-red-50 border border-red-200 rounded-lg">
-                    <p class="text-red-600 font-bold mb-2">載入配置失敗</p>
-                    <p class="text-red-500 text-sm">${error.message}</p>
-                    <p class="text-gray-500 text-xs mt-4">
-                        響應數據：<br>
-                        <pre class="bg-gray-100 p-2 text-xs overflow-auto">${JSON.stringify(error, null, 2)}</pre>
-                    </p>
-                    <button onclick="loadConfig()" class="mt-3 px-4 py-2 bg-red-100 text-red-700 rounded text-sm font-bold hover:bg-red-200 transition">
-                        重新載入
-                    </button>
-                </div>
-            `;
-        }
+        <div id="eq-container" class="space-y-4"></div>
+
+        <div class="mt-6">
+          <div class="hint mb-2">目前 JSON 預覽（儲存前會以此內容寫入）：</div>
+          <pre id="eq-json-preview" class="mono text-xs bg-slate-50 border border-slate-200 rounded-xl p-4 overflow-auto"></pre>
+        </div>
+      </div>
+
+      <div class="flex justify-end gap-4 mt-10">
+        <button onclick="saveAllSettings()" id="save-btn" class="btn-line btn-line-green px-24 py-5 shadow-2xl text-lg">
+          儲存並更新雲端試算表
+        </button>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    /* =============================
+     *  基本設定
+     * ============================= */
+    const API_URL = 'https://aged-rice-2438.wetw-net3.workers.dev/';
+    let eqList = [];
+
+    function toggleSidebar() {
+      document.getElementById('sidebar').classList.toggle('collapsed');
+      document.getElementById('main-content').classList.toggle('expanded');
     }
-}
 
-        function renderEq() {
-            const container = document.getElementById('eq-container');
-            
-            if (!container) {
-                console.error('找不到 eq-container 元素');
-                return;
-            }
-            
-            if (!eqList || eqList.length === 0) {
-                container.innerHTML = '<p class="text-center py-10 text-slate-300 italic">目前無設備資料，請點擊上方按鈕新增項目</p>';
-                return;
-            }
-            
-            // 確保 eqList 中的每個項目都有必要的屬性
-            eqList = eqList.map(item => ({
-                name: item.name || '',
-                price: item.price || item.price === 0 ? Number(item.price) : 0
-            }));
-            
-            container.innerHTML = eqList.map((eq, i) => `
-                <div class="flex gap-6 items-center p-6 bg-slate-50/50 rounded-xl border border-slate-100 group hover:border-slate-200 transition-all">
-                    <div class="flex-1">
-                        <label class="text-[9px]">設備名稱</label>
-                        <input type="text" 
-                               value="${eq.name || ''}" 
-                               oninput="eqList[${i}].name = this.value" 
-                               class="bg-white"
-                               placeholder="輸入設備名稱">
-                    </div>
-                    <div class="w-32">
-                        <label class="text-[9px]">租用費用</label>
-                        <input type="number" 
-                               value="${eq.price || 0}" 
-                               oninput="eqList[${i}].price = Number(this.value) || 0" 
-                               class="bg-white"
-                               placeholder="0"
-                               min="0"
-                               step="10">
-                    </div>
-                    <button onclick="removeEqItem(${i})" 
-                            class="mt-4 p-4 text-slate-300 hover:text-red-500 bg-transparent border-none cursor-pointer transition-colors"
-                            title="刪除此項目">
-                        <i class="fas fa-trash-alt text-lg"></i>
-                    </button>
-                </div>
-            `).join('');
-        }
+    function setStatus(text, ok){
+      const el = document.getElementById('sync-status');
+      el.innerText = text;
+      if(ok === true){
+        el.style.color = '#10B981';
+        el.style.borderColor = '#10B981';
+      }else if(ok === false){
+        el.style.color = '#EF4444';
+        el.style.borderColor = '#EF4444';
+      }else{
+        el.style.color = '#94A3B8';
+        el.style.borderColor = '#94A3B8';
+      }
+    }
 
-        function addEqItem() { 
-            eqList.push({ name: '', price: 0 }); 
-            renderEq(); 
-        }
+    function safeJsonParse(str, fallback){
+      try{
+        if(str === null || str === undefined) return fallback;
+        if(typeof str === 'object') return str; // 已是物件/陣列
+        const s = String(str).trim();
+        if(!s) return fallback;
+        return JSON.parse(s);
+      }catch(e){
+        return fallback;
+      }
+    }
 
-        function removeEqItem(index) {
-            if (confirm('確定要刪除此設備項目嗎？')) {
-                eqList.splice(index, 1);
-                renderEq();
-            }
-        }
+    // 兼容 worker 包裝：{status:'ok', data:{...gas...}}
+    function unwrapMaybeWorker(raw){
+      if(raw && raw.data && raw.data.status && (raw.status === 'ok' || raw.status === 'success')){
+        return raw.data;
+      }
+      return raw;
+    }
 
-        async function saveAllSettings() {
-            const btn = document.getElementById('save-btn');
-            const originalText = btn.innerHTML;
-            
-            btn.disabled = true; 
-            btn.innerHTML = `<div class="loading-spinner mr-2"></div> 資料同步中...`;
-            
-            // 收集銀行資料
-            const bankData = {
-                bankName: document.getElementById('bank-name').value.trim(),
-                bankCode: document.getElementById('bank-code').value.trim(),
-                accountName: document.getElementById('bank-acc-name').value.trim(),
-                accountNumber: document.getElementById('bank-acc-num').value.trim()
-            };
-            
-            // 過濾掉空設備項目
-            const filteredEqList = eqList.filter(item => item.name.trim() !== '');
-            
-            // 準備要發送的數據
-            const payload = {
-                type: 'config_update',
-                data: [
-                    { 
-                        type: 'remittance', 
-                        name: 'Global', 
-                        options: JSON.stringify(bankData) 
-                    },
-                    { 
-                        type: 'equipment_list', 
-                        name: 'Global', 
-                        options: JSON.stringify(filteredEqList) 
-                    }
-                ]
-            };
-            
-            console.log('發送配置數據:', payload);
+    /* =============================
+     *  Render Equipment
+     * ============================= */
+    function normalizeEqList(list){
+      if(!Array.isArray(list)) return [];
+      return list
+        .map(x => ({
+          name: (x?.name ?? x?.設備名稱 ?? '').toString().trim(),
+          price: Number(x?.price ?? x?.費用 ?? 0) || 0
+        }))
+        .filter(x => x.name !== '');
+    }
 
-            try {
-                const response = await fetch(API_URL, { 
-                    method: 'POST', 
-                    headers: { 
-                        'Content-Type': 'application/json',
-                        'Accept': 'application/json'
-                    },
-                    body: JSON.stringify(payload) 
-                });
-                
-                const result = await response.json();
-                console.log('保存結果:', result);
-                
-                if (result.status === "success" || result.result === "success") {
-                    alert("✅ 設定已成功更新！");
-                    // 重新載入配置以確保數據一致性
-                    setTimeout(() => loadConfig(), 500);
-                } else {
-                    throw new Error(result.message || '保存失敗');
-                }
-            } catch (error) {
-                console.error('保存配置時發生錯誤:', error);
-                alert(`❌ 儲存失敗: ${error.message}`);
-            } finally { 
-                btn.disabled = false; 
-                btn.innerHTML = originalText; 
-            }
-        }
+    function updateEqPreview(){
+      const el = document.getElementById('eq-json-preview');
+      if(!el) return;
+      el.textContent = JSON.stringify(eqList, null, 2);
+    }
 
-        // 頁面載入完成後執行
-        window.addEventListener('DOMContentLoaded', (event) => {
-            console.log('頁面載入完成，開始載入配置...');
-            loadConfig();
-            
-            // 添加表單輸入監聽，實時保存功能（可選）
-            const inputs = document.querySelectorAll('input');
-            inputs.forEach(input => {
-                input.addEventListener('blur', () => {
-                    // 可以在這裡添加自動保存功能
-                });
-            });
+    function renderEq() {
+      const container = document.getElementById('eq-container');
+      if (!container) return;
+
+      if (!eqList || eqList.length === 0) {
+        container.innerHTML = '<p class="text-center py-10 text-slate-300 italic">目前無設備資料，請點擊右上角新增項目</p>';
+        updateEqPreview();
+        return;
+      }
+
+      container.innerHTML = eqList.map((eq, i) => `
+        <div class="flex gap-6 items-center p-6 bg-slate-50/50 rounded-xl border border-slate-100 hover:border-slate-200 transition">
+          <div class="flex-1">
+            <label class="text-[9px]">設備名稱</label>
+            <input type="text"
+              value="${escapeHtml(eq.name)}"
+              oninput="eqList[${i}].name = this.value; updateEqPreview();"
+              placeholder="輸入設備名稱">
+          </div>
+
+          <div class="w-36">
+            <label class="text-[9px]">租用費用</label>
+            <input type="number"
+              value="${Number(eq.price)||0}"
+              oninput="eqList[${i}].price = Number(this.value)||0; updateEqPreview();"
+              placeholder="0" min="0" step="10">
+          </div>
+
+          <button onclick="removeEqItem(${i})"
+            class="p-4 text-slate-300 hover:text-red-500 bg-transparent border-none cursor-pointer transition-colors"
+            title="刪除此項目">
+            <i class="fas fa-trash-alt text-lg"></i>
+          </button>
+        </div>
+      `).join('');
+
+      updateEqPreview();
+    }
+
+    function addEqItem() {
+      eqList.push({ name: '', price: 0 });
+      renderEq();
+    }
+
+    function removeEqItem(index) {
+      if (confirm('確定要刪除此設備項目嗎？')) {
+        eqList.splice(index, 1);
+        renderEq();
+      }
+    }
+
+    function escapeHtml(str){
+      return String(str ?? '')
+        .replaceAll('&','&amp;')
+        .replaceAll('<','&lt;')
+        .replaceAll('>','&gt;')
+        .replaceAll('"','&quot;')
+        .replaceAll("'","&#039;");
+    }
+
+    /* =============================
+     *  Load Config
+     * ============================= */
+    async function loadConfig() {
+      setStatus('連線中...', null);
+
+      try {
+        const res = await fetch(`${API_URL}?type=config&_t=${Date.now()}`, {
+          headers: { 'Accept': 'application/json' }
         });
 
-        // 防止表單提交
-        document.addEventListener('submit', function(e) {
-            e.preventDefault();
-            return false;
+        const raw = await res.json();
+        const r = unwrapMaybeWorker(raw);
+
+        if (!r || r.status !== 'success') {
+          throw new Error(r?.message || 'config 回傳格式錯誤');
+        }
+
+        const cfg = r.data || {};
+
+        // ✅ 物件版：cfg.remittance.Global / cfg.equipment_list.Global
+        const bankJson = cfg?.remittance?.Global ?? cfg?.remittance ?? '{}';
+        const eqJson   = cfg?.equipment_list?.Global ?? cfg?.equipment_list ?? '[]';
+
+        const bankData = safeJsonParse(bankJson, {});
+        const eqData   = normalizeEqList(safeJsonParse(eqJson, []));
+
+        document.getElementById('bank-name').value     = bankData.bankName || '';
+        document.getElementById('bank-code').value     = bankData.bankCode || '';
+        document.getElementById('bank-acc-name').value = bankData.accountName || '';
+        document.getElementById('bank-acc-num').value  = bankData.accountNumber || '';
+
+        eqList = eqData;
+        renderEq();
+
+        setStatus('連線正常', true);
+
+      } catch (err) {
+        console.error(err);
+        setStatus('連線失敗', false);
+
+        const container = document.getElementById('eq-container');
+        if(container){
+          container.innerHTML = `
+            <div class="p-6 bg-red-50 border border-red-200 rounded-lg">
+              <div class="text-red-700 font-black mb-2">載入配置失敗</div>
+              <div class="text-red-600 text-sm">${escapeHtml(err.message || String(err))}</div>
+              <button onclick="loadConfig()" class="mt-4 px-4 py-2 bg-red-100 text-red-700 rounded text-sm font-black hover:bg-red-200 transition">
+                重新載入
+              </button>
+            </div>
+          `;
+        }
+      }
+    }
+
+    /* =============================
+     *  Save Config
+     * ============================= */
+    function validateBeforeSave(){
+      // 設備 price 必須是數字
+      for(const item of eqList){
+        if(!item.name || item.name.trim() === '') return '設備名稱不可為空';
+        if(isNaN(Number(item.price))) return `設備「${item.name}」費用不是數字`;
+      }
+      return '';
+    }
+
+    async function saveAllSettings() {
+      const btn = document.getElementById('save-btn');
+      const originalText = btn.innerHTML;
+
+      const errMsg = validateBeforeSave();
+      if(errMsg){
+        alert('❌ ' + errMsg);
+        return;
+      }
+
+      btn.disabled = true;
+      btn.innerHTML = `<span class="loading-spinner"></span> 資料同步中...`;
+
+      const bankData = {
+        bankName: (document.getElementById('bank-name').value || '').trim(),
+        bankCode: (document.getElementById('bank-code').value || '').trim(),
+        accountName: (document.getElementById('bank-acc-name').value || '').trim(),
+        accountNumber: (document.getElementById('bank-acc-num').value || '').trim()
+      };
+
+      const filteredEqList = normalizeEqList(eqList); // 過濾空白、確保 price
+      const eqStr = JSON.stringify(filteredEqList);
+      const bankStr = JSON.stringify(bankData);
+
+      // ✅ 同時帶兩套欄位：type/name/options + key/scope/value（兼容你不同 GAS）
+      const payload = {
+        type: 'config_update',
+        data: [
+          { type:'remittance', name:'Global', options: bankStr, key:'remittance', scope:'Global', value: bankStr },
+          { type:'equipment_list', name:'Global', options: eqStr, key:'equipment_list', scope:'Global', value: eqStr }
+        ]
+      };
+
+      try {
+        const res = await fetch(API_URL, {
+          method: 'POST',
+          headers: { 'Content-Type':'application/json', 'Accept':'application/json' },
+          body: JSON.stringify(payload)
         });
-    </script>
+
+        const raw = await res.json();
+        const r = unwrapMaybeWorker(raw);
+
+        if (r?.status !== 'success') {
+          throw new Error(r?.message || '儲存失敗（GAS 未處理 config_update？）');
+        }
+
+        alert('✅ 設定已成功更新！');
+        await loadConfig();
+
+      } catch (err) {
+        console.error(err);
+        alert(`❌ 儲存失敗：${err.message || String(err)}`);
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = originalText;
+      }
+    }
+
+    /* =============================
+     *  Init
+     * ============================= */
+    window.addEventListener('DOMContentLoaded', () => {
+      loadConfig();
+    });
+
+    // 防止 form submit
+    document.addEventListener('submit', (e) => {
+      e.preventDefault();
+      return false;
+    });
+  </script>
 </body>
 </html>
