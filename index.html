@@ -10,106 +10,98 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700;900&display=swap');
-    :root { --line-green:#06C755; --bg-gray:#F0F2F5; }
-    body {
+    @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;800&display=swap');
+    :root { --line-green:#06C755; --bg-gray:#F0F2F5; --text:#111; }
+
+    body{
       font-family:'Noto Sans TC',sans-serif;
       background-color:var(--bg-gray);
-      margin:0;
-      display:flex;
-      justify-content:center;
+      margin:0; display:flex; justify-content:center;
+      color: var(--text);
     }
-    .page-wrapper {
-      width:100%;
-      max-width:640px;
-      background:#fff;
-      min-height:100vh;
-      padding-bottom:80px;
+    .page-wrapper{
+      width:100%; max-width:640px; background:#fff;
+      min-height:100vh; padding-bottom:80px;
       box-shadow:0 0 30px rgba(0,0,0,0.05);
     }
-    .top-nav {
-      background:#fff;
-      padding:12px 20px;
-      display:flex;
-      justify-content:space-between;
-      align-items:center;
-      position:sticky;
-      top:0;
-      z-index:100;
+
+    .top-nav{
+      background:#fff; padding:12px 16px;
+      display:flex; justify-content:space-between; align-items:center;
+      position:sticky; top:0; z-index:100;
       border-bottom:1px solid #F0F0F0;
     }
-    .tab-container {
-      display:flex;
-      background:#fff;
-      border-bottom:1px solid #F0F0F0;
-      position:sticky;
-      top:56px;
-      z-index:90;
-      overflow-x:auto;
+
+    .tab-container{
+      display:flex; background:#fff; border-bottom:1px solid #F0F0F0;
+      position:sticky; top:56px; z-index:90; overflow-x:auto;
     }
-    .tab-item {
-      padding:16px 20px;
-      font-size:14px;
-      color:#888;
-      cursor:pointer;
-      border-bottom:3px solid transparent;
-      white-space:nowrap;
+    .tab-item{
+      padding:16px 20px; font-size:14px; color:#666; cursor:pointer;
+      border-bottom:3px solid transparent; white-space:nowrap;
+      font-weight:600;
     }
-    .tab-item.active {
+    .tab-item.active{
       color:var(--line-green);
       border-bottom-color:var(--line-green);
-      font-weight:700;
+      font-weight:800;
     }
-    .course-card {
-      background:#fff;
-      margin:20px;
-      border-radius:16px;
-      overflow:hidden;
+
+    .course-card{
+      background:#fff; margin:20px; border-radius:16px; overflow:hidden;
       border:1px solid #F0F0F0;
     }
-    .modal-overlay {
-      display:none;
-      position:fixed;
-      inset:0;
-      background:rgba(0,0,0,0.7);
-      z-index:1000;
-      align-items:center;
-      justify-content:center;
-      padding:20px;
-    }
-    .modal-content {
-      background:#fff;
-      width:100%;
-      max-width:500px;
-      border-radius:24px;
-      max-height:80vh;
-      overflow-y:auto;
-      animation:slideUp .3s ease-out;
-    }
-    @keyframes slideUp {
-      from { transform:translateY(30px); opacity:0; }
-      to { transform:translateY(0); opacity:1; }
-    }
-    .btn-outline { border:1.5px solid var(--line-green); color:var(--line-green); }
-    .btn-solid { background:var(--line-green); color:#fff; }
 
-    /* ✅ 右上角會員 pill */
-    .user-pill {
+    /* Detail modal */
+    .modal-overlay{
+      display:none; position:fixed; inset:0; background:rgba(0,0,0,0.65);
+      z-index:1000; align-items:center; justify-content:center; padding:20px;
+    }
+    .modal-content{
+      background:#fff; width:100%; max-width:520px; border-radius:24px;
+      max-height:84vh; overflow-y:auto; animation:slideUp .25s ease-out;
+    }
+    @keyframes slideUp{ from{transform:translateY(24px);opacity:0} to{transform:translateY(0);opacity:1} }
+
+    .btn-outline{ border:1.5px solid var(--line-green); color:var(--line-green); background:#fff; }
+    .btn-solid{ background:var(--line-green); color:#fff; }
+
+    /* Top right user */
+    .user-pill{
       display:flex; align-items:center; gap:10px;
-      padding:6px 10px;
-      border:2px solid #22c55e;
-      border-radius:999px;
-      background:#fff;
-      cursor:pointer;
+      border:2px solid rgba(6,199,85,.35);
+      border-radius:999px; padding:6px 10px;
+      font-weight:800; font-size:12px;
+      color: #0F7A34; background:#F2FFF7;
     }
-    .user-pill img{
-      width:28px; height:28px; border-radius:999px;
-      border:1px solid #bbf7d0;
+    .user-pill img{ width:28px; height:28px; border-radius:999px; border:2px solid rgba(6,199,85,.25); }
+
+    /* Attendee tags */
+    .tag-self{
+      font-size:12px; font-weight:800;
+      padding:6px 12px; border-radius:999px;
+      background:#EAFBF0; color:#0F7A34; border:1px solid #BBF7D0;
+      white-space:nowrap;
     }
-    .user-pill .name{
-      font-size:12px; font-weight:900; color:#166534;
-      max-width:110px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+    .tag-member{
+      font-size:12px; font-weight:800;
+      padding:6px 12px; border-radius:999px;
+      background:#EEF2FF; color:#3730A3; border:1px solid #C7D2FE;
+      white-space:nowrap;
     }
+
+    .radio-row{
+      display:flex; align-items:flex-start; gap:12px;
+      padding:14px; border:1px solid #EEF2F7; border-radius:16px;
+      background:#fff; cursor:pointer;
+    }
+    .radio-row:hover{ background:#FAFAFA; }
+    .radio-row input{ margin-top:3px; transform:scale(1.2); }
+
+    .t-title{ font-weight:900; font-size:18px; color:#111; }
+    .t-sub{ font-weight:600; font-size:14px; color:#222; opacity:.9; }
+    .t-meta{ font-weight:600; font-size:13px; color:#111; opacity:.85; }
+
   </style>
 </head>
 
@@ -120,26 +112,22 @@
   <header class="top-nav">
     <div class="font-black text-xl text-gray-800">Sports-Island</div>
 
-    <!-- ✅ 未登入顯示 -->
-    <button id="login-btn"
-      class="text-xs text-green-600 font-bold px-4 py-1.5 border-2 border-green-500 rounded-full"
-      onclick="loginOrOpenMember()">
+    <!-- ✅ 右上角：登入後顯示頭像+名稱，未登入顯示登入中心 -->
+    <button id="top-right-btn" onclick="onTopRightClick()"
+      class="text-xs text-green-600 font-bold px-4 py-1.5 border-2 border-green-500 rounded-full">
       登入中心
     </button>
 
-    <!-- ✅ 已登入顯示（頭像＋名稱） -->
-    <div id="user-pill" class="user-pill hidden" onclick="openMemberCenter()">
-      <img id="user-avatar" src="" alt="avatar">
-      <div class="flex flex-col leading-tight">
-        <div class="text-[10px] font-black text-gray-400">已登入</div>
-        <div id="user-name" class="name">---</div>
+    <div id="top-right-user" class="hidden cursor-pointer" onclick="goMemberCenter()">
+      <div class="user-pill">
+        <img id="top-avatar" src="" alt="avatar">
+        <span id="top-name">LINE使用者</span>
       </div>
-      <i class="fas fa-chevron-right text-[10px] text-green-600"></i>
     </div>
   </header>
 
   <!-- Banner -->
-  <img src="https://aiwe.cc/wp-content/uploads/2025/12/3486bc19dc6317e16bf4f1449ec52ae4.jpg" class="w-full">
+  <img src="https://aiwe.cc/wp-content/uploads/2025/12/3486bc19dc6317e16bf4f1449ec52ae4.jpg" class="w-full" alt="banner">
 
   <!-- Tabs -->
   <div class="tab-container">
@@ -150,27 +138,25 @@
   </div>
 
   <!-- Course List -->
-  <main id="course-list" class="min-h-[400px]"></main>
+  <main id="course-list" class="min-h-[420px]"></main>
 
   <!-- Bottom Nav -->
   <nav class="fixed bottom-0 w-full max-w-[640px] bg-white border-t flex justify-around py-3 z-50">
     <a href="#" onclick="location.reload()" class="flex flex-col items-center text-green-500">
-      <i class="fas fa-compass text-xl"></i><span class="text-[10px] font-bold">探索</span>
+      <i class="fas fa-compass text-xl"></i><span class="text-[11px] font-black">探索</span>
     </a>
-
-    <!-- ✅ 會員：改成走 openMemberCenter() -->
-    <a href="#" onclick="openMemberCenter()" class="flex flex-col items-center text-gray-300">
-      <i class="fas fa-user-circle text-xl"></i><span class="text-[10px] font-bold">會員</span>
+    <a href="#" onclick="goMemberCenter()" class="flex flex-col items-center text-gray-400">
+      <i class="fas fa-user-circle text-xl"></i><span class="text-[11px] font-black">會員</span>
     </a>
   </nav>
 </div>
 
-<!-- Modal -->
+<!-- Details Modal -->
 <div id="detail-modal" class="modal-overlay" onclick="if(event.target===this)closeDetails()">
   <div class="modal-content">
-    <div class="p-6 border-b flex justify-between">
-      <h3 id="modal-title" class="font-black"></h3>
-      <button onclick="closeDetails()"><i class="fas fa-times"></i></button>
+    <div class="p-6 border-b flex justify-between items-center">
+      <h3 id="modal-title" class="t-title"></h3>
+      <button onclick="closeDetails()" aria-label="close"><i class="fas fa-times"></i></button>
     </div>
     <div id="modal-body" class="p-6"></div>
     <div class="p-6 border-t">
@@ -181,16 +167,67 @@
   </div>
 </div>
 
+<!-- ✅ Attendee Select Modal -->
+<div id="attendee-modal" class="modal-overlay" onclick="if(event.target===this)closeAttendeeModal()">
+  <div class="modal-content">
+    <div class="p-6 border-b flex justify-between items-center">
+      <div>
+        <div class="t-title">選擇報名對象</div>
+        <div id="attendee-course-name" class="t-sub mt-1">—</div>
+      </div>
+      <button onclick="closeAttendeeModal()" aria-label="close"><i class="fas fa-times"></i></button>
+    </div>
+
+    <div class="p-6">
+      <div id="attendee-list" class="space-y-3"></div>
+
+      <div id="attendee-hint" class="t-meta mt-4" style="color:#B91C1C; display:none;">
+        請先勾選一位報名對象
+      </div>
+    </div>
+
+    <div class="p-6 border-t space-y-3">
+      <button class="w-full btn-solid py-4 rounded-2xl font-black" onclick="confirmAttendeeAndGo()">
+        確認並前往預約
+      </button>
+      <button id="go-register-btn" class="w-full btn-outline py-4 rounded-2xl font-black hidden" onclick="goRegisterFromPending()">
+        尚未註冊 → 前往註冊
+      </button>
+    </div>
+  </div>
+</div>
+
 <script>
-/* ========= 基本設定 ========= */
+/* ===================== Config ===================== */
 const API_URL = 'https://aged-rice-2438.wetw-net3.workers.dev/';
 const LIFF_ID = '2008786875-F7ifLsbN';
-let lineProfile = null;
 
 let currentCourses = [];
 let currentSheet = 'SingleCourses';
 
-/* === normalizeCourse === */
+let liffReady = false;
+let loggedIn = false;
+let lineUser = null;
+
+// member profile cache
+let memberStatus = 'unknown'; // unknown | exists | not_found
+let memberData = null;        // { ... }
+let familyData = [];          // [ ... ]
+
+// pending booking (courseId + sheet)
+let pendingCourseId = null;
+let pendingCourseName = null;
+
+/* ===================== Helpers ===================== */
+function navigateTo(p) {
+  const base = location.href.split('?')[0];
+  location.href = base.substring(0, base.lastIndexOf('/')+1) + p;
+}
+
+function getCleanUrl(){
+  return location.origin + location.pathname + location.search;
+}
+
 function normalizeCourse(c) {
   return {
     courseId: c.courseId || c['課程ID'] || c['ID'] || '',
@@ -205,67 +242,121 @@ function normalizeCourse(c) {
   };
 }
 
-function navigateTo(p) {
-  location.href = new URL(p, location.href).toString();
-}
+/* ===================== LIFF ===================== */
+async function initLIFF(){
+  try{
+    await liff.init({ liffId: LIFF_ID });
+    liffReady = true;
+    loggedIn = liff.isLoggedIn();
 
-/* ✅ 會員中心入口（從 OA 點進來也不會回首頁） */
-function openMemberCenter() {
-  navigateTo('register.html');
-}
-
-/* ✅ 右上角按鈕：未登入時登入；已登入時進會員中心 */
-function loginOrOpenMember() {
-  if (!window.liff) {
-    openMemberCenter();
-    return;
+    if (loggedIn){
+      lineUser = await liff.getProfile();
+      renderTopRightUser(lineUser);
+      await warmupMemberProfile(); // 有登入就先拉一次會員資料
+    } else {
+      renderTopRightLogin();
+    }
+  }catch(err){
+    console.warn('LIFF init failed (non-LINE browser?)', err);
+    liffReady = false;
+    loggedIn = false;
+    renderTopRightLogin();
   }
-  if (liff.isLoggedIn && liff.isLoggedIn()) {
-    openMemberCenter();
-    return;
-  }
-  const cleanUrl = location.origin + location.pathname + location.search;
-  liff.login({ redirectUri: cleanUrl });
 }
 
+function renderTopRightUser(p){
+  document.getElementById('top-right-btn').classList.add('hidden');
+  document.getElementById('top-right-user').classList.remove('hidden');
+  document.getElementById('top-avatar').src = p.pictureUrl || 'https://cdn-icons-png.flaticon.com/512/3135/3135715.png';
+  document.getElementById('top-name').innerText = p.displayName || 'LINE使用者';
+}
+function renderTopRightLogin(){
+  document.getElementById('top-right-user').classList.add('hidden');
+  document.getElementById('top-right-btn').classList.remove('hidden');
+}
+
+function onTopRightClick(){
+  // 未登入 → 走 LIFF login；若非 LIFF 環境 → 直接去 register.html
+  if (liffReady){
+    if (!liff.isLoggedIn()){
+      liff.login({ redirectUri: getCleanUrl() });
+      return;
+    }
+    goMemberCenter();
+  } else {
+    goMemberCenter();
+  }
+}
+
+function goMemberCenter(){
+  const from = encodeURIComponent(getCleanUrl());
+  navigateTo(`register.html?from=${from}`);
+}
+
+/* ===================== Member Fetch ===================== */
+async function warmupMemberProfile(){
+  if (!liffReady || !liff.isLoggedIn()) return;
+
+  try{
+    const uid = (lineUser && lineUser.userId) ? lineUser.userId : '';
+    if (!uid) return;
+
+    const res = await fetch(`${API_URL}?type=member_check&lineUserId=${encodeURIComponent(uid)}&_t=${Date.now()}`);
+    const raw = await res.json();
+    const result = raw?.data ? raw.data : raw; // 兼容 worker 包裝
+
+    if (result.status === 'exists'){
+      memberStatus = 'exists';
+      memberData = result.data || null;
+      familyData = result.families || [];
+    } else {
+      memberStatus = 'not_found';
+      memberData = null;
+      familyData = [];
+    }
+  }catch(err){
+    console.warn('member_check failed', err);
+    memberStatus = 'unknown';
+  }
+}
+
+/* ===================== Courses ===================== */
 async function switchTab(name) {
   currentSheet = name;
   document.querySelectorAll('.tab-item').forEach(t=>t.classList.remove('active'));
   document.getElementById(`tab-${name}`).classList.add('active');
 
   const list = document.getElementById('course-list');
-  list.innerHTML = '<div class="p-20 text-center text-gray-300">讀取中...</div>';
+  list.innerHTML = '<div class="p-20 text-center text-gray-400 font-bold">讀取中...</div>';
 
   try {
     const res = await fetch(`${API_URL}?sheet=${name}`);
     const json = await res.json();
-    // 你 Worker 可能包一層 status=ok，這裡兼容兩種
-    const arr = Array.isArray(json.data) ? json.data : (Array.isArray(json.data?.data) ? json.data.data : []);
-    currentCourses = arr.map(normalizeCourse);
+    currentCourses = (json.data || []).map(normalizeCourse);
     render();
   } catch {
-    list.innerHTML = '<div class="p-10 text-center text-red-400">載入失敗</div>';
+    list.innerHTML = '<div class="p-10 text-center text-red-500 font-bold">載入失敗</div>';
   }
 }
 
 function render() {
   const list = document.getElementById('course-list');
   if (!currentCourses.length) {
-    list.innerHTML = '<div class="p-10 text-center text-gray-400">目前無活動</div>';
+    list.innerHTML = '<div class="p-10 text-center text-gray-500 font-bold">目前無活動</div>';
     return;
   }
 
   list.innerHTML = currentCourses.map(c=>`
     <div class="course-card">
-      <img src="${c.coverImage || 'https://placehold.co/800x450'}">
+      <img src="${c.coverImage || 'https://placehold.co/800x450'}" alt="cover">
       <div class="p-6">
-        <h3 class="font-black text-lg">${c.courseName}</h3>
-        <p class="text-xs text-gray-400 mt-1">${c.courseDate || ''}</p>
-        <div class="flex justify-between mt-6">
-          <div class="text-green-600 font-bold text-xl">$${c.memberPrice}</div>
+        <h3 class="font-black text-lg text-gray-900">${c.courseName}</h3>
+        <p class="text-sm text-gray-700 mt-2 font-semibold">${c.courseDate || ''}</p>
+        <div class="flex justify-between items-center mt-6">
+          <div class="text-green-700 font-black text-xl">$${c.memberPrice}</div>
           <div class="flex gap-2">
-            <button onclick="showDetails('${c.courseId}')" class="btn-outline px-4 py-1.5 rounded-full text-xs font-black">詳情</button>
-            <button onclick="startBooking('${c.courseId}')" class="btn-solid px-4 py-1.5 rounded-full text-xs font-black">預約</button>
+            <button onclick="showDetails('${c.courseId}')" class="btn-outline px-4 py-2 rounded-full text-xs font-black">詳情</button>
+            <button onclick="startBookingFlow('${c.courseId}')" class="btn-solid px-4 py-2 rounded-full text-xs font-black">預約</button>
           </div>
         </div>
       </div>
@@ -273,18 +364,21 @@ function render() {
   `).join('');
 }
 
+/* ===================== Details ===================== */
 function showDetails(id) {
   const c = currentCourses.find(x => String(x.courseId) === String(id));
   if (!c) return;
 
   document.getElementById('modal-title').innerText = c.courseName;
   document.getElementById('modal-body').innerHTML = `
-    <p><b>課程亮點</b><br>${c.highlights || '暫無資料'}</p><br>
-    <p><b>課程內容</b><br>${c.content || '暫無資料'}</p><br>
-    <p><b>注意事項</b><br>${c.notes || '暫無資料'}</p><br>
-    <p><b>適合對象</b><br>${c.targetAudience || '暫無資料'}</p>
+    <div class="space-y-4">
+      <div><div class="t-title" style="font-size:16px;">課程亮點</div><div class="t-sub mt-1">${c.highlights || '暫無資料'}</div></div>
+      <div><div class="t-title" style="font-size:16px;">課程內容</div><div class="t-sub mt-1">${c.content || '暫無資料'}</div></div>
+      <div><div class="t-title" style="font-size:16px;">注意事項</div><div class="t-sub mt-1">${c.notes || '暫無資料'}</div></div>
+      <div><div class="t-title" style="font-size:16px;">適合對象</div><div class="t-sub mt-1">${c.targetAudience || '暫無資料'}</div></div>
+    </div>
   `;
-  document.getElementById('modal-book-btn').onclick = ()=>startBooking(id);
+  document.getElementById('modal-book-btn').onclick = ()=>startBookingFlow(id);
   document.getElementById('detail-modal').style.display='flex';
 }
 
@@ -292,36 +386,193 @@ function closeDetails() {
   document.getElementById('detail-modal').style.display='none';
 }
 
-function startBooking(id) {
-  navigateTo(`booking.html?id=${id}&type=${currentSheet}`);
+/* ===================== Booking Flow (NEW) ===================== */
+async function startBookingFlow(courseId){
+  const c = currentCourses.find(x => String(x.courseId) === String(courseId));
+  pendingCourseId = courseId;
+  pendingCourseName = c ? c.courseName : '課程';
+
+  // 1) 必須登入才能選對象
+  if (liffReady){
+    if (!liff.isLoggedIn()){
+      liff.login({ redirectUri: getCleanUrl() });
+      return;
+    }
+    if (!lineUser) lineUser = await liff.getProfile();
+  } else {
+    // 非 LIFF 環境：就直接帶去會員中心（讓他先註冊/或登入）
+    goMemberCenter();
+    return;
+  }
+
+  // 2) 取會員資料（避免快取不準）
+  await warmupMemberProfile();
+
+  // 3) 未註冊：POP 顯示「去註冊」
+  if (memberStatus !== 'exists'){
+    openAttendeeModalAsNotRegistered();
+    return;
+  }
+
+  // 4) 已註冊：POP 成員列表（本人 + 家人）
+  openAttendeeModal();
 }
 
-/* ✅ 初始化 LIFF：已登入就把右上角改成頭像＋名稱 */
-(async () => {
-  try {
-    await liff.init({ liffId: LIFF_ID });
+function openAttendeeModalAsNotRegistered(){
+  document.getElementById('attendee-course-name').innerText = `${pendingCourseName}（需先註冊會員）`;
+  document.getElementById('attendee-list').innerHTML = `
+    <div class="p-4 rounded-2xl border border-gray-100 bg-white">
+      <div class="t-title" style="font-size:16px;">你目前尚未完成會員註冊</div>
+      <div class="t-sub mt-2">請先到會員中心完成註冊，才能選擇報名對象並預約課程。</div>
+    </div>
+  `;
+  document.getElementById('attendee-hint').style.display = 'none';
+  document.getElementById('go-register-btn').classList.remove('hidden');
 
-    if (liff.isLoggedIn()) {
-      lineProfile = await liff.getProfile();
+  // 先藏掉「確認並前往預約」避免誤點
+  document.querySelector('#attendee-modal .btn-solid').classList.add('hidden');
 
-      document.getElementById('user-avatar').src =
-        lineProfile.pictureUrl || 'https://cdn-icons-png.flaticon.com/512/3135/3135715.png';
-      document.getElementById('user-name').innerText = lineProfile.displayName || 'LINE 使用者';
+  document.getElementById('attendee-modal').style.display='flex';
+}
 
-      document.getElementById('login-btn').classList.add('hidden');
-      document.getElementById('user-pill').classList.remove('hidden');
-    } else {
-      // 未登入保留「登入中心」，點擊會 login 並回到本頁
-      document.getElementById('login-btn').classList.remove('hidden');
-      document.getElementById('user-pill').classList.add('hidden');
-    }
-  } catch (e) {
-    // LIFF 失敗也不阻塞首頁
-    console.error(e);
+function goRegisterFromPending(){
+  // 記住這次要預約的課程，註冊回來可以繼續
+  sessionStorage.setItem('pendingCourseId', pendingCourseId || '');
+  sessionStorage.setItem('pendingCourseSheet', currentSheet || '');
+  const from = encodeURIComponent(getCleanUrl());
+  navigateTo(`register.html?from=${from}`);
+}
+
+function openAttendeeModal(){
+  document.getElementById('attendee-course-name').innerText = pendingCourseName || '課程';
+  document.getElementById('go-register-btn').classList.add('hidden');
+  document.querySelector('#attendee-modal .btn-solid').classList.remove('hidden');
+  document.getElementById('attendee-hint').style.display = 'none';
+
+  const items = [];
+
+  // 本人
+  items.push({
+    key: 'self',
+    tagClass: 'tag-self',
+    tagText: '本人',
+    name: (memberData && memberData.name) ? memberData.name : '本人',
+    meta: [
+      memberData?.gender ? `性別：${memberData.gender}` : '',
+      memberData?.birthDate ? `生日：${String(memberData.birthDate).split('T')[0]}` : '',
+      memberData?.grade ? `年級：${memberData.grade}` : ''
+    ].filter(Boolean).join('　')
+  });
+
+  // 家人
+  (familyData || []).forEach((f, idx) => {
+    items.push({
+      key: `family_${idx}`,
+      tagClass: 'tag-member',
+      tagText: '成員',
+      name: f?.name || `成員${idx+1}`,
+      meta: [
+        f?.gender ? `性別：${f.gender}` : '',
+        f?.birthDate ? `生日：${String(f.birthDate).split('T')[0]}` : '',
+        f?.grade ? `年級：${f.grade}` : ''
+      ].filter(Boolean).join('　')
+    });
+  });
+
+  const html = items.map((it, i) => `
+    <label class="radio-row" onclick="document.getElementById('att_${it.key}').checked=true;">
+      <input type="radio" name="attendee" id="att_${it.key}" value="${it.key}" ${i===0?'checked':''}>
+      <div class="flex-1">
+        <div class="flex items-center gap-3">
+          <span class="${it.tagClass}">${it.tagText}</span>
+          <div class="t-title" style="font-size:18px;">${it.name}</div>
+        </div>
+        <div class="t-sub mt-2">${it.meta || '—'}</div>
+      </div>
+    </label>
+  `).join('');
+
+  document.getElementById('attendee-list').innerHTML = html;
+  document.getElementById('attendee-modal').style.display='flex';
+}
+
+function closeAttendeeModal(){
+  document.getElementById('attendee-modal').style.display='none';
+}
+
+function confirmAttendeeAndGo(){
+  const picked = document.querySelector('input[name="attendee"]:checked');
+  if (!picked){
+    document.getElementById('attendee-hint').style.display='block';
+    return;
   }
-})();
+  const key = picked.value;
 
-switchTab('SingleCourses');
+  // 建立要帶去 booking.html 的參數
+  let attendeeType = 'self';
+  let attendeeName = '';
+  let attendeeGender = '';
+  let attendeeBirth = '';
+  let attendeeGrade = '';
+
+  if (key === 'self'){
+    attendeeType = 'self';
+    attendeeName = memberData?.name || '';
+    attendeeGender = memberData?.gender || '';
+    attendeeBirth = (memberData?.birthDate || '').toString().split('T')[0];
+    attendeeGrade = memberData?.grade || '';
+  } else if (key.startsWith('family_')){
+    attendeeType = 'family';
+    const idx = parseInt(key.split('_')[1], 10);
+    const f = (familyData || [])[idx] || {};
+    attendeeName = f?.name || '';
+    attendeeGender = f?.gender || '';
+    attendeeBirth = (f?.birthDate || '').toString().split('T')[0];
+    attendeeGrade = f?.grade || '';
+  }
+
+  closeAttendeeModal();
+
+  // ✅ 導到 booking.html，並帶上報名對象資訊
+  const qs = new URLSearchParams({
+    id: pendingCourseId || '',
+    type: currentSheet || '',
+    attendeeType,
+    attendeeName,
+    attendeeGender,
+    attendeeBirth,
+    attendeeGrade
+  });
+
+  navigateTo(`booking.html?${qs.toString()}`);
+}
+
+/* ===================== Auto resume after register ===================== */
+async function tryResumePendingBooking(){
+  const pid = sessionStorage.getItem('pendingCourseId');
+  const psheet = sessionStorage.getItem('pendingCourseSheet');
+
+  if (pid && psheet){
+    // 清掉避免一直觸發
+    sessionStorage.removeItem('pendingCourseId');
+    sessionStorage.removeItem('pendingCourseSheet');
+
+    // 切到原本的 sheet
+    if (psheet && psheet !== currentSheet){
+      await switchTab(psheet);
+    }
+    // 觸發預約流程
+    startBookingFlow(pid);
+  }
+}
+
+/* ===================== Init ===================== */
+(async function boot(){
+  await initLIFF();
+  await switchTab('SingleCourses');
+  await tryResumePendingBooking();
+})();
 </script>
+
 </body>
 </html>
