@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
-  <title>Sports-Island - 運動探索中心</title>
+  <title>運動探索中心</title>
 
   <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
   <script src="https://cdn.tailwindcss.com"></script>
@@ -16,21 +16,22 @@
       --bg:#F7F9FB;
       --card:#fff;
       --border:#E5E7EB;
-      --text:#111;
+      --text:#111827;
       --muted:#6B7280;
     }
     body{ font-family:"Noto Sans TC", sans-serif; background:var(--bg); color:var(--text); }
     .card{ background:var(--card); border:1px solid var(--border); border-radius:18px; box-shadow:0 8px 22px rgba(0,0,0,.04); }
+    .chip{ display:inline-flex; align-items:center; gap:6px; padding:6px 10px; border-radius:999px; border:1px solid #E5E7EB; background:#fff; color:#374151; font-size:12px; font-weight:600; }
     .tabbar{
-      display:flex; gap:24px; align-items:flex-end;
+      display:flex; gap:18px; align-items:flex-end;
       border-bottom:1px solid #E5E7EB;
-      padding:12px 6px 0 6px;
+      padding:10px 4px 0 4px;
       overflow:auto;
       -webkit-overflow-scrolling:touch;
     }
     .tab{
-      position:relative; padding:14px 6px; font-weight:800; white-space:nowrap;
-      color:#4B5563;
+      position:relative; padding:12px 4px; font-weight:700; white-space:nowrap;
+      color:#6B7280; font-size:15px;
     }
     .tab.active{ color:var(--line); }
     .tab.active::after{
@@ -48,7 +49,7 @@
     }
     .nav-item{
       display:flex; flex-direction:column; align-items:center; gap:6px;
-      padding:10px 0; font-weight:800; font-size:12px; color:#9CA3AF;
+      padding:10px 0; font-weight:700; font-size:12px; color:#9CA3AF;
     }
     .nav-item .ico{
       width:44px; height:44px; border-radius:16px;
@@ -60,6 +61,13 @@
       border-color: rgba(6,199,85,.35);
       background: rgba(6,199,85,.10);
     }
+
+    /* details */
+    details{ border:1px dashed #E5E7EB; border-radius:14px; padding:12px 14px; background:#fff; }
+    summary{ cursor:pointer; font-weight:700; color:#374151; list-style:none; }
+    summary::-webkit-details-marker{ display:none; }
+    .kv{ font-size:13px; font-weight:600; color:#4B5563; }
+    .kvd{ font-size:14px; font-weight:500; color:#111827; }
   </style>
 </head>
 
@@ -71,34 +79,33 @@
   </div>
 
   <div class="max-w-[720px] mx-auto px-4 pb-[110px]">
-    <!-- Header -->
-    <div class="pt-5 flex items-start justify-between gap-3">
-      <div>
-        <div class="text-3xl font-extrabold tracking-tight">Sports-Island</div>
-        <div class="text-sm font-semibold text-gray-500">運動探索中心</div>
+    <!-- ✅ 表頭縮小：Banner 已有，就不再顯示大英文店名 -->
+    <div class="pt-4 flex items-center justify-between gap-3">
+      <div class="min-w-0">
+        <div class="text-lg font-extrabold tracking-tight">運動探索中心</div>
+        <div class="text-xs font-semibold text-gray-500">請從下方探索課程，並可查看你的購課紀錄</div>
       </div>
 
-      <!-- LINE badge -->
-      <div id="line-badge" class="hidden card px-4 py-3 flex items-center gap-3 rounded-full">
-        <img id="line-avatar" class="w-10 h-10 rounded-full border border-green-200" alt="avatar" />
-        <div class="leading-tight">
-          <div class="text-[11px] font-semibold text-gray-500">已透過 LINE 登入</div>
-          <div id="line-name" class="text-[15px] font-extrabold">載入中...</div>
+      <div id="line-badge" class="hidden card px-3 py-2 flex items-center gap-2 rounded-full">
+        <img id="line-avatar" class="w-9 h-9 rounded-full border border-green-200" alt="avatar" />
+        <div class="leading-tight min-w-0">
+          <div class="text-[11px] font-semibold text-gray-500">LINE 登入</div>
+          <div id="line-name" class="text-[14px] font-bold truncate max-w-[120px]">載入中...</div>
         </div>
       </div>
     </div>
 
-    <!-- Banner（固定你的網址，不再找 banner.png） -->
+    <!-- Banner：固定你給的圖片 -->
     <div class="mt-4 card overflow-hidden">
       <img id="bannerImg"
            alt="banner"
            class="w-full object-cover"
-           style="max-height:240px; display:block;"
+           style="max-height:280px; display:block;"
            src="https://aiwe.cc/wp-content/uploads/2025/12/3486bc19dc6317e16bf4f1449ec52ae4.jpg"
            onerror="this.style.display='none'">
     </div>
 
-    <!-- Tabs (4) -->
+    <!-- 4 Tabs -->
     <div class="mt-4 tabbar">
       <button id="tab-SingleCourses" class="tab active" onclick="switchTab('SingleCourses')">單日活動</button>
       <button id="tab-SeriesCourses" class="tab" onclick="switchTab('SeriesCourses')">梯次課程</button>
@@ -106,11 +113,11 @@
       <button id="tab-AfterSchool" class="tab" onclick="switchTab('AfterSchool')">課後班</button>
     </div>
 
-    <!-- Explore list -->
+    <!-- Explore -->
     <section id="view-explore" class="mt-4">
       <div class="flex items-center justify-between">
-        <div class="text-sm font-extrabold text-gray-700">探索</div>
-        <button class="px-4 py-2 rounded-xl border border-gray-200 bg-white font-extrabold text-sm"
+        <div class="text-sm font-bold text-gray-700">探索</div>
+        <button class="px-4 py-2 rounded-xl border border-gray-200 bg-white font-bold text-sm"
                 onclick="loadCourses(currentSheet,true)">
           重新整理
         </button>
@@ -123,15 +130,15 @@
     <!-- Record -->
     <section id="view-record" class="mt-4 hidden">
       <div class="card p-5">
-        <div class="text-xl font-extrabold">我的紀錄</div>
-        <div class="mt-1 text-sm font-semibold text-gray-500">此帳號的購課/預約紀錄</div>
+        <div class="text-lg font-extrabold">購課 / 預約紀錄</div>
+        <div class="mt-1 text-sm font-semibold text-gray-500">依 LINE UID 查詢（Bookings / booking data）</div>
 
         <div class="mt-4 flex items-center gap-2">
-          <button class="px-4 py-2 rounded-xl border border-gray-200 bg-white font-extrabold text-sm"
+          <button class="px-4 py-2 rounded-xl border border-gray-200 bg-white font-bold text-sm"
                   onclick="loadRecords(true)">
             重新整理
           </button>
-          <button class="px-4 py-2 rounded-xl border border-gray-200 bg-white font-extrabold text-sm"
+          <button class="px-4 py-2 rounded-xl border border-gray-200 bg-white font-bold text-sm"
                   onclick="goMemberCenter()">
             會員中心
           </button>
@@ -142,7 +149,7 @@
     </section>
   </div>
 
-  <!-- Bottom Nav：探索 / 紀錄 / 會員（會員直接進 register.html，不顯示按鈕頁） -->
+  <!-- Bottom Nav：探索 / 紀錄 / 會員（會員直接進 register.html） -->
   <nav class="bottom-nav">
     <div class="max-w-[720px] mx-auto grid grid-cols-3 px-6">
       <button id="nav-explore" class="nav-item active" onclick="switchView('explore')">
@@ -161,26 +168,30 @@
   </nav>
 
   <script>
-    /* ========= 基本設定 ========= */
     const API_URL = 'https://aged-rice-2438.wetw-net3.workers.dev/';
     const LIFF_ID  = '2008786875-F7ifLsbN';
 
     let lineUser = null;
     let currentSheet = 'SingleCourses';
 
-    function s(v){ return (v===undefined || v===null) ? '' : String(v); }
-    function esc(str){
-      return s(str).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
-    }
+    const SHEET_LABEL = {
+      SingleCourses: '單日活動',
+      SeriesCourses: '梯次課程',
+      TeamZone: '營隊專區',
+      AfterSchool: '課後班'
+    };
 
-    /* ✅ 時間顯示修正：1899-12-30T14:30:00 -> 14:30 */
+    function s(v){ return (v===undefined || v===null) ? '' : String(v); }
+    function esc(str){ return s(str).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
+
+    // 1899-12-30 9:05:00 / 1899-12-30T14:30:00 / 14:30:00 -> 14:30
     function fmtTime(v){
       const t = s(v).trim();
       if(!t) return '';
       const m1 = t.match(/(?:1899-12-30[ T])(\d{1,2}):(\d{2})/);
       if(m1) return `${m1[1].padStart(2,'0')}:${m1[2]}`;
-      const m2 = t.match(/T(\d{2}):(\d{2})/);
-      if(m2) return `${m2[1]}:${m2[2]}`;
+      const m2 = t.match(/T(\d{1,2}):(\d{2})/);
+      if(m2) return `${m2[1].padStart(2,'0')}:${m2[2]}`;
       const m3 = t.match(/^(\d{1,2}):(\d{2})(?::\d{2})?$/);
       if(m3) return `${m3[1].padStart(2,'0')}:${m3[2]}`;
       return t;
@@ -194,21 +205,17 @@
     function switchView(key){
       document.getElementById('view-explore').classList.toggle('hidden', key!=='explore');
       document.getElementById('view-record').classList.toggle('hidden', key!=='record');
-
       document.getElementById('nav-explore').classList.toggle('active', key==='explore');
       document.getElementById('nav-record').classList.toggle('active', key==='record');
-
       if(key==='record') loadRecords(false);
     }
 
     function setActiveTab(sheet){
       ['SingleCourses','SeriesCourses','TeamZone','AfterSchool'].forEach(k=>{
         const el = document.getElementById('tab-'+k);
-        if(!el) return;
-        el.classList.toggle('active', k===sheet);
+        if(el) el.classList.toggle('active', k===sheet);
       });
     }
-
     function switchTab(sheet){
       currentSheet = sheet;
       setActiveTab(sheet);
@@ -220,26 +227,65 @@
       location.href = `register.html?from=${from}`;
     }
 
-    function courseMeta(c){
-      const date = fmtDate(c.courseDate ?? c["課程日期"]);
-      const st = fmtTime(c.startTime ?? c["開始時間"]);
-      const et = fmtTime(c.endTime ?? c["結束時間"]);
-      return {date, st, et};
+    function pick(c, ...keys){
+      for(const k of keys){
+        const v = c?.[k];
+        if(v!==undefined && v!==null && s(v).trim()!=='') return v;
+      }
+      return '';
     }
 
     function coursePrice(c){
-      const mp = c.memberPrice ?? c["會員價"];
-      const op = c.priceOriginal ?? c["原價"];
-      const ep = c.priceEarly ?? c["早鳥價"];
-      const val = (mp!==undefined && s(mp).trim()!=='') ? mp : ((op!==undefined && s(op).trim()!=='') ? op : ep);
-      if(val===undefined || s(val).trim()==='') return '';
+      const mp = pick(c,'memberPrice','會員價');
+      const op = pick(c,'priceOriginal','原價');
+      const ep = pick(c,'priceEarly','早鳥價');
+      const val = (s(mp).trim()!=='') ? mp : ((s(ep).trim()!=='') ? ep : op);
+      if(s(val).trim()==='') return '';
       const n = Number(val);
       return Number.isFinite(n) ? `$${n}` : `$${esc(val)}`;
     }
 
-    async function loadCourses(sheet, force){
+    function courseMetaChips(c){
+      const sport = pick(c,'sportCategory','運動類別');
+      const age = pick(c,'ageGroup','年齡分級');
+      const diff = pick(c,'difficulty','難度等級');
+      const tag = pick(c,'tags','標籤分類');
+      const area = pick(c,'venueArea','場地區域');
+      const chips = [sport, age, diff, area, tag].filter(x=>s(x).trim()!=='');
+      return chips.slice(0,5).map(x=>`<span class="chip">${esc(x)}</span>`).join('');
+    }
+
+    function courseDetailsBlock(c){
+      // ✅ 你說「課程本來的詳細說明不見了」：這裡補回
+      const highlights = pick(c,'highlights','課程亮點');
+      const content = pick(c,'content','課程內容');
+      const notes = pick(c,'notes','注意事項');
+      const target = pick(c,'targetAudience','適合對象');
+      const detailImg = pick(c,'detailImage','詳細圖片');
+
+      const any = [highlights,content,notes,target,detailImg].some(v=>s(v).trim()!=='');
+      if(!any) return '';
+
+      return `
+        <div class="mt-4">
+          <details>
+            <summary>詳細說明（點我展開）</summary>
+            <div class="mt-3 space-y-3">
+              ${detailImg ? `<img src="${esc(detailImg)}" class="w-full rounded-xl border border-gray-100" onerror="this.style.display='none'">` : ``}
+              ${highlights ? `<div><div class="kv">課程亮點</div><div class="kvd whitespace-pre-wrap">${esc(highlights)}</div></div>` : ``}
+              ${content ? `<div><div class="kv">課程內容</div><div class="kvd whitespace-pre-wrap">${esc(content)}</div></div>` : ``}
+              ${notes ? `<div><div class="kv">注意事項</div><div class="kvd whitespace-pre-wrap">${esc(notes)}</div></div>` : ``}
+              ${target ? `<div><div class="kv">適合對象</div><div class="kvd whitespace-pre-wrap">${esc(target)}</div></div>` : ``}
+            </div>
+          </details>
+        </div>
+      `;
+    }
+
+    async function loadCourses(sheet){
       const list = document.getElementById('course-list');
       const count = document.getElementById('course-count');
+
       list.innerHTML = `<div class="card p-4"><div class="text-sm font-semibold text-gray-500">載入課程中...</div></div>`;
       count.textContent = '載入中...';
 
@@ -247,36 +293,49 @@
         const url = `${API_URL}?type=fetch_courses&sheet=${encodeURIComponent(sheet)}&_t=${Date.now()}`;
         const res = await fetch(url);
         const raw = await res.json();
-        const data = raw?.data ? raw.data : (Array.isArray(raw) ? raw : []);
+        const data = raw?.data ? raw.data : [];
         const courses = Array.isArray(data) ? data : [];
 
-        count.textContent = `共 ${courses.length} 筆`;
+        count.textContent = `${SHEET_LABEL[sheet] || sheet}：共 ${courses.length} 筆`;
+
         if(!courses.length){
           list.innerHTML = `<div class="card p-4"><div class="text-sm font-semibold text-gray-500">目前沒有課程</div></div>`;
           return;
         }
 
         list.innerHTML = courses.map(c=>{
-          const id = c.courseId ?? c["課程ID"] ?? c.id ?? c.UUID ?? '';
-          const name = c.courseName ?? c["課程名稱"] ?? '未命名課程';
-          const cover = c.coverImage ?? c["封面圖片"] ?? '';
-          const meta = courseMeta(c);
+          const id = pick(c,'courseId','課程ID','id','UUID');
+          const name = pick(c,'courseName','課程名稱') || '未命名課程';
+          const cover = pick(c,'coverImage','封面圖片');
+          const date = fmtDate(pick(c,'courseDate','課程日期'));
+          const st = fmtTime(pick(c,'startTime','開始時間'));
+          const et = fmtTime(pick(c,'endTime','結束時間'));
           const price = coursePrice(c);
 
           const bookUrl = `booking.html?id=${encodeURIComponent(id)}&type=${encodeURIComponent(sheet)}&from=${encodeURIComponent(location.href)}`;
 
           return `
             <div class="card overflow-hidden">
-              ${cover ? `<img src="${esc(cover)}" class="w-full object-cover" style="max-height:220px" onerror="this.style.display='none'">` : ``}
+              ${cover ? `<img src="${esc(cover)}" class="w-full object-cover" style="max-height:240px" onerror="this.style.display='none'">` : ``}
               <div class="p-5">
-                <div class="text-xl font-extrabold">${esc(name)}</div>
-                <div class="mt-2 text-sm font-semibold text-gray-600">
-                  ${esc(meta.date)} ｜ ${esc(meta.st)}${meta.et?`-${esc(meta.et)}`:''}
+                <div class="flex items-start justify-between gap-3">
+                  <div class="min-w-0">
+                    <div class="text-lg font-extrabold">${esc(name)}</div>
+                    <div class="mt-2 text-sm font-semibold text-gray-600">
+                      日期：${esc(date)}　時間：${esc(st)}${et?`-${esc(et)}`:''}
+                    </div>
+                  </div>
+                  <div class="text-lg font-extrabold text-gray-900">${esc(price)}</div>
                 </div>
 
-                <div class="mt-4 flex items-center justify-between">
-                  <div class="text-lg font-extrabold">${esc(price)}</div>
-                  <a class="px-4 py-2 rounded-xl font-extrabold text-sm"
+                <div class="mt-3 flex flex-wrap gap-2">
+                  ${courseMetaChips(c)}
+                </div>
+
+                ${courseDetailsBlock(c)}
+
+                <div class="mt-4 flex justify-end">
+                  <a class="px-4 py-2 rounded-xl font-bold text-sm"
                      style="background:rgba(6,199,85,.12);color:#0F7A34;border:1px solid rgba(6,199,85,.25);"
                      href="${bookUrl}">
                     點我預約
@@ -292,68 +351,68 @@
         count.textContent = '載入失敗';
         list.innerHTML = `
           <div class="card p-4">
-            <div class="text-sm font-extrabold text-red-600">課程載入失敗</div>
+            <div class="text-sm font-bold text-red-600">課程載入失敗</div>
             <div class="mt-2 text-sm font-semibold text-gray-500">${esc(err.message || err)}</div>
           </div>
         `;
       }
     }
 
-    /* ✅ 紀錄：後端需要支援 type=booking_list */
-    async function loadRecords(force){
+    async function loadRecords(){
       const box = document.getElementById('record-list');
+
       if(!lineUser?.userId){
-        box.innerHTML = `<div class="p-4 rounded-2xl border border-gray-100 bg-white">
-          <div class="text-sm font-extrabold text-gray-700">尚未登入</div>
-          <div class="mt-1 text-sm font-semibold text-gray-500">請先完成 LIFF 登入</div>
-        </div>`;
+        box.innerHTML = `<div class="card p-4"><div class="text-sm font-semibold text-gray-500">尚未登入</div></div>`;
         return;
       }
 
-      box.innerHTML = `<div class="p-4 rounded-2xl border border-gray-100 bg-white">
-        <div class="text-sm font-semibold text-gray-500">載入紀錄中...</div>
-      </div>`;
+      box.innerHTML = `<div class="card p-4"><div class="text-sm font-semibold text-gray-500">載入紀錄中...</div></div>`;
 
       try{
         const url = `${API_URL}?type=booking_list&lineUserId=${encodeURIComponent(lineUser.userId)}&_t=${Date.now()}`;
         const res = await fetch(url);
         const raw = await res.json();
-
         const rows = Array.isArray(raw?.data) ? raw.data : [];
+
         if(!rows.length){
-          box.innerHTML = `<div class="p-4 rounded-2xl border border-gray-100 bg-white">
-            <div class="text-sm font-extrabold text-gray-700">目前沒有紀錄</div>
-            <div class="mt-1 text-sm font-semibold text-gray-500">${esc(raw?.message || '（後端未回傳 booking_list 或查無資料）')}</div>
-          </div>`;
+          box.innerHTML = `
+            <div class="card p-4">
+              <div class="text-sm font-bold text-gray-700">目前沒有紀錄</div>
+              <div class="mt-2 text-sm font-semibold text-gray-500">${esc(raw?.message || '查無資料')}</div>
+            </div>`;
           return;
         }
 
         box.innerHTML = rows.map(r=>{
-          const cname = r.courseName || '';
+          const cname = r.courseName || '未命名課程';
           const date = fmtDate(r.courseDate);
           const st = fmtTime(r.startTime);
-          const who = r.attendeeName || '';
-          const status = r.status || '';
-          const id = r.bookingId || '';
-          return `<div class="p-4 rounded-2xl border border-gray-100 bg-white">
-            <div class="flex items-start justify-between gap-3">
-              <div class="min-w-0">
-                <div class="text-base font-extrabold">${esc(cname || '未命名課程')}</div>
-                <div class="mt-2 text-sm font-semibold text-gray-600">${esc(date)} ｜ ${esc(st)}</div>
-                <div class="mt-2 text-sm font-semibold text-gray-700">對象：${esc(who || '未指定')}</div>
-                <div class="mt-2 text-xs font-semibold text-gray-400 break-all">ID：${esc(id)}</div>
-              </div>
-              <div class="text-xs font-extrabold px-3 py-2 rounded-full border border-gray-200 text-gray-700">
-                ${esc(status || '—')}
+          const who = r.attendeeName || '未指定';
+          const price = (r.price!==undefined && r.price!==null && String(r.price).trim()!=='') ? `$${r.price}` : '';
+          const eq = r.rentEquipment ? `設備：${esc(r.rentEquipment)}` : '';
+          const status = r.status || '—';
+
+          return `
+            <div class="card p-4">
+              <div class="flex items-start justify-between gap-3">
+                <div class="min-w-0">
+                  <div class="text-base font-extrabold">${esc(cname)}</div>
+                  <div class="mt-2 text-sm font-semibold text-gray-600">${esc(date)}　${esc(st)}</div>
+                  <div class="mt-2 text-sm font-semibold text-gray-700">對象：${esc(who)}</div>
+                  ${price ? `<div class="mt-2 text-sm font-semibold text-gray-700">金額：${esc(price)}</div>` : ``}
+                  ${eq ? `<div class="mt-2 text-sm font-semibold text-gray-700">${eq}</div>` : ``}
+                  <div class="mt-2 text-xs font-semibold text-gray-400 break-all">ID：${esc(r.bookingId || '')}</div>
+                </div>
+                <div class="text-xs font-bold px-3 py-2 rounded-full border border-gray-200 text-gray-700">${esc(status)}</div>
               </div>
             </div>
-          </div>`;
+          `;
         }).join('');
 
       }catch(err){
         console.error(err);
-        box.innerHTML = `<div class="p-4 rounded-2xl border border-gray-100 bg-white">
-          <div class="text-sm font-extrabold text-red-600">紀錄載入失敗</div>
+        box.innerHTML = `<div class="card p-4">
+          <div class="text-sm font-bold text-red-600">紀錄載入失敗</div>
           <div class="mt-2 text-sm font-semibold text-gray-500">${esc(err.message || err)}</div>
         </div>`;
       }
@@ -375,7 +434,7 @@
         document.getElementById('line-badge').classList.remove('hidden');
 
         setActiveTab(currentSheet);
-        await loadCourses(currentSheet,false);
+        await loadCourses(currentSheet);
       }catch(err){
         console.error(err);
       }finally{
