@@ -48,7 +48,7 @@
 
 <div class="w-full max-w-[640px] bg-white min-h-screen p-6">
 
-  <!-- 1. LINE 登入狀態顯示 (不論註冊與否都會顯示) -->
+  <!-- 1. LINE 登入狀態顯示 -->
   <div id="line-status" class="hidden">
     <div class="line-profile-badge shadow-sm">
       <img id="line-avatar" src="" class="w-8 h-8 rounded-full border border-green-200">
@@ -63,11 +63,11 @@
     </div>
   </div>
 
-  <!-- 狀態 A：已註冊過（精簡顯示） -->
+  <!-- 狀態 A：已註冊過 -->
   <div id="view-exists" class="hidden">
     <h2 class="text-xl font-black mb-2">您好，歡迎回來</h2>
     <p class="text-gray-400 text-sm mb-10 font-bold">您已完成中心會員註冊，可點擊編輯更新資料</p>
-    
+
     <div class="flex items-center justify-between p-6 bg-gray-50 rounded-2xl border border-gray-100 mb-8">
       <div class="flex items-center gap-4">
         <div class="w-12 h-12 bg-green-500 text-white rounded-full flex items-center justify-center shadow-md shadow-green-100">
@@ -85,7 +85,7 @@
   <!-- 狀態 B：未註冊或編輯中 -->
   <div id="view-form" class="hidden">
     <div class="flex items-center gap-3 mb-6">
-       <h2 id="form-title" class="text-xl font-black">會員個人檔案管理</h2>
+      <h2 id="form-title" class="text-xl font-black">會員個人檔案管理</h2>
     </div>
 
     <form id="reg-form">
@@ -123,6 +123,7 @@
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
+
 <script>
 /* ========= 基本設定 ========= */
 const API_URL = 'https://aged-rice-2438.wetw-net3.workers.dev/';
@@ -140,7 +141,7 @@ function f0(v) {
 function getTaiwanGrade(birth) {
   if (!birth) return '0';
   const b = new Date(birth);
-  let entry = b.getFullYear() + 6;
+  const entry = b.getFullYear() + 6;
   const now = new Date();
   const ay = now.getFullYear();
   const g = ay - entry + 1;
@@ -159,17 +160,20 @@ function showEditForm() {
   document.getElementById('cancel-btn').classList.remove('hidden');
 }
 
+/* ========= 會員狀態檢查 ========= */
 async function checkStatus() {
   document.getElementById('loading').style.display = 'flex';
   try {
-    // 呼叫 API 檢查註冊狀態
-    const res = await fetch(`${API_URL}?type=member_check&lineUserId=${lineUser.userId}&_t=${Date.now()}`);
-    const result = await res.json();
+    const res = await fetch(`${API_URL}?type=member_check&lineUserId=${encodeURIComponent(lineUser.userId)}&_t=${Date.now()}`);
+    const raw = await res.json();
+
+    // ✅ Worker 統一包裝：raw.status = ok；真結果在 raw.data
+    const result = raw && raw.data ? raw.data : {};
 
     if (result.status === "exists") {
-      const u = result.data;
+      const u = result.data || {};
       document.getElementById('summary-name').innerText = f0(u.name);
-      
+
       // 預填表單
       document.getElementById('m-name').value = f0(u.name);
       document.getElementById('m-phone').value = f0(u.phone);
@@ -177,12 +181,11 @@ async function checkStatus() {
       document.getElementById('m-school').value = f0(u.school);
       document.getElementById('o-name').value = f0(u.orgName);
       document.getElementById('o-tax').value = f0(u.taxId);
-      if(u.birthDate) document.getElementById('m-birth').value = u.birthDate.split('T')[0];
+      if (u.birthDate) document.getElementById('m-birth').value = String(u.birthDate).split('T')[0];
 
       document.getElementById('view-exists').classList.remove('hidden');
       document.getElementById('view-form').classList.add('hidden');
     } else {
-      // 未註冊則直接顯示表單
       document.getElementById('view-exists').classList.add('hidden');
       document.getElementById('view-form').classList.remove('hidden');
       document.getElementById('form-title').innerText = "歡迎首次註冊中心會員";
@@ -221,9 +224,9 @@ document.getElementById('reg-form').addEventListener('submit', async function (e
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload)
     });
-    const result = await res.json();
+    await res.json();
     alert('✅ 會員資料已同步成功');
-    checkStatus(); 
+    checkStatus();
   } catch (err) {
     alert('❌ 送出失敗');
   } finally {
@@ -232,23 +235,17 @@ document.getElementById('reg-form').addEventListener('submit', async function (e
   }
 });
 
-/* ========= 初始化 ========= */
-<script>
+/* ========= 初始化（登入後回本頁，不回首頁） ========= */
 (async () => {
   try {
-    await liff.init({
-      liffId: LIFF_ID,
-      withLoginOnExternalBrowser: true // 允許外部瀏覽器也可走 LIFF Login
-    });
+    await liff.init({ liffId: LIFF_ID });
 
-    // 尚未登入：登入後回到「此頁（register.html）」而不是回首頁
     if (!liff.isLoggedIn()) {
       const cleanUrl = location.origin + location.pathname + location.search;
       liff.login({ redirectUri: cleanUrl });
       return;
     }
 
-    // 已登入：正常取 profile
     lineUser = await liff.getProfile();
 
     document.getElementById('line-avatar').src =
@@ -261,9 +258,6 @@ document.getElementById('reg-form').addEventListener('submit', async function (e
     console.error("LIFF Init Error:", err);
   }
 })();
-</script>
-
-
 </script>
 
 </body>
