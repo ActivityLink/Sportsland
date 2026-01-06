@@ -1,250 +1,518 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Sports-Island - 預約中心</title>
-    <script charset="utf-8" src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700;900&display=swap');
-        :root { --line-green: #06C755; --bg-gray: #F7F9FB; }
-        body { font-family: 'Noto Sans TC', sans-serif; background-color: var(--bg-gray); margin: 0; display: flex; justify-content: center; -webkit-font-smoothing: antialiased; }
-        .page-wrapper { width: 100%; max-width: 640px; background: #FFFFFF; min-height: 100vh; position: relative; padding-bottom: 120px; box-shadow: 0 0 20px rgba(0,0,0,0.03); }
-        .step-header { padding: 30px 24px 20px 24px; border-bottom: 1px solid #F0F0F0; background: white; }
-        .course-card { background: #FAFBFC; padding: 20px; border-radius: 16px; margin: 20px; display: flex; gap: 15px; align-items: center; border: 1px solid #F0F0F0; }
-        .member-option { border: 1.5px solid #EEE; border-radius: 20px; padding: 20px; margin: 12px 20px; cursor: pointer; transition: 0.3s; display: flex; align-items: center; gap: 15px; background: white; }
-        .member-option.active { border-color: var(--line-green); background: #F0FAF3; transform: translateY(-2px); box-shadow: 0 4px 12px rgba(6,199,85,0.1); }
-        .check-icon { width: 24px; height: 24px; border: 2px solid #DDD; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; transition: 0.2s; }
-        .active .check-icon { background: var(--line-green); border-color: var(--line-green); }
-        .footer-action { position: fixed; bottom: 0; width: 100%; max-width: 640px; background: white; padding: 20px; border-top: 1px solid #EEE; z-index: 100; box-shadow: 0 -4px 10px rgba(0,0,0,0.02); }
-        .btn-main { background: var(--line-green); color: white; width: 100%; padding: 18px; border-radius: 16px; font-weight: 900; font-size: 17px; transition: 0.2s; }
-        .btn-main:disabled { background: #DDD; cursor: not-allowed; }
-        .loading-screen { position: fixed; inset: 0; background: white; z-index: 1000; display: flex; flex-direction: column; align-items: center; justify-content: center; }
-        .info-card { margin: 0 20px; background: #F9FAFB; border-radius: 20px; padding: 24px; border: 2px dashed #E2E8F0; }
-        .info-row { display: flex; justify-content: space-between; margin-bottom: 14px; font-size: 14px; }
-        .info-label { color: #888; font-weight: 500; }
-        .info-val { font-weight: 700; color: #333; }
-        .option-group { margin: 20px; }
-        .option-label { font-size: 13px; font-weight: 800; color: #64748b; margin-bottom: 10px; display: block; }
-        input[type="text"] { width: 100%; border: 1.5px solid #E2E8F0; border-radius: 12px; padding: 12px 16px; outline: none; transition: 0.2s; }
-        input[type="text"]:focus { border-color: var(--line-green); }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>課程預約</title>
+
+  <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;800&display=swap');
+    :root{ --line:#06C755; --bg:#F7F9FB; --text:#111; --border:#E2E8F0; }
+    body{ font-family:"Noto Sans TC",sans-serif; background:var(--bg); color:var(--text); }
+    .t-title{ font-size:20px; font-weight:800; }
+    .t-sub{ font-size:15px; font-weight:500; color:#222; }
+    .t-label{ font-size:14px; font-weight:700; color:#222; letter-spacing:.2px; }
+    .btn-main{ background:var(--line); color:#fff; padding:16px; border-radius:16px; font-weight:800; font-size:17px; width:100%; }
+    .btn-lite{ background:#EAF2FF; color:#1246B7; padding:12px 14px; border-radius:14px; font-weight:700; border:1px solid #CFE0FF; }
+    input, select, textarea{
+      width:100%; padding:14px; border-radius:14px; border:1.5px solid var(--border);
+      background:#fff; font-size:16px; font-weight:500; color:#111; outline:none;
+    }
+    textarea{ min-height:100px; }
+    input:focus, select:focus, textarea:focus{ border-color:var(--line); box-shadow:0 0 0 3px rgba(6,199,85,.12); }
+    #loading{
+      position:fixed; inset:0; background:white; z-index:100;
+      display:flex; flex-direction:column; align-items:center; justify-content:center;
+    }
+
+    /* Bottom sheet (對象選擇) */
+    .sheet-mask{
+      position:fixed; inset:0; background:rgba(0,0,0,.55); z-index:200;
+      display:none; align-items:flex-end; justify-content:center;
+    }
+    .sheet{
+      width:100%; max-width:640px; background:#fff;
+      border-top-left-radius:22px; border-top-right-radius:22px;
+      padding:14px 14px 18px 14px;
+      box-shadow:0 -10px 30px rgba(0,0,0,.15);
+      max-height:78vh; overflow:auto;
+      animation:up .18s ease-out;
+    }
+    @keyframes up{ from{ transform:translateY(18px); opacity:.7 } to{ transform:translateY(0); opacity:1 } }
+    .pill{ font-size:12px; font-weight:700; padding:6px 12px; border-radius:999px; }
+    .pill-self{ background:#EAFBF0; color:#0F7A34; border:1px solid #BBF7D0; }
+    .pill-member{ background:#EEF2FF; color:#3730A3; border:1px solid #C7D2FE; }
+  </style>
 </head>
-<body>
-    <div id="loading" class="loading-screen">
-        <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-[#06C755] mb-4"></div>
-        <p class="text-gray-400 text-sm font-bold">同步會員與課程資訊中...</p>
+
+<body class="flex justify-center">
+  <div id="loading">
+    <div class="animate-spin rounded-full h-10 w-10 border-b-2 border-green-500 mb-4"></div>
+    <div class="t-sub">正在連線與載入課程...</div>
+  </div>
+
+  <div class="w-full max-w-[640px] min-h-screen px-4 pb-28 pt-3">
+
+    <!-- Topbar -->
+    <div class="sticky top-0 z-50 bg-white/90 backdrop-blur border-b border-slate-100 rounded-2xl px-3 py-3 flex items-center gap-3">
+      <button class="btn-lite" id="backBtn">
+        <i class="fas fa-chevron-left mr-1"></i> 返回
+      </button>
+      <div class="flex-1">
+        <div class="t-title" id="courseTitle">課程預約</div>
+        <div class="t-sub" id="courseMeta"></div>
+      </div>
     </div>
 
-    <div class="page-wrapper">
-        <div class="step-header">
-            <h1 id="step-title" class="text-2xl font-black text-gray-800">Step 01. 選取報名人</h1>
-            <p id="step-desc" class="text-xs text-gray-400 mt-1 font-bold">請從名單中勾選一位要參加活動的學員</p>
+    <!-- 選擇對象 -->
+    <div class="mt-4 bg-white border border-slate-100 rounded-2xl p-4 shadow-sm">
+      <div class="flex items-center justify-between gap-3">
+        <div>
+          <div class="t-label mb-1">預約對象</div>
+          <div class="t-title" style="font-size:18px" id="whoText">尚未選擇</div>
+          <div class="t-sub" id="whoMeta"></div>
         </div>
-        
-        <div id="course-summary" class="course-card">
-            <img id="c-img" src="" class="w-16 h-16 rounded-xl object-cover bg-gray-200">
-            <div class="flex-1">
-                <div id="c-name" class="font-black text-gray-800 text-sm">讀取中...</div>
-                <div id="c-meta" class="text-[10px] text-gray-400 mt-0.5"></div>
-            </div>
-        </div>
-
-        <!-- 階段一：選取學員 -->
-        <div id="view-member-list">
-            <div id="member-list" class="mt-4"></div>
-            <div class="px-6 py-8 text-center"><button onclick="navigateTo('register.html')" class="text-sm text-blue-500 font-black underline"><i class="fas fa-user-plus mr-1"></i> 前往中心修改資料</button></div>
-        </div>
-
-        <!-- 階段二：額外選項 (設備租借) -->
-        <div id="view-options" class="hidden">
-            <div class="option-group">
-                <span class="option-label">是否有租借設備需求？</span>
-                <div id="eq-list" class="space-y-3">
-                    <!-- JS 渲染設備清單 -->
-                </div>
-            </div>
-        </div>
-
-        <!-- 階段三：最終確認 (匯款後五碼) -->
-        <div id="view-confirm" class="hidden">
-            <div class="info-card">
-                <div class="info-row"><span class="info-label">報名學員</span><span id="res-name" class="info-val"></span></div>
-                <div class="info-row"><span class="info-label">聯繫電話</span><span id="res-phone" class="info-val"></span></div>
-                <div class="info-row"><span class="info-label">場地教練</span><span id="res-snapshot" class="info-val"></span></div>
-                <div class="info-row"><span class="info-label">早鳥優待</span><span id="res-early" class="info-val"></span></div>
-                <div class="info-row border-t border-gray-200 pt-4 mt-2"><span class="info-label font-black text-gray-800 text-lg">應付總額</span><span id="res-total" class="text-2xl font-black text-green-600"></span></div>
-            </div>
-            
-            <div class="option-group mt-6">
-                <span class="option-label">請輸入匯款帳號後五碼 (核銷對帳用)</span>
-                <input type="text" id="last-five" placeholder="範例：88888" maxlength="5">
-                <p class="text-[10px] text-gray-400 mt-2">※ 若尚未匯款可先留空，但會影響核銷速度。</p>
-            </div>
-        </div>
-
-        <div class="footer-action"><button id="next-btn" class="btn-main shadow-lg" disabled onclick="handleAction()">下一步</button></div>
+        <button class="btn-lite" id="changeWhoBtn">更換</button>
+      </div>
     </div>
 
-    <script>
-        const API_URL = 'https://aged-rice-2438.wetw-net3.workers.dev/';
-        const LIFF_ID = '2008786875-F7ifLsbN';
-        let currentStep = 1, selectedMember = null, courseData = null, candidates = [], mainUser = null, eqList = [];
-        let selectedEq = [];
+    <!-- 詳細報名資料（A~AN） -->
+    <div class="mt-4 bg-white border border-slate-100 rounded-2xl p-4 shadow-sm">
+      <div class="t-title mb-2" style="font-size:18px;">詳細報名資料</div>
+      <div class="t-sub mb-4">請依課程需求填寫（來自 SingleCourses A～AN）</div>
+      <div id="formFields" class="space-y-4"></div>
+    </div>
 
-        function navigateTo(page) {
-            const base = window.location.href.split('?')[0].split('#')[0];
-            const dir = base.substring(0, base.lastIndexOf('/') + 1);
-            window.location.href = dir + page;
-        }
+    <!-- Submit -->
+    <div class="mt-4">
+      <button class="btn-main" id="submitBtn">確認送出預約</button>
+      <div class="t-sub mt-3" id="hintText"></div>
+    </div>
 
-        async function init() {
-            const params = new URLSearchParams(window.location.search);
-            const id = params.get('id');
-            const type = params.get('type') || 'SingleCourses';
-            if(!id) { alert("參數遺失"); navigateTo('index.html'); return; }
+  </div>
 
-            try {
-                await liff.init({ liffId: LIFF_ID });
-                if(!liff.isLoggedIn()) { liff.login(); return; }
-                const profile = await liff.getProfile();
-                
-                const [cRes, mRes, sRes] = await Promise.all([
-                    fetch(`${API_URL}?sheet=${type}&id=${id}&_t=${Date.now()}`),
-                    fetch(`${API_URL}?type=member_check&lineUserId=${profile.userId}&_t=${Date.now()}`),
-                    fetch(`${API_URL}?type=config`)
-                ]);
-                
-                const cResult = await cRes.json();
-                const mResult = await mRes.json();
-                const sResult = await sRes.json();
-                
-                courseData = (cResult.data || [])[0];
-                if(courseData) {
-                    document.getElementById('c-name').innerText = courseData.courseName || "未知課程";
-                    document.getElementById('c-meta').innerText = `${courseData.venueName || '場地待定'} | ${courseData.coachName || '教練待定'}`;
-                    document.getElementById('c-img').src = courseData.coverImage || 'https://placehold.co/100?text=SI';
-                }
+  <!-- 對象選擇 Bottom Sheet -->
+  <div id="sheetMask" class="sheet-mask" onclick="if(event.target===this)closePicker()">
+    <div class="sheet">
+      <div class="flex items-center justify-between px-2 py-2">
+        <div class="t-title" style="font-size:18px;">選擇預約對象</div>
+        <button class="btn-lite" onclick="closePicker()"><i class="fas fa-xmark"></i></button>
+      </div>
+      <div id="pickerList" class="mt-2 space-y-2"></div>
+    </div>
+  </div>
 
-                if(mResult.status === "exists") {
-                    mainUser = mResult.data;
-                    candidates.push({ name: mainUser.name || mainUser["姓名"], info: "本人", grade: mainUser.currentGrade || mainUser["目前年級"] || "成人" });
-                    if(mResult.families) mResult.families.forEach(f => candidates.push({ name: f.name || f["家人姓名"], info: "家人", grade: f.grade || f["目前年級"] }));
-                    renderList();
-                } else { navigateTo('register.html'); }
+<script>
+/* ================== 基本設定 ================== */
+const API_URL = 'https://aged-rice-2438.wetw-net3.workers.dev/';
+const LIFF_ID  = '2008786875-F7ifLsbN';
 
-                // 解析設備清單
-                const equipRow = (sResult.data || []).find(r => r.type === 'equipment_list');
-                if(equipRow) eqList = JSON.parse(equipRow.options);
-                renderEq();
+/* ✅ 防止初始化/彈窗重複跑 */
+if (window.__BOOKING_INITED__) {
+  console.warn('booking already inited');
+} else {
+  window.__BOOKING_INITED__ = true;
+}
 
-                document.getElementById('loading').style.display = 'none';
-            } catch (e) { document.getElementById('loading').innerHTML = '<div class="p-10 text-center font-bold text-red-500">雲端連線失敗</div>'; }
-        }
+let lineUser = null;
+let memberBundle = null; // {status:'exists', data:{...}, families:[...]}
+let course = null;
 
-        function renderList() {
-            document.getElementById('member-list').innerHTML = candidates.map((m, i) => `
-                <div class="member-option" onclick="selectMember(${i})" id="m-${i}">
-                    <div class="w-6 h-6 border-2 rounded-full flex items-center justify-center mr-4 border-gray-200 check-dot"><div class="w-3 h-3 rounded-full bg-green-500 hidden"></div></div>
-                    <div class="flex-1 font-black text-gray-800 text-lg">${m.name}</div>
-                </div>`).join('');
-        }
+let selected = { attendeeType: null, attendeeIndex: 0 }; // self/family
+let pickerOpenedOnce = false;
+let pickerLock = false;
 
-        function renderEq() {
-            const container = document.getElementById('eq-list');
-            if(eqList.length === 0) { container.innerHTML = '<p class="text-gray-400 text-xs">目前無可選租設備</p>'; return; }
-            container.innerHTML = eqList.map((eq, i) => `
-                <div onclick="toggleEq(${i})" class="flex justify-between items-center p-4 border-2 rounded-xl bg-white transition-all eq-opt" id="eq-${i}">
-                    <div class="font-bold text-gray-700">${eq.name} <span class="text-xs text-gray-400 font-normal ml-1">+$${eq.price}</span></div>
-                    <i class="fas fa-check-circle text-gray-100 eq-check"></i>
-                </div>
-            `).join('');
-        }
+/* ================== URL & 返回 ================== */
+const u = new URL(location.href);
+const courseId = u.searchParams.get('id') || '';
+const courseSheet = u.searchParams.get('type') || 'SingleCourses';
+const fromUrl = u.searchParams.get('from') || '';
 
-        function toggleEq(i) {
-            const idx = selectedEq.indexOf(i);
-            if(idx > -1) {
-                selectedEq.splice(idx, 1);
-                document.getElementById(`eq-${i}`).classList.remove('border-green-500', 'bg-green-50');
-                document.getElementById(`eq-${i}`).querySelector('.eq-check').classList.replace('text-green-500', 'text-gray-100');
-            } else {
-                selectedEq.push(i);
-                document.getElementById(`eq-${i}`).classList.add('border-green-500', 'bg-green-50');
-                document.getElementById(`eq-${i}`).querySelector('.eq-check').classList.replace('text-gray-100', 'text-green-500');
-            }
-        }
+document.getElementById('backBtn').onclick = () => {
+  if (fromUrl) { location.href = fromUrl; return; }
+  if (history.length > 1) { history.back(); return; }
+  location.href = new URL('index.html', location.href).toString();
+};
 
-        function selectMember(i) {
-            selectedMember = candidates[i];
-            document.querySelectorAll('.member-option').forEach(el => el.classList.remove('active'));
-            document.querySelectorAll('.check-dot div').forEach(d => d.classList.add('hidden'));
-            document.getElementById('m-'+i).classList.add('active');
-            document.getElementById('m-'+i).querySelector('.check-dot div').classList.remove('hidden');
-            document.getElementById('next-btn').disabled = false;
-        }
+/* ================== 工具 ================== */
+function safeText(v){ return (v===null||v===undefined) ? '' : String(v); }
+function isEmpty(v){
+  const s = safeText(v).trim();
+  return (s==='' || s==='0' || s.toLowerCase()==='null' || s.toLowerCase()==='undefined');
+}
+function tryJson(s){
+  try { return JSON.parse(s); } catch { return null; }
+}
 
-        function handleAction() {
-            if (currentStep === 1) {
-                currentStep = 2;
-                document.getElementById('step-title').innerText = "Step 02. 選項設定";
-                document.getElementById('view-member-list').classList.add('hidden');
-                document.getElementById('view-options').classList.remove('hidden');
-            } else if (currentStep === 2) {
-                currentStep = 3;
-                document.getElementById('step-title').innerText = "Step 03. 預約確認";
-                document.getElementById('view-options').classList.add('hidden');
-                document.getElementById('view-confirm').classList.remove('hidden');
-                
-                const now = new Date();
-                let isEarly = false, baseAmt = courseData.memberPrice || 0;
-                if (courseData.earlyBirdPrice && courseData.earlyBirdEnd && now <= new Date(courseData.earlyBirdEnd)) {
-                    isEarly = true; baseAmt = courseData.earlyBirdPrice;
-                }
-                
-                // 計算設備費
-                let eqAmt = 0;
-                let eqNames = selectedEq.map(i => { eqAmt += Number(eqList[i].price); return eqList[i].name; });
-                
-                const total = baseAmt + eqAmt;
-                
-                document.getElementById('res-name').innerText = selectedMember.name;
-                document.getElementById('res-phone').innerText = mainUser.phone;
-                document.getElementById('res-snapshot').innerText = `${courseData.coachName || 'N/A'} @ ${courseData.venueName || 'N/A'}`;
-                document.getElementById('res-early').innerText = isEarly ? "符合早鳥資格" : "不適用";
-                document.getElementById('res-total').innerText = `$${total}`;
-                document.getElementById('next-btn').innerText = "確認預約並送出";
-                
-                selectedMember.finalAmt = total;
-                selectedMember.isEarly = isEarly;
-                selectedMember.eqStr = eqNames.join(', ') || '無';
-            } else { submitBooking(); }
-        }
+/* A~AN 欄位名列表 */
+function makeColLabels_A_to_AN(){
+  const labels = [];
+  // A..Z
+  for (let i=0;i<26;i++){
+    labels.push(String.fromCharCode('A'.charCodeAt(0)+i));
+  }
+  // AA..AN
+  const second = 'A'.charCodeAt(0);
+  for (let i=0;i<14;i++){ // A..N
+    labels.push('A' + String.fromCharCode(second+i));
+  }
+  return labels;
+}
 
-        async function submitBooking() {
-            const btn = document.getElementById('next-btn');
-            btn.disabled = true; btn.innerText = "傳送中...";
-            const payload = { 
-                type: 'course_booking', 
-                courseId: courseData.courseId, 
-                courseName: courseData.courseName, 
-                enrolleeName: selectedMember.name, 
-                phone: mainUser.phone, 
-                amount: selectedMember.finalAmt, 
-                isEarlyBird: selectedMember.isEarly, 
-                equipment: selectedMember.eqStr,
-                lastFiveDigits: document.getElementById('last-five').value,
-                venueName: courseData.venueName,
-                coachName: courseData.coachName,
-                lineUserId: liff.getContext().userId 
-            };
-            const res = await fetch(API_URL, { method: 'POST', body: JSON.stringify(payload), headers: { 'Content-Type': 'application/json' } });
-            const result = await res.json();
-            if(result.status === "success") { alert("✅ 預約成功！編號：" + result.bookingId); navigateTo('index.html'); }
-            else { alert("預約失敗"); btn.disabled = false; }
-        }
-        window.onload = init;
-    </script>
+/**
+ * 將欄位文字解析成題目
+ * 支援幾種格式（越通用越好）：
+ * 1) "題目|選項1,選項2,選項3" => select
+ * 2) "題目\n選項1\n選項2" => radio
+ * 3) "題目" => text
+ */
+function parseFieldDef(raw, key){
+  const s = safeText(raw).trim();
+  if (!s) return null;
+
+  // JSON 支援： {"label":"...","type":"select|radio|text|textarea","options":[...],"required":true}
+  const j = tryJson(s);
+  if (j && j.label) {
+    return {
+      key,
+      label: safeText(j.label),
+      type: j.type || (Array.isArray(j.options) ? 'select' : 'text'),
+      options: Array.isArray(j.options) ? j.options.map(x=>safeText(x)) : [],
+      required: !!j.required,
+      placeholder: safeText(j.placeholder || '')
+    };
+  }
+
+  if (s.includes('|')) {
+    const [label, optStr] = s.split('|');
+    const options = (optStr || '').split(',').map(x=>x.trim()).filter(Boolean);
+    return { key, label: label.trim() || key, type:'select', options, required:false, placeholder:'' };
+  }
+
+  if (s.includes('\n')) {
+    const lines = s.split('\n').map(x=>x.trim()).filter(Boolean);
+    if (lines.length >= 2) {
+      const label = lines[0];
+      const options = lines.slice(1);
+      return { key, label, type:'radio', options, required:false, placeholder:'' };
+    }
+  }
+
+  return { key, label: s, type:'text', options:[], required:false, placeholder:'' };
+}
+
+/* ================== API 讀取（避免 HTML -> json 爆炸） ================== */
+async function fetchJsonSafe(url, init){
+  const res = await fetch(url, init);
+  const text = await res.text();
+  let json = null;
+  try { json = JSON.parse(text); } catch {}
+  if (!json) {
+    throw new Error('API 回傳非 JSON：' + text.slice(0,120));
+  }
+  return json;
+}
+
+/* ================== 課程與會員載入 ================== */
+async function loadCourse(){
+  if (!courseId) throw new Error('缺少課程 id');
+  const r = await fetchJsonSafe(`${API_URL}?sheet=${encodeURIComponent(courseSheet)}&id=${encodeURIComponent(courseId)}&_t=${Date.now()}`);
+  if (r.status !== 'success') throw new Error(r.message || '課程讀取失敗');
+  const list = r.data || [];
+  if (!list.length) throw new Error('找不到課程資料');
+  course = list[0];
+}
+
+async function loadMember(){
+  const r = await fetchJsonSafe(`${API_URL}?type=member_check&lineUserId=${encodeURIComponent(lineUser.userId)}&_t=${Date.now()}`);
+  memberBundle = r;
+
+  if (r.status !== 'exists') {
+    // 未註冊：導去註冊（保留返回）
+    const back = location.href;
+    const regUrl = new URL('register.html', location.href);
+    regUrl.searchParams.set('from', back);
+    location.href = regUrl.toString();
+    return;
+  }
+}
+
+/* ================== UI Render ================== */
+function renderCourse(){
+  const name = course.courseName || course['課程名稱'] || course['活動名稱'] || '課程';
+  const date = course.courseDate || course['課程日期'] || course['活動日期'] || '';
+  document.getElementById('courseTitle').innerText = name;
+  document.getElementById('courseMeta').innerText = date ? `日期：${safeText(date).split('T')[0]}` : '';
+}
+
+function openPicker(){
+  if (pickerLock) return;
+  if (pickerOpenedOnce) return; // ✅ 核心：只自動開一次（避免跑兩次）
+  pickerLock = true;
+  pickerOpenedOnce = true;
+
+  renderPickerList();
+  document.getElementById('sheetMask').style.display = 'flex';
+
+  setTimeout(()=>{ pickerLock = false; }, 250);
+}
+
+function closePicker(){
+  document.getElementById('sheetMask').style.display = 'none';
+}
+
+function renderPickerList(){
+  const list = document.getElementById('pickerList');
+  const u = memberBundle.data || {};
+  const families = memberBundle.families || [];
+
+  const items = [];
+  items.push({
+    labelType: '本人',
+    pillClass: 'pill pill-self',
+    name: u.name || '未填',
+    meta: `${u.gender ? '性別：'+u.gender : ''}${u.birthDate ? '　生日：'+safeText(u.birthDate).split('T')[0] : ''}`,
+    attendeeType: 'self',
+    attendeeIndex: 0
+  });
+
+  families.forEach((f, i) => {
+    items.push({
+      labelType: '成員',
+      pillClass: 'pill pill-member',
+      name: f.name || '未填',
+      meta: `${f.gender ? '性別：'+f.gender : ''}${f.birthDate ? '　生日：'+safeText(f.birthDate).split('T')[0] : ''}`,
+      attendeeType: 'family',
+      attendeeIndex: i
+    });
+  });
+
+  list.innerHTML = items.map(it => `
+    <button class="w-full text-left bg-white border border-slate-100 rounded-2xl px-4 py-4 shadow-sm hover:shadow transition"
+      onclick="selectAttendee('${it.attendeeType}', ${it.attendeeIndex});">
+      <div class="flex items-center gap-3 mb-2">
+        <span class="${it.pillClass}">${it.labelType}</span>
+        <div class="t-title" style="font-size:18px;">${it.name}</div>
+      </div>
+      <div class="t-sub">${it.meta || ''}</div>
+    </button>
+  `).join('');
+}
+
+window.selectAttendee = function(attendeeType, attendeeIndex){
+  selected.attendeeType = attendeeType;
+  selected.attendeeIndex = Number(attendeeIndex || 0);
+
+  renderSelectedWho();
+  closePicker();
+};
+
+function renderSelectedWho(){
+  const u = memberBundle.data || {};
+  const families = memberBundle.families || [];
+
+  let who = null;
+  if (selected.attendeeType === 'family') who = families[selected.attendeeIndex];
+  else who = u;
+
+  const name = who?.name || '未填';
+  const gender = who?.gender ? `性別：${who.gender}` : '';
+  const birth = who?.birthDate ? `生日：${safeText(who.birthDate).split('T')[0]}` : '';
+  const grade = who?.grade ? `年級：${who.grade}` : '';
+
+  document.getElementById('whoText').innerText = name;
+  document.getElementById('whoMeta').innerText = [gender, birth, grade].filter(Boolean).join('　');
+}
+
+/* ================== A~AN 詳細報名欄位 ================== */
+function renderFormFields(){
+  const wrap = document.getElementById('formFields');
+  wrap.innerHTML = '';
+
+  const labels = makeColLabels_A_to_AN();
+  const defs = [];
+
+  labels.forEach(k => {
+    if (course && Object.prototype.hasOwnProperty.call(course, k) && !isEmpty(course[k])) {
+      const def = parseFieldDef(course[k], k);
+      if (def) defs.push(def);
+    }
+  });
+
+  if (!defs.length) {
+    wrap.innerHTML = `<div class="t-sub">此課程未設定 A～AN 報名欄位（或欄位為空）。</div>`;
+    return;
+  }
+
+  defs.forEach(def => {
+    const id = `fld_${def.key}`;
+    let html = '';
+
+    if (def.type === 'select') {
+      html = `
+        <div>
+          <div class="t-label mb-2">${def.label}</div>
+          <select id="${id}">
+            <option value="">請選擇</option>
+            ${def.options.map(o=>`<option value="${o}">${o}</option>`).join('')}
+          </select>
+        </div>
+      `;
+    } else if (def.type === 'radio') {
+      html = `
+        <div>
+          <div class="t-label mb-2">${def.label}</div>
+          <div class="space-y-2">
+            ${def.options.map((o, idx)=>`
+              <label class="flex items-center gap-3 bg-white border border-slate-100 rounded-2xl px-4 py-3">
+                <input type="radio" name="${id}" value="${o}" class="w-5 h-5 accent-green-500">
+                <span class="t-sub" style="font-size:16px;">${o}</span>
+              </label>
+            `).join('')}
+          </div>
+        </div>
+      `;
+    } else if (def.type === 'textarea') {
+      html = `
+        <div>
+          <div class="t-label mb-2">${def.label}</div>
+          <textarea id="${id}" placeholder="${def.placeholder || ''}"></textarea>
+        </div>
+      `;
+    } else {
+      html = `
+        <div>
+          <div class="t-label mb-2">${def.label}</div>
+          <input id="${id}" placeholder="${def.placeholder || ''}">
+        </div>
+      `;
+    }
+
+    wrap.insertAdjacentHTML('beforeend', html);
+  });
+}
+
+function collectAnswers(){
+  const labels = makeColLabels_A_to_AN();
+  const answers = {};
+  labels.forEach(k => {
+    const id = `fld_${k}`;
+    const el = document.getElementById(id);
+    if (el) {
+      const v = safeText(el.value).trim();
+      if (v) answers[k] = v;
+      return;
+    }
+    // radio
+    const radio = document.querySelector(`input[name="fld_${k}"]:checked`);
+    if (radio) {
+      answers[k] = safeText(radio.value).trim();
+    }
+  });
+  return answers;
+}
+
+/* ================== 送出預約 ================== */
+async function submitBooking(){
+  if (!selected.attendeeType) {
+    alert('請先選擇預約對象');
+    pickerOpenedOnce = false; // 允許再開
+    openPicker();
+    return;
+  }
+
+  const btn = document.getElementById('submitBtn');
+  btn.disabled = true;
+  btn.innerText = '送出中...';
+
+  try {
+    const answers = collectAnswers();
+
+    const payload = {
+      type: 'course_booking',
+      lineUserId: lineUser.userId,
+      sheet: courseSheet,
+      courseId: courseId,
+      attendeeType: selected.attendeeType,
+      attendeeIndex: selected.attendeeIndex,
+      answers
+    };
+
+    const r = await fetchJsonSafe(API_URL, {
+      method:'POST',
+      headers:{ 'Content-Type':'application/json' },
+      body: JSON.stringify(payload)
+    });
+
+    if (r.status !== 'success') {
+      alert('❌ 預約失敗：' + (r.message || '請稍後再試'));
+      return;
+    }
+
+    alert(`✅ 已完成預約\n預約ID：${r.bookingId || ''}`);
+    // 成功後返回
+    document.getElementById('backBtn').click();
+
+  } catch (err) {
+    alert('❌ 雲端連線失敗：' + String(err.message || err));
+  } finally {
+    btn.disabled = false;
+    btn.innerText = '確認送出預約';
+  }
+}
+
+/* ================== 初始化 ================== */
+document.getElementById('changeWhoBtn').onclick = () => {
+  // 手動更換：允許再開
+  pickerOpenedOnce = false;
+  openPicker();
+};
+
+document.getElementById('submitBtn').onclick = submitBooking;
+
+(async () => {
+  try {
+    await liff.init({ liffId: LIFF_ID });
+
+    if (!liff.isLoggedIn()) {
+      const clean = location.origin + location.pathname + location.search;
+      liff.login({ redirectUri: clean });
+      return;
+    }
+
+    lineUser = await liff.getProfile();
+
+    // 先載課程 + 會員
+    await loadCourse();
+    renderCourse();
+
+    await loadMember();
+    // loadMember 可能會 redirect 註冊頁，所以這行之後才繼續
+    if (!memberBundle || memberBundle.status !== 'exists') return;
+
+    // ✅ 預設選本人
+    selected.attendeeType = 'self';
+    selected.attendeeIndex = 0;
+    renderSelectedWho();
+
+    // ✅ 渲染 A~AN
+    renderFormFields();
+
+    // ✅ 自動跳出對象選擇（只會一次，不會跑兩次）
+    openPicker();
+
+  } catch (err) {
+    console.error(err);
+    document.getElementById('hintText').innerText = '載入錯誤：' + String(err.message || err);
+    alert('❌ 載入失敗：' + String(err.message || err));
+  } finally {
+    document.getElementById('loading').style.display = 'none';
+  }
+})();
+</script>
 </body>
 </html>
