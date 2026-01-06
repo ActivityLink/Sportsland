@@ -37,6 +37,7 @@
       content:""; position:absolute; left:0; right:0; bottom:-1px; height:3px;
       background:var(--line); border-radius:999px;
     }
+
     /* 底部導覽 */
     .bottom-nav{
       position:fixed; left:0; right:0; bottom:0;
@@ -87,9 +88,14 @@
       </div>
     </div>
 
-    <!-- Banner -->
+    <!-- Banner（固定你的網址，不再找 banner.png） -->
     <div class="mt-4 card overflow-hidden">
-      <img id="bannerImg" alt="banner" class="w-full object-cover" style="max-height:240px; display:none;">
+      <img id="bannerImg"
+           alt="banner"
+           class="w-full object-cover"
+           style="max-height:240px; display:block;"
+           src="https://aiwe.cc/wp-content/uploads/2025/12/3486bc19dc6317e16bf4f1449ec52ae4.jpg"
+           onerror="this.style.display='none'">
     </div>
 
     <!-- Tabs (4) -->
@@ -134,22 +140,9 @@
         <div id="record-list" class="mt-4 space-y-3"></div>
       </div>
     </section>
-
-    <!-- Member -->
-    <section id="view-member" class="mt-4 hidden">
-      <div class="card p-5">
-        <div class="text-xl font-extrabold">會員</div>
-        <div class="mt-1 text-sm font-semibold text-gray-500">查看/編輯會員與成員資料</div>
-        <button class="mt-4 w-full py-4 rounded-2xl font-extrabold text-base"
-                style="background:var(--line);color:#fff;"
-                onclick="goMemberCenter()">
-          前往會員中心
-        </button>
-      </div>
-    </section>
   </div>
 
-  <!-- Bottom Nav -->
+  <!-- Bottom Nav：探索 / 紀錄 / 會員（會員直接進 register.html，不顯示按鈕頁） -->
   <nav class="bottom-nav">
     <div class="max-w-[720px] mx-auto grid grid-cols-3 px-6">
       <button id="nav-explore" class="nav-item active" onclick="switchView('explore')">
@@ -160,7 +153,7 @@
         <div class="ico"><i class="fa-solid fa-receipt text-lg"></i></div>
         紀錄
       </button>
-      <button id="nav-member" class="nav-item" onclick="switchView('member')">
+      <button id="nav-member" class="nav-item" onclick="goMemberCenter()">
         <div class="ico"><i class="fa-solid fa-user text-lg"></i></div>
         會員
       </button>
@@ -174,16 +167,6 @@
 
     let lineUser = null;
     let currentSheet = 'SingleCourses';
-
-    /* ✅ 你 repo 可能的 banner 路徑（自動嘗試，避免 404） */
-    const BANNER_CANDIDATES = [
-      './banner.png',
-      './banner.jpg',
-      './assets/banner.png',
-      './assets/banner.jpg',
-      './img/banner.png',
-      './img/banner.jpg'
-    ];
 
     function s(v){ return (v===undefined || v===null) ? '' : String(v); }
     function esc(str){
@@ -208,36 +191,12 @@
       return d.includes('T') ? d.split('T')[0] : d;
     }
 
-    async function loadBanner(){
-      const img = document.getElementById('bannerImg');
-      for(const url of BANNER_CANDIDATES){
-        const ok = await probeImage(url);
-        if(ok){
-          img.src = url;
-          img.style.display = 'block';
-          return;
-        }
-      }
-      // 找不到就不要顯示（不破版）
-      img.style.display = 'none';
-    }
-    function probeImage(url){
-      return new Promise(resolve=>{
-        const i = new Image();
-        i.onload = ()=>resolve(true);
-        i.onerror = ()=>resolve(false);
-        i.src = url + (url.includes('?') ? '&' : '?') + '_t=' + Date.now();
-      });
-    }
-
     function switchView(key){
       document.getElementById('view-explore').classList.toggle('hidden', key!=='explore');
       document.getElementById('view-record').classList.toggle('hidden', key!=='record');
-      document.getElementById('view-member').classList.toggle('hidden', key!=='member');
 
       document.getElementById('nav-explore').classList.toggle('active', key==='explore');
       document.getElementById('nav-record').classList.toggle('active', key==='record');
-      document.getElementById('nav-member').classList.toggle('active', key==='member');
 
       if(key==='record') loadRecords(false);
     }
@@ -340,7 +299,7 @@
       }
     }
 
-    /* 紀錄：預設抓 type=booking_list（後端未做也不會壞） */
+    /* ✅ 紀錄：後端需要支援 type=booking_list */
     async function loadRecords(force){
       const box = document.getElementById('record-list');
       if(!lineUser?.userId){
@@ -359,26 +318,23 @@
         const url = `${API_URL}?type=booking_list&lineUserId=${encodeURIComponent(lineUser.userId)}&_t=${Date.now()}`;
         const res = await fetch(url);
         const raw = await res.json();
-        const rows = Array.isArray(raw?.data) ? raw.data : [];
 
+        const rows = Array.isArray(raw?.data) ? raw.data : [];
         if(!rows.length){
-          const msg = raw?.message ? `（${raw.message}）` : '';
           box.innerHTML = `<div class="p-4 rounded-2xl border border-gray-100 bg-white">
             <div class="text-sm font-extrabold text-gray-700">目前沒有紀錄</div>
-            <div class="mt-1 text-sm font-semibold text-gray-500">
-              若你已經有預約但這裡空白，表示後端尚未提供 booking_list ${esc(msg)}
-            </div>
+            <div class="mt-1 text-sm font-semibold text-gray-500">${esc(raw?.message || '（後端未回傳 booking_list 或查無資料）')}</div>
           </div>`;
           return;
         }
 
         box.innerHTML = rows.map(r=>{
-          const cname = r.courseName ?? r["課程名稱"] ?? '';
-          const date = fmtDate(r.courseDate ?? r["課程日期"]);
-          const st = fmtTime(r.startTime ?? r["開始時間"]);
-          const who = r.attendeeName ?? r["報名對象姓名"] ?? '';
-          const status = r.status ?? r["狀態"] ?? '';
-          const id = r.bookingId ?? r["預約ID"] ?? '';
+          const cname = r.courseName || '';
+          const date = fmtDate(r.courseDate);
+          const st = fmtTime(r.startTime);
+          const who = r.attendeeName || '';
+          const status = r.status || '';
+          const id = r.bookingId || '';
           return `<div class="p-4 rounded-2xl border border-gray-100 bg-white">
             <div class="flex items-start justify-between gap-3">
               <div class="min-w-0">
@@ -405,12 +361,7 @@
 
     async function init(){
       try{
-        await loadBanner();
-
-        await liff.init({
-          liffId: LIFF_ID,
-          withLoginOnExternalBrowser: true
-        });
+        await liff.init({ liffId: LIFF_ID, withLoginOnExternalBrowser: true });
 
         if(!liff.isLoggedIn()){
           const cleanUrl = location.origin + location.pathname + location.search;
@@ -425,7 +376,6 @@
 
         setActiveTab(currentSheet);
         await loadCourses(currentSheet,false);
-
       }catch(err){
         console.error(err);
       }finally{
