@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>會員中心</title>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <style>
+    body { background:#f6f7f9; }
+  </style>
+</head>
+<body>
+
+<!-- Header -->
+<header class="bg-white border-b">
+  <div class="max-w-xl mx-auto px-4 py-4 flex items-center gap-3">
+    <button onclick="history.back()" class="text-gray-500">←</button>
+    <h1 class="text-lg font-bold">會員中心</h1>
+  </div>
+</header>
+
+<!-- Content -->
+<main class="max-w-xl mx-auto px-4 py-6 space-y-6">
+
+  <!-- 狀態 -->
+  <div id="statusBox" class="hidden p-4 rounded bg-red-50 text-red-600 text-sm"></div>
+
+  <!-- 主會員 -->
+  <section class="bg-white rounded-xl p-5 shadow">
+    <h2 class="font-semibold mb-3">本人資料</h2>
+    <div id="ownerBox" class="text-gray-400 text-sm">載入中...</div>
+  </section>
+
+  <!-- 成員 -->
+  <section class="bg-white rounded-xl p-5 shadow">
+    <div class="flex justify-between items-center mb-3">
+      <h2 class="font-semibold">家庭成員</h2>
+    </div>
+    <div id="memberList" class="space-y-3 text-gray-400 text-sm">
+      載入中...
+    </div>
+  </section>
+
+</main>
+
+<!-- Bottom Nav -->
+<nav class="fixed bottom-0 left-0 right-0 bg-white border-t">
+  <div class="max-w-xl mx-auto grid grid-cols-3 text-center text-sm">
+    <a href="index.html" class="py-3 text-gray-500">探索</a>
+    <a href="record.html" class="py-3 text-gray-500">紀錄</a>
+    <a href="member.html" class="py-3 text-green-600 font-bold">會員</a>
+  </div>
+</nav>
+
+<script>
+/* ===============================
+   基本設定
+================================ */
+const API = 'https://aged-rice-2438.wetw-net3.workers.dev';
+
+/* 取得 lineUserId（支援 query / localStorage） */
+function getLineUserId() {
+  const p = new URLSearchParams(location.search);
+  return (
+    p.get('lineUserId') ||
+    localStorage.getItem('lineUserId') ||
+    ''
+  );
+}
+
+/* 通用 fetch */
+async function apiFetch(params) {
+  const url = API + '?' + new URLSearchParams(params).toString();
+  const res = await fetch(url);
+  if (!res.ok) throw new Error('API 失敗');
+  return res.json();
+}
+
+/* ===============================
+   載入會員資料
+================================ */
+async function loadMember() {
+  const lineUserId = getLineUserId();
+  if (!lineUserId) {
+    showError('找不到 LINE 使用者，請從官方帳號進入');
+    return;
+  }
+
+  localStorage.setItem('lineUserId', lineUserId);
+
+  const tryTypes = ['member', 'members', 'member_list'];
+  let data = null;
+
+  for (const type of tryTypes) {
+    try {
+      const r = await apiFetch({ type, lineUserId });
+      if (r && r.status === 'success' && r.data) {
+        data = r.data;
+        break;
+      }
+    } catch (e) {}
+  }
+
+  if (!data) {
+    showError('找不到會員資料');
+    return;
+  }
+
+  renderMember(data);
+}
+
+/* ===============================
+   Render
+================================ */
+function renderMember(data) {
+  /* 本人 */
+  const owner = data.owner || data.main || data.user;
+  const ownerBox = document.getElementById('ownerBox');
+
+  if (!owner) {
+    ownerBox.innerHTML = '<span class="text-gray-400">無資料</span>';
+  } else {
+    ownerBox.innerHTML = `
+      <div class="font-medium">${owner.name || owner.姓名 || '—'}</div>
+      <div class="text-xs text-gray-500 mt-1">
+        性別：${owner.gender || '—'}　
+        生日：${owner.birthday || '—'}
+      </div>
+    `;
+  }
+
+  /* 成員 */
+  const members = data.members || data.children || [];
+  const list = document.getElementById('memberList');
+
+  if (!members.length) {
+    list.innerHTML = '<div class="text-gray-400">尚無成員</div>';
+    return;
+  }
+
+  list.innerHTML = members.map(m => `
+    <div class="border rounded-lg p-3">
+      <div class="font-medium">${m.name || m.姓名 || '—'}</div>
+      <div class="text-xs text-gray-500 mt-1">
+        性別：${m.gender || '—'}　
+        生日：${m.birthday || '—'}
+      </div>
+    </div>
+  `).join('');
+}
+
+/* ===============================
+   Error
+================================ */
+function showError(msg) {
+  const box = document.getElementById('statusBox');
+  box.innerText = msg;
+  box.classList.remove('hidden');
+}
+
+/* init */
+loadMember();
+</script>
+
+</body>
+</html>
