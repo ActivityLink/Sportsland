@@ -5,283 +5,623 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>課程預約</title>
 
-  <!-- LIFF + Tailwind -->
   <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
   <script src="https://cdn.tailwindcss.com"></script>
 
   <style>
-    :root{
-      --line:#06C755;
-      --text:#111;
-      --muted:#333;
-      --bg:#F7F9FB;
-      --card:#fff;
-      --border:#E5E7EB;
-    }
-    html,body{ background:var(--bg); color:var(--text); font-family: ui-sans-serif, system-ui, -apple-system, "Noto Sans TC", Arial; }
-    .card{ background:var(--card); border:1px solid var(--border); border-radius:18px; box-shadow:0 10px 26px rgba(0,0,0,.05); }
-    .btn{ border-radius:16px; padding:14px 16px; font-size:16px; font-weight:700; }
-    .btn-main{ background:var(--line); color:#fff; }
-    .btn-ghost{ background:#fff; border:1px solid var(--border); color:#111; }
-    .tag-self{ font-size:12px; font-weight:700; padding:6px 12px; border-radius:999px; background:#EAFBF0; color:#0F7A34; border:1px solid #BBF7D0; }
-    .tag-member{ font-size:12px; font-weight:700; padding:6px 12px; border-radius:999px; background:#EEF2FF; color:#3730A3; border:1px solid #C7D2FE; }
-    .pill{ border:1px solid var(--border); border-radius:999px; padding:8px 12px; background:#fff; }
-    .topbar{ position:sticky; top:0; z-index:50; backdrop-filter: blur(10px); background:rgba(247,249,251,.92); border-bottom:1px solid #EEF2F7; }
-    .h-title{ font-size:20px; font-weight:800; letter-spacing:.2px; }
-    .h-sub{ font-size:14px; font-weight:600; color:var(--muted); }
-    .label{ font-size:13px; font-weight:800; color:#222; letter-spacing:.2px; }
-    .inp, select, textarea{
-      width:100%; border:1.5px solid var(--border); border-radius:14px;
-      padding:14px; font-size:16px; font-weight:600; color:#111; background:#fff;
-      outline:none;
-    }
-    .inp:focus, select:focus, textarea:focus{ border-color:var(--line); box-shadow:0 0 0 3px rgba(6,199,85,.12); }
-    .muted{ color:#333; font-weight:600; }
-    .hr{ height:1px; background:#EEF2F7; }
-    .skeleton{ background: linear-gradient(90deg,#f1f5f9,#e2e8f0,#f1f5f9); background-size:200% 100%; animation: sk 1.2s infinite; border-radius:12px; }
-    @keyframes sk{ 0%{ background-position:200% 0 } 100%{ background-position:-200% 0 } }
+    @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;800&display=swap');
+    body{font-family:"Noto Sans TC",sans-serif;background:#f6f8fb;color:#111;}
+    .card{background:#fff;border:1px solid #e7edf5;border-radius:18px;box-shadow:0 8px 22px rgba(0,0,0,.04);}
+    .btn{border-radius:16px;font-weight:800;}
+    .btn-line{background:#06C755;color:#fff;}
+    .btn-soft{background:#eef2ff;color:#1e3a8a;border:1px solid #c7d2fe;}
+    .muted{color:#334155;}
+    .tag-self{background:#EAFBF0;color:#0F7A34;border:1px solid #BBF7D0;}
+    .tag-member{background:#EEF2FF;color:#3730A3;border:1px solid #C7D2FE;}
   </style>
 </head>
 
-<body class="flex justify-center">
-  <div class="w-full max-w-[720px] min-h-screen">
+<body class="max-w-[720px] mx-auto p-4 pb-28">
 
-    <!-- Topbar -->
-    <div class="topbar px-4 py-3">
-      <div class="flex items-center justify-between gap-3">
-        <button class="btn btn-ghost px-4 py-2" onclick="goBack()">返回</button>
-        <div class="text-right">
-          <div class="h-title">課程預約</div>
-          <div id="subTitle" class="h-sub">載入中…</div>
-        </div>
+  <!-- Topbar -->
+  <div class="sticky top-0 z-40 bg-white/90 backdrop-blur border-b border-slate-100 px-2 py-3 -mx-4 mb-4">
+    <div class="flex items-center justify-between">
+      <button class="btn btn-soft px-4 py-2 text-sm" onclick="goBack()">← 返回</button>
+      <div class="font-black text-base">課程預約</div>
+      <div class="w-[72px]"></div>
+    </div>
+  </div>
+
+  <!-- Error -->
+  <div id="error-box" class="hidden card p-4 border-red-200 bg-red-50 mb-4">
+    <div class="font-black text-red-600 mb-1">載入失敗</div>
+    <div id="error-msg" class="text-red-600 text-sm"></div>
+    <button class="btn btn-soft px-4 py-2 mt-3 text-sm" onclick="init()">重新載入</button>
+  </div>
+
+  <!-- Loading -->
+  <div id="loading" class="card p-6 mb-4">
+    <div class="flex items-center gap-3">
+      <div class="animate-spin rounded-full h-5 w-5 border-b-2 border-green-500"></div>
+      <div class="font-bold muted">正在載入課程與會員資料...</div>
+    </div>
+  </div>
+
+  <!-- Course Summary -->
+  <div id="course-card" class="hidden card p-5 mb-4">
+    <div class="font-black text-xl" id="course-name">--</div>
+    <div class="muted mt-1 text-sm" id="course-meta">--</div>
+  </div>
+
+  <!-- Price -->
+  <div id="price-card" class="hidden card p-5 mb-4">
+    <div class="font-black text-lg mb-3">費用</div>
+    <div class="grid grid-cols-2 gap-3">
+      <div class="card p-4">
+        <div class="text-xs muted font-bold">會員價</div>
+        <div class="text-xl font-black" id="price-member">$0</div>
+      </div>
+      <div class="card p-4">
+        <div class="text-xs muted font-bold">早鳥價</div>
+        <div class="text-xl font-black" id="price-early">$0</div>
+        <div class="text-[11px] muted mt-1" id="early-deadline"></div>
       </div>
     </div>
 
-    <!-- Error -->
-    <div id="errorBox" class="hidden mx-4 mt-4 card p-4 border-red-200" style="background:#FFF1F2;">
-      <div class="font-extrabold text-red-700 mb-1">發生錯誤</div>
-      <div id="errorMsg" class="text-red-700 font-semibold text-sm"></div>
-      <div class="mt-3 flex gap-2">
-        <button class="btn btn-ghost" onclick="location.reload()">重新載入</button>
-        <button class="btn btn-ghost" onclick="goBack()">返回上一頁</button>
+    <div class="mt-4 flex items-center justify-between card p-4">
+      <div>
+        <div class="font-black">使用早鳥價</div>
+        <div class="text-[12px] muted" id="early-hint">符合期限才可使用</div>
       </div>
+      <input id="toggle-early" type="checkbox" class="w-6 h-6 accent-green-500">
+    </div>
+  </div>
+
+  <!-- Attendee -->
+  <div id="attendee-card" class="hidden card p-5 mb-4">
+    <div class="flex items-center justify-between">
+      <div class="font-black text-lg">預約對象</div>
+      <button class="btn btn-soft px-4 py-2 text-sm" onclick="openAttendeeModal()">更換</button>
     </div>
 
-    <!-- Loading -->
-    <div id="loading" class="mx-4 mt-4 card p-4">
-      <div class="skeleton h-6 w-40 mb-3"></div>
-      <div class="skeleton h-4 w-full mb-2"></div>
-      <div class="skeleton h-4 w-5/6 mb-2"></div>
-      <div class="skeleton h-4 w-3/4"></div>
+    <div class="mt-4 card p-4">
+      <div class="flex items-center gap-2 mb-2">
+        <span id="attendee-tag" class="text-xs font-bold px-3 py-1 rounded-full tag-self">本人</span>
+        <div class="font-black text-lg" id="attendee-name">--</div>
+      </div>
+      <div class="text-sm muted" id="attendee-meta">--</div>
+    </div>
+  </div>
+
+  <!-- Dynamic Form -->
+  <div id="form-card" class="hidden card p-5 mb-4">
+    <div class="font-black text-lg mb-2">詳細報名資料</div>
+    <div class="text-sm muted mb-4">依課程需求填寫（可留空欄位不會送出）</div>
+    <div id="dynamic-form" class="space-y-3"></div>
+  </div>
+
+  <!-- Equipment -->
+  <div id="equipment-card" class="hidden card p-5 mb-4">
+    <div class="font-black text-lg">租用設備</div>
+    <div class="text-sm muted mt-1">可選擇租用，系統會加總設備費用</div>
+    <div id="equipment-list" class="mt-4 space-y-3"></div>
+    <div id="equipment-empty" class="hidden mt-4 text-sm muted">目前沒有可租用設備（請到 SYS 設定 equipment_list）</div>
+  </div>
+
+  <!-- Total -->
+  <div id="total-card" class="hidden card p-5 mb-6">
+    <div class="flex items-center justify-between">
+      <div class="font-black text-lg">結算</div>
+      <div class="text-sm muted">送出前會再確認</div>
     </div>
 
-    <!-- Main -->
-    <div id="main" class="hidden px-4 pb-10">
-
-      <!-- LINE + Member -->
-      <div class="card p-4 mt-4">
-        <div class="flex items-center gap-3">
-          <img id="lineAvatar" class="w-10 h-10 rounded-full border" alt="" />
-          <div class="flex-1">
-            <div class="label">登入帳號</div>
-            <div id="lineName" class="text-[16px] font-extrabold">—</div>
-          </div>
-          <div class="pill text-[12px] font-extrabold" style="color:#0F7A34;border-color:#BBF7D0;background:#EAFBF0;">
-            連線中
-          </div>
-        </div>
-      </div>
-
-      <!-- Course Summary -->
-      <div class="card p-4 mt-4">
-        <div class="flex items-start justify-between gap-3">
-          <div>
-            <div class="label mb-1">課程資訊</div>
-            <div id="courseName" class="text-[20px] font-extrabold leading-snug">—</div>
-            <div id="courseMeta" class="mt-2 text-[14px] font-semibold text-[#222] leading-relaxed"></div>
-          </div>
-          <img id="coverImg" class="w-24 h-24 rounded-2xl object-cover border hidden" alt="">
-        </div>
-
-        <div class="hr my-4"></div>
-
-        <!-- 詳細說明（保留你原本需要的內容） -->
-        <div id="courseDetail" class="space-y-3"></div>
-      </div>
-
-      <!-- Step 1: Attendee Picker -->
-      <div class="card p-4 mt-4">
-        <div class="flex items-center justify-between">
-          <div>
-            <div class="label">報名對象</div>
-            <div class="h-sub">請先選擇由誰預約（必選）</div>
-          </div>
-          <button class="btn btn-ghost" onclick="openAttendeeModal()">選擇</button>
-        </div>
-
-        <div id="attendeeSelected" class="mt-3 hidden">
-          <div class="flex items-center gap-2">
-            <span id="attendeeTag" class="tag-self">本人</span>
-            <div id="attendeeName" class="text-[18px] font-extrabold">—</div>
-          </div>
-          <div id="attendeeInfo" class="mt-1 text-[14px] font-semibold text-[#222]"></div>
-        </div>
-
-        <div id="attendeeHint" class="mt-3 text-[14px] font-semibold text-[#222]">
-          尚未選擇報名對象
-        </div>
-      </div>
-
-      <!-- Step 2: Pricing -->
-      <div class="card p-4 mt-4">
-        <div class="label">價格方案</div>
-        <div class="h-sub mb-3">依課程提供的價格欄位自動出現</div>
-
-        <select id="pricePlan" onchange="recalc()"></select>
-
-        <div id="earlyHint" class="mt-2 text-[13px] font-semibold text-[#222] hidden"></div>
-      </div>
-
-      <!-- Step 3: Equipment -->
-      <div id="eqCard" class="card p-4 mt-4 hidden">
-        <div class="label">租用設備</div>
-        <div class="h-sub mb-3">勾選後會加入結算金額</div>
-        <div id="eqList" class="space-y-2"></div>
-      </div>
-
-      <!-- Note -->
-      <div class="card p-4 mt-4">
-        <div class="label">備註（選填）</div>
-        <textarea id="note" rows="3" class="mt-2" placeholder="例如：需注意膝蓋舊傷 / 想安排靠近入口…"></textarea>
-      </div>
-
-      <!-- Summary -->
-      <div class="card p-4 mt-4">
-        <div class="label">送出前結算</div>
-        <div class="mt-3 space-y-2 text-[15px] font-semibold text-[#111]">
-          <div class="flex justify-between"><span>課程費用</span><span id="sumBase">0</span></div>
-          <div class="flex justify-between"><span>設備租用</span><span id="sumEq">0</span></div>
-          <div class="hr my-2"></div>
-          <div class="flex justify-between text-[18px] font-extrabold"><span>總計</span><span id="sumTotal">0</span></div>
-        </div>
-
-        <button id="submitBtn" class="btn btn-main w-full mt-4" onclick="submitBooking()">確認送出預約</button>
-        <button class="btn btn-ghost w-full mt-3" onclick="goBack()">取消返回</button>
-      </div>
+    <div class="mt-4 space-y-2 text-sm">
+      <div class="flex justify-between"><span class="muted">課程費用</span><span id="sum-base">$0</span></div>
+      <div class="flex justify-between"><span class="muted">設備費用</span><span id="sum-eq">$0</span></div>
+      <div class="border-t border-slate-100 my-2"></div>
+      <div class="flex justify-between text-lg font-black"><span>應付金額</span><span id="sum-total">$0</span></div>
     </div>
+  </div>
 
-    <!-- Attendee Modal -->
-    <div id="modal" class="hidden fixed inset-0 z-[100]">
-      <div class="absolute inset-0 bg-black/40" onclick="closeModal()"></div>
-      <div class="absolute left-1/2 top-1/2 w-[92%] max-w-[620px] -translate-x-1/2 -translate-y-1/2 card p-4">
-        <div class="flex items-center justify-between">
-          <div>
-            <div class="h-title">選擇報名對象</div>
-            <div class="h-sub">勾選後才會進行結算</div>
-          </div>
-          <button class="btn btn-ghost px-4 py-2" onclick="closeModal()">關閉</button>
-        </div>
-
-        <div class="hr my-3"></div>
-
-        <div id="attendeeList" class="space-y-2"></div>
-
-        <button class="btn btn-main w-full mt-4" onclick="confirmAttendee()">確認選擇</button>
-      </div>
+  <!-- CTA -->
+  <div class="fixed left-0 right-0 bottom-0 bg-white/90 backdrop-blur border-t border-slate-100 p-4">
+    <div class="max-w-[720px] mx-auto">
+      <button id="btn-submit" class="btn btn-line w-full py-4 text-lg" onclick="submitBooking()" disabled>
+        確認送出預約
+      </button>
     </div>
+  </div>
 
+  <!-- Attendee Modal -->
+  <div id="attendee-modal" class="hidden fixed inset-0 z-50 bg-black/40">
+    <div class="absolute inset-x-0 bottom-0 bg-white rounded-t-3xl p-5 max-h-[85vh] overflow-auto">
+      <div class="flex items-center justify-between">
+        <div>
+          <div class="font-black text-lg">選擇報名對象</div>
+          <div class="text-sm muted mt-1">勾選後才會進行結算</div>
+        </div>
+        <button class="btn btn-soft px-4 py-2 text-sm" onclick="closeAttendeeModal()">關閉</button>
+      </div>
+
+      <div id="attendee-list" class="mt-4 space-y-3"></div>
+
+      <button class="btn btn-line w-full py-4 mt-6 text-lg" onclick="confirmAttendee()">
+        確認選擇
+      </button>
+    </div>
   </div>
 
 <script>
 /* =========================
- * 參數
+ * 基本設定
  * ========================= */
 const API_URL = 'https://aged-rice-2438.wetw-net3.workers.dev/';
-const LIFF_ID  = '2008786875-F7ifLsbN';
+const LIFF_ID = '2008786875-F7ifLsbN';
 
-const qs = new URL(location.href).searchParams;
-const courseId = (qs.get('id') || '').trim();
-const sheetName = (qs.get('type') || qs.get('sheet') || 'SingleCourses').trim(); // 你網址用 type=SingleCourses
-const fromUrl = (qs.get('from') || '').trim();
-
-let initOnce = false;
+let _initOnce = false;
 
 let lineUser = null;
-let member = null;     // {data, families}
-let course = null;     // course object
-let config = null;     // config object
+let courseSheet = 'SingleCourses';   // 由 URL 的 type 取（避免跟 API 的 type 衝突）
+let courseId = '';
 
-let attendee = null;   // {role,name,gender,birthDate,memberId,lineUserId}
-let selectedEquip = []; // [{name,price}]
-let basePrice = 0;
-let eqPrice = 0;
+let course = null;
+let memberPack = null; // {status, data, families}
+let configKV = {};     // config.kv
+
+let attendeeList = [];
+let selectedAttendee = null;
+
+let equipmentCatalog = []; // [{name, price}]
+let selectedEquip = new Set();
+let useEarlyBird = false;
 
 /* =========================
- * UI helpers
+ * 工具
  * ========================= */
-function money(n){
-  const num = Number(n || 0);
-  return 'NT$ ' + num.toLocaleString('zh-TW');
-}
-
 function showError(msg){
-  const box = document.getElementById('errorBox');
-  const m = document.getElementById('errorMsg');
-  if (!box || !m) return alert(msg);
-  m.textContent = msg;
+  const box = document.getElementById('error-box');
+  const m = document.getElementById('error-msg');
+  if (!box || !m) return;
+  m.textContent = msg || '未知錯誤';
   box.classList.remove('hidden');
   document.getElementById('loading')?.classList.add('hidden');
-  document.getElementById('main')?.classList.add('hidden');
+}
+
+function hideError(){
+  document.getElementById('error-box')?.classList.add('hidden');
+}
+
+function money(n){
+  const x = Number(n || 0) || 0;
+  return '$' + x.toLocaleString('zh-TW');
+}
+
+function isYmd(s){
+  return typeof s === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(s);
+}
+
+function todayYmd(){
+  const d = new Date();
+  const y = d.getFullYear();
+  const m = String(d.getMonth()+1).padStart(2,'0');
+  const dd = String(d.getDate()).padStart(2,'0');
+  return `${y}-${m}-${dd}`;
 }
 
 function goBack(){
-  if (fromUrl) { location.href = fromUrl; return; }
+  const u = new URL(location.href);
+  const from = u.searchParams.get('from');
+  if (from) { location.href = new URL(from, location.href).toString(); return; }
   if (history.length > 1) { history.back(); return; }
   location.href = new URL('index.html', location.href).toString();
 }
 
 /* =========================
- * API
+ * Config / equipment_list 解析
  * ========================= */
-async function apiGet(params){
-  const url = API_URL + '?' + new URLSearchParams({...params, _t: Date.now()});
-  const res = await fetch(url, { method:'GET' });
-  let data = null;
-  try { data = await res.json(); } catch {}
-  if (!res.ok) {
-    const msg = data?.message || data?.error || ('HTTP ' + res.status);
-    throw new Error(msg);
+function parseEquipmentFromKV(kv){
+  // kv: { equipment_list: { Global: "[{...}]" } }
+  const raw = kv?.equipment_list?.Global ?? kv?.equipment_list?.global ?? kv?.equipment_list;
+  if (!raw) return [];
+  try{
+    const arr = typeof raw === 'string' ? JSON.parse(raw) : raw;
+    if (!Array.isArray(arr)) return [];
+    return arr.map(x => ({
+      name: String(x?.name ?? '').trim(),
+      price: Number(x?.price ?? 0) || 0
+    })).filter(x => x.name);
+  }catch(e){
+    return [];
   }
-  return data;
-}
-
-async function apiPost(payload){
-  const res = await fetch(API_URL, {
-    method:'POST',
-    headers: { 'Content-Type':'application/json' },
-    body: JSON.stringify(payload)
-  });
-  let data = null;
-  try { data = await res.json(); } catch {}
-  if (!res.ok) {
-    const msg = data?.message || data?.error || ('HTTP ' + res.status);
-    throw new Error(msg);
-  }
-  return data;
 }
 
 /* =========================
- * 載入流程（避免跑兩次）
+ * 動態表單（可擴充）
+ * 你之後要做梯次課/營隊/課後班：在這裡加 handler
+ * ========================= */
+const COURSE_TYPE_HANDLERS = {
+  // 單堂課：示範先做最穩的
+  SingleCourses: {
+    buildDynamicFields(courseObj){
+      // 若你未來要用某欄位（例如 courseObj.formFieldsJson）來定義欄位，可在這裡擴充
+      // 目前：若課程表沒有欄位定義，就顯示「可填備註」即可
+      return [
+        { key:'note', label:'備註（選填）', type:'textarea', placeholder:'例如：是否有舊傷、需注意事項...' }
+      ];
+    }
+  }
+};
+
+function renderDynamicForm(){
+  const wrap = document.getElementById('dynamic-form');
+  if (!wrap) return;
+  wrap.innerHTML = '';
+
+  const handler = COURSE_TYPE_HANDLERS[courseSheet] || COURSE_TYPE_HANDLERS.SingleCourses;
+  const fields = handler.buildDynamicFields(course) || [];
+
+  fields.forEach(f=>{
+    const id = `f_${f.key}`;
+    const box = document.createElement('div');
+    box.className = "card p-4";
+
+    if (f.type === 'textarea'){
+      box.innerHTML = `
+        <div class="font-bold mb-2">${f.label}</div>
+        <textarea id="${id}" class="w-full border border-slate-200 rounded-xl p-3 outline-none focus:ring-2 focus:ring-green-200"
+          rows="3" placeholder="${f.placeholder||''}"></textarea>
+      `;
+    } else {
+      box.innerHTML = `
+        <div class="font-bold mb-2">${f.label}</div>
+        <input id="${id}" class="w-full border border-slate-200 rounded-xl p-3 outline-none focus:ring-2 focus:ring-green-200"
+          placeholder="${f.placeholder||''}">
+      `;
+    }
+    wrap.appendChild(box);
+  });
+
+  document.getElementById('form-card')?.classList.remove('hidden');
+}
+
+/* =========================
+ * UI Render
+ * ========================= */
+function renderCourse(){
+  if (!course){
+    showError('找不到課程資料（course=null）');
+    return;
+  }
+
+  const name = course.courseName || course["課程名稱"] || '--';
+  const d = course.courseDate || course["課程日期"] || '';
+  const st = course.startTime || course["開始時間"] || '';
+  const et = course.endTime || course["結束時間"] || '';
+
+  document.getElementById('course-name').textContent = name;
+
+  const meta = [];
+  if (d) meta.push(`日期：${String(d).split('T')[0]}`);
+  if (st || et) meta.push(`時間：${formatTime_(st)}-${formatTime_(et)}`);
+  document.getElementById('course-meta').textContent = meta.join('　');
+
+  document.getElementById('course-card').classList.remove('hidden');
+
+  // price
+  const memberPrice = Number(course.memberPrice || course["會員價"] || 0) || 0;
+  const earlyPrice = Number(course.priceEarly || course["早鳥價"] || 0) || 0;
+  const deadline = String(course.earlyDeadline || course["早鳥截止"] || '').split('T')[0];
+
+  document.getElementById('price-member').textContent = money(memberPrice);
+  document.getElementById('price-early').textContent = money(earlyPrice);
+
+  document.getElementById('early-deadline').textContent = deadline ? `早鳥截止：${deadline}` : '';
+
+  const canEarly = earlyPrice > 0 && deadline && isYmd(deadline) && (todayYmd() <= deadline);
+  document.getElementById('early-hint').textContent = canEarly ? '目前符合早鳥期限，可勾選使用' : '目前不符合早鳥期限或未設定早鳥價';
+
+  const toggle = document.getElementById('toggle-early');
+  toggle.checked = false;
+  toggle.disabled = !canEarly;
+  useEarlyBird = false;
+
+  toggle.onchange = () => {
+    useEarlyBird = !!toggle.checked;
+    recalcTotal();
+  };
+
+  document.getElementById('price-card').classList.remove('hidden');
+
+  // dynamic form
+  renderDynamicForm();
+}
+
+function formatTime_(v){
+  // 避免 1899-12-30T14:30:00
+  if (!v) return '';
+  const s = String(v);
+  const m = s.match(/(\d{1,2}):(\d{2})/);
+  if (m) return `${m[1].padStart(2,'0')}:${m[2]}`;
+  return s;
+}
+
+function buildAttendeeList(){
+  const u = memberPack?.data || {};
+  const fam = Array.isArray(memberPack?.families) ? memberPack.families : [];
+
+  attendeeList = [];
+
+  attendeeList.push({
+    role: '本人',
+    name: (u.name && String(u.name).trim() && String(u.name).trim() !== '0') ? String(u.name).trim() : '本人',
+    gender: u.gender || '未填',
+    birthDate: (u.birthDate || '0'),
+    memberId: u.memberId || '',
+  });
+
+  fam.forEach((f, idx)=>{
+    const raw = (f?.name ?? '').toString().trim();
+    const nm = (!raw || raw === '0') ? `成員#${idx+1}` : raw;
+    attendeeList.push({
+      role: '成員',
+      name: nm,
+      gender: f.gender || '未填',
+      birthDate: f.birthDate || '0',
+      memberId: u.memberId || '',
+    });
+  });
+
+  selectedAttendee = attendeeList[0]; // 預設本人
+  renderSelectedAttendee();
+}
+
+function renderSelectedAttendee(){
+  if (!selectedAttendee) return;
+
+  const tag = document.getElementById('attendee-tag');
+  tag.textContent = selectedAttendee.role;
+  tag.className = `text-xs font-bold px-3 py-1 rounded-full ${selectedAttendee.role==='本人'?'tag-self':'tag-member'}`;
+
+  document.getElementById('attendee-name').textContent = selectedAttendee.name;
+
+  const meta = [];
+  if (selectedAttendee.gender) meta.push(`性別：${selectedAttendee.gender}`);
+  const bd = String(selectedAttendee.birthDate||'').split('T')[0];
+  if (bd && bd !== '0') meta.push(`生日：${bd}`);
+  document.getElementById('attendee-meta').textContent = meta.join('　');
+
+  document.getElementById('attendee-card').classList.remove('hidden');
+}
+
+function openAttendeeModal(){
+  const modal = document.getElementById('attendee-modal');
+  const list = document.getElementById('attendee-list');
+  if (!modal || !list) return;
+
+  list.innerHTML = attendeeList.map((a, idx)=>{
+    const checked = (selectedAttendee && selectedAttendee.name === a.name && selectedAttendee.role === a.role) ? 'checked' : '';
+    const bd = String(a.birthDate||'').split('T')[0];
+    const tagCls = a.role==='本人'?'tag-self':'tag-member';
+    return `
+      <label class="card p-4 flex items-start gap-3 cursor-pointer">
+        <input type="radio" name="att" value="${idx}" class="mt-1 w-5 h-5 accent-green-500" ${checked}>
+        <div class="flex-1">
+          <div class="flex items-center gap-2">
+            <span class="text-xs font-bold px-3 py-1 rounded-full ${tagCls}">${a.role}</span>
+            <div class="font-black text-lg">${a.name}</div>
+          </div>
+          <div class="text-sm muted mt-1">
+            性別：${a.gender || '未填'}
+            ${bd && bd!=='0' ? `　生日：${bd}` : ''}
+          </div>
+        </div>
+      </label>
+    `;
+  }).join('');
+
+  modal.classList.remove('hidden');
+}
+
+function closeAttendeeModal(){
+  document.getElementById('attendee-modal')?.classList.add('hidden');
+}
+
+function confirmAttendee(){
+  const pick = document.querySelector('input[name="att"]:checked');
+  if (!pick) return;
+
+  const idx = Number(pick.value);
+  selectedAttendee = attendeeList[idx];
+  renderSelectedAttendee();
+  closeAttendeeModal();
+  recalcTotal();
+
+  // 有選擇才允許送出
+  document.getElementById('btn-submit').disabled = false;
+}
+
+/* =========================
+ * Equipment
+ * ========================= */
+function renderEquipment(){
+  equipmentCatalog = parseEquipmentFromKV(configKV);
+  const list = document.getElementById('equipment-list');
+  const empty = document.getElementById('equipment-empty');
+
+  if (!list || !empty) return;
+
+  selectedEquip = new Set();
+
+  if (!equipmentCatalog.length){
+    list.innerHTML = '';
+    empty.classList.remove('hidden');
+    document.getElementById('equipment-card')?.classList.remove('hidden');
+    recalcTotal();
+    return;
+  }
+
+  empty.classList.add('hidden');
+  list.innerHTML = equipmentCatalog.map((eq, i)=>`
+    <label class="card p-4 flex items-center gap-3 cursor-pointer">
+      <input type="checkbox" class="w-6 h-6 accent-green-500" data-eq="${i}">
+      <div class="flex-1">
+        <div class="font-black text-lg">${eq.name}</div>
+        <div class="text-sm muted">加價：${money(eq.price)}</div>
+      </div>
+    </label>
+  `).join('');
+
+  list.querySelectorAll('input[type="checkbox"]').forEach(cb=>{
+    cb.addEventListener('change', ()=>{
+      const i = Number(cb.getAttribute('data-eq'));
+      const name = equipmentCatalog[i]?.name;
+      if (!name) return;
+      if (cb.checked) selectedEquip.add(name);
+      else selectedEquip.delete(name);
+      recalcTotal();
+    });
+  });
+
+  document.getElementById('equipment-card')?.classList.remove('hidden');
+  recalcTotal();
+}
+
+/* =========================
+ * Total
+ * ========================= */
+function recalcTotal(){
+  const memberPrice = Number(course?.memberPrice || course?.["會員價"] || 0) || 0;
+  const earlyPrice = Number(course?.priceEarly || course?.["早鳥價"] || 0) || 0;
+  const base = (useEarlyBird && earlyPrice>0) ? earlyPrice : memberPrice;
+
+  let eqFee = 0;
+  const eqItems = [...selectedEquip];
+  eqItems.forEach(n=>{
+    const found = equipmentCatalog.find(x=>x.name===n);
+    if (found) eqFee += Number(found.price||0);
+  });
+
+  const total = base + eqFee;
+
+  document.getElementById('sum-base').textContent = money(base);
+  document.getElementById('sum-eq').textContent = money(eqFee);
+  document.getElementById('sum-total').textContent = money(total);
+
+  document.getElementById('total-card')?.classList.remove('hidden');
+}
+
+/* =========================
+ * Submit
+ * ========================= */
+function collectFormData(){
+  const data = {};
+  document.querySelectorAll('#dynamic-form [id^="f_"]').forEach(el=>{
+    const key = el.id.replace(/^f_/, '');
+    const val = (el.value || '').toString().trim();
+    if (val) data[key] = val;
+  });
+  return data;
+}
+
+async function submitBooking(){
+  try{
+    if (!course) return showError('找不到課程資料（course=null）');
+    if (!selectedAttendee) return showError('請先選擇報名對象');
+
+    const btn = document.getElementById('btn-submit');
+    btn.disabled = true;
+    btn.textContent = '送出中...';
+
+    const memberPrice = Number(course.memberPrice || course["會員價"] || 0) || 0;
+    const earlyPrice = Number(course.priceEarly || course["早鳥價"] || 0) || 0;
+    const basePrice = (useEarlyBird && earlyPrice>0) ? earlyPrice : memberPrice;
+
+    let equipmentFee = 0;
+    const equipmentItems = [...selectedEquip];
+    equipmentItems.forEach(n=>{
+      const found = equipmentCatalog.find(x=>x.name===n);
+      if (found) equipmentFee += Number(found.price||0);
+    });
+
+    const totalAmount = basePrice + equipmentFee;
+
+    const u = memberPack?.data || {};
+    const formData = collectFormData();
+
+    const payload = {
+      type: 'course_booking',
+      sheet: courseSheet,
+      courseId: course.courseId || course.id || course.UUID || courseId,
+
+      lineUserId: lineUser?.userId || '',
+      memberId: u.memberId || '',
+
+      attendeeRole: selectedAttendee.role,
+      attendeeName: selectedAttendee.name,
+      attendeeGender: selectedAttendee.gender,
+      attendeeBirthDate: String(selectedAttendee.birthDate||'0').split('T')[0],
+
+      useEarlyBird: !!useEarlyBird,
+      basePrice,
+      equipmentItems,
+      equipmentFee,
+      totalAmount,
+
+      payStatus: 'unpaid',
+      bookingStatus: 'pending',
+
+      formData,
+      note: formData.note || ''
+    };
+
+    const resp = await fetch(API_URL, {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify(payload)
+    });
+    const json = await resp.json();
+
+    if (json.status !== 'success'){
+      return showError(json.message || '預約失敗');
+    }
+
+    alert('✅ 預約成功\n預約ID：' + json.bookingId);
+    goBack();
+
+  }catch(err){
+    showError(String(err));
+  }finally{
+    const btn = document.getElementById('btn-submit');
+    if (btn){
+      btn.disabled = false;
+      btn.textContent = '確認送出預約';
+    }
+  }
+}
+
+/* =========================
+ * Init
  * ========================= */
 async function init(){
-  if (initOnce) return;
-  initOnce = true;
+  if (_initOnce) return;
+  _initOnce = true;
 
-  if (!courseId) return showError('缺少課程ID（網址需要帶 ?id=...）');
+  hideError();
 
-  try {
-    // 1) LIFF
-    await liff.init({ liffId: LIFF_ID });
+  const params = new URL(location.href).searchParams;
+
+  // ✅ 你的頁面 URL 用 type=SingleCourses（我們把它當作 sheet）
+  courseSheet = params.get('type') || params.get('sheet') || 'SingleCourses';
+  courseId = params.get('id') || params.get('courseId') || '';
+
+  if (!courseId){
+    showError('缺少課程 id');
+    return;
+  }
+
+  try{
+    // LIFF
+    await liff.init({ liffId: LIFF_ID, withLoginOnExternalBrowser: true });
 
     if (!liff.isLoggedIn()){
       const cleanUrl = location.origin + location.pathname + location.search;
@@ -290,440 +630,59 @@ async function init(){
     }
 
     lineUser = await liff.getProfile();
-    document.getElementById('lineAvatar').src = lineUser.pictureUrl || '';
-    document.getElementById('lineName').textContent = lineUser.displayName || 'LINE 使用者';
 
-    // 2) 同步抓：member + course + config
-    const [m, c, cfg] = await Promise.all([
-      apiGet({ type:'member_check', lineUserId: lineUser.userId }),
-      apiGet({ type:'course_detail', sheet: sheetName, id: courseId }),
-      apiGet({ type:'config' })
-    ]);
+    // booking_init：一次取課程 + 會員 + config
+    const qs = new URLSearchParams({
+      type: 'booking_init',
+      sheet: courseSheet,
+      id: courseId,
+      lineUserId: lineUser.userId,
+      _t: Date.now()
+    });
 
-    // member_check：你的 GAS 回 {status:"exists", data, families}
-    if (m?.status !== 'exists' && m?.status !== 'success'){
-      // 會員沒註冊：仍允許看課程，但不能送出
-      member = { status:'not_found', data:null, families:[] };
-    } else {
-      member = m;
+    const res = await fetch(`${API_URL}?${qs.toString()}`);
+    const raw = await res.json();
+
+    if (raw.status !== 'success'){
+      showError(raw.message || '雲端連線失敗');
+      return;
     }
 
-    // course_detail：回 {status:"success", data:[...]} 或 {status:"success", data:...}
-    const cd = c?.data;
-    if (!c || c.status !== 'success') throw new Error(c?.message || '課程載入失敗');
-    if (Array.isArray(cd)) course = cd[0] || null;
-    else if (cd && Array.isArray(cd.data)) course = cd.data[0] || null; // 兼容
-    else course = null;
-    if (!course) throw new Error('找不到課程資料：' + courseId);
+    course = raw.data?.course || null;
 
-    config = cfg?.data || cfg || {};
+    // member 會是 {status, data, families}
+    const member = raw.data?.member || {status:'not_found'};
+    memberPack = (member.status === 'exists')
+      ? { data: member.data || {}, families: member.families || [] }
+      : { data: {}, families: [] };
 
-    // 3) render
+    configKV = raw.data?.config || {};
+
+    if (!course){
+      showError('找不到課程資料（course=null）');
+      return;
+    }
+
+    // 若會員不存在，仍可讓他回會員中心註冊（這裡先直接提示）
+    if (!memberPack.data || !memberPack.data.memberId){
+      // 你要的做法是：若未註冊就導去 register.html
+      // 這裡不強制跳，避免你流程被打斷；你可自行改成 location.href
+      console.warn('member not found');
+    }
+
+    // render
+    document.getElementById('loading')?.classList.add('hidden');
+
     renderCourse();
-    buildAttendeeList();     // modal 內容
-    buildPricePlans();       // 價格方案
-    buildEquipment();        // equipment_list
-    recalc();
+    buildAttendeeList();
+    renderEquipment();
+    confirmAttendee(); // 預設本人（會 enable submit）
 
-    // 4) show main
-    document.getElementById('subTitle').textContent = `${sheetName}｜ID：${courseId}`;
-    document.getElementById('loading').classList.add('hidden');
-    document.getElementById('main').classList.remove('hidden');
-
-    // 如果會員不存在，鎖住送出
-    if (member?.status !== 'exists') {
-      document.getElementById('submitBtn').disabled = true;
-      document.getElementById('submitBtn').textContent = '請先到會員中心完成註冊後再預約';
-      document.getElementById('submitBtn').classList.add('opacity-60');
-    }
-
-  } catch (err){
-    showError(String(err?.message || err));
-  }
-}
-
-/* =========================
- * 課程呈現（多類型框架）
- * ========================= */
-function renderCourse(){
-  const name = course.courseName || course['課程名稱'] || '未命名課程';
-  const date = course.courseDate || course['課程日期'] || '';
-  const st = toHHMM(course.startTime || course['開始時間'] || '');
-  const et = toHHMM(course.endTime || course['結束時間'] || '');
-  const venue = course.venueName || course['場地名稱'] || '';
-  const area = course.venueArea || course['場地區域'] || '';
-  const coach = course.coachName || course['教練姓名'] || '';
-
-  document.getElementById('courseName').textContent = name;
-
-  const metaParts = [];
-  if (date) metaParts.push(`日期：${date}`);
-  if (st || et) metaParts.push(`時間：${st}${et ? ' – ' + et : ''}`);
-  if (venue || area) metaParts.push(`場地：${venue}${area ? '（' + area + '）' : ''}`);
-  if (coach) metaParts.push(`教練：${coach}`);
-  document.getElementById('courseMeta').innerHTML = metaParts.map(x=>`<div>${x}</div>`).join('');
-
-  // 封面
-  const cover = course.coverImage || course['封面圖片'] || '';
-  const img = document.getElementById('coverImg');
-  if (cover) { img.src = cover; img.classList.remove('hidden'); }
-
-  // 詳細說明：保留你需要的內容（課程亮點/內容/注意事項/適合對象）
-  const blocks = [];
-  const highlights = course.highlights || course['課程亮點'] || '';
-  const content = course.content || course['課程內容'] || '';
-  const notes = course.notes || course['注意事項'] || '';
-  const target = course.targetAudience || course['適合對象'] || '';
-
-  if (highlights) blocks.push(section('課程亮點', highlights));
-  if (content) blocks.push(section('課程內容', content));
-  if (notes) blocks.push(section('注意事項', notes));
-  if (target) blocks.push(section('適合對象', target));
-
-  // 多類型框架：若你未來放 rules JSON（例如 course.rules / course['規則JSON']）
-  const rulesRaw = course.rules || course['規則JSON'] || '';
-  const parsed = tryParseJSON(rulesRaw);
-  if (parsed && parsed.type) {
-    blocks.push(section('課程規則（系統）', renderRules(parsed)));
-  }
-
-  document.getElementById('courseDetail').innerHTML = blocks.length ? blocks.join('') : `<div class="text-[14px] font-semibold text-[#222]">此課程尚未提供詳細說明。</div>`;
-}
-
-function section(title, html){
-  return `
-    <div class="p-3 rounded-2xl border" style="border-color:#EEF2F7;background:#fff;">
-      <div class="text-[14px] font-extrabold mb-1">${escapeHtml(title)}</div>
-      <div class="text-[14px] font-semibold text-[#222] leading-relaxed whitespace-pre-wrap">${escapeHtml(String(html))}</div>
-    </div>
-  `;
-}
-
-function renderRules(r){
-  // 先做框架：你之後做梯次/營隊/課後班，就塞 rules JSON 進來即可
-  if (r.type === 'batch' && Array.isArray(r.sessions)) {
-    return r.sessions.map((s,i)=>`第${i+1}堂：${s.date || ''} ${s.start || ''}-${s.end || ''}`).join('\n');
-  }
-  if (r.type === 'camp') {
-    return `營隊天數：${r.days || ''}\n${r.checkinRequired ? '需簽到' : ''}`;
-  }
-  if (r.type === 'afterschool') {
-    return `期數：${r.months || ''} 個月\n上課日：${(r.weekday||[]).join(', ')}`;
-  }
-  return JSON.stringify(r, null, 2);
-}
-
-function toHHMM(v){
-  // 兼容：1899-12-30 9:05:00 / 09:05:00 / 9:05
-  const s = String(v || '').trim();
-  if (!s) return '';
-  const m = s.match(/(\d{1,2}):(\d{2})/);
-  if (!m) return '';
-  const hh = m[1].padStart(2,'0');
-  return `${hh}:${m[2]}`;
-}
-
-function tryParseJSON(v){
-  if (!v) return null;
-  try { return JSON.parse(v); } catch { return null; }
-}
-
-function escapeHtml(str){
-  return String(str)
-    .replaceAll('&','&amp;')
-    .replaceAll('<','&lt;')
-    .replaceAll('>','&gt;')
-    .replaceAll('"','&quot;')
-    .replaceAll("'","&#039;");
-}
-
-/* =========================
- * 報名對象（本人+家人）
- * ========================= */
-function buildAttendeeList(){
-  const list = [];
-
-  const u = member?.data || null;
-  if (u){
-    list.push({
-      role:'本人',
-      name: u.name || u['姓名'] || '未填',
-      gender: u.gender || u['性別'] || '未填',
-      birthDate: u.birthDate || u['出生日期'] || '0',
-      memberId: u.memberId || u['會員ID'] || '',
-      lineUserId: u.lineUserId || u['LINE UID'] || lineUser?.userId || '',
-    });
-  }
-
-  const fam = Array.isArray(member?.families) ? member.families : [];
-  fam.forEach(f=>{
-    list.push({
-      role:'成員',
-      name: f.name || '未填',
-      gender: f.gender || '未填',
-      birthDate: f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || f.birthDate || '0',
-      memberId: u?.memberId || u?.['會員ID'] || '',
-      lineUserId: lineUser?.userId || '',
-    });
-  });
-
-  // 存到 window 暫存
-  window.__attendees = list;
-
-  const wrap = document.getElementById('attendeeList');
-  wrap.innerHTML = list.map((a,idx)=>`
-    <label class="card p-3 flex items-center gap-3 cursor-pointer" style="box-shadow:none;border-radius:16px;">
-      <input type="radio" name="attendeeRadio" value="${idx}" class="w-5 h-5" ${idx===0 ? 'checked':''}>
-      <span class="${a.role==='本人' ? 'tag-self' : 'tag-member'}">${a.role}</span>
-      <div class="flex-1">
-        <div class="text-[16px] font-extrabold">${escapeHtml(a.name)}</div>
-        <div class="text-[13px] font-semibold text-[#222]">
-          性別：${escapeHtml(a.gender || '未填')}　
-          生日：${escapeHtml((a.birthDate && a.birthDate!=='0') ? a.birthDate : '未填')}
-        </div>
-      </div>
-    </label>
-  `).join('');
-}
-
-function openAttendeeModal(){
-  document.getElementById('modal').classList.remove('hidden');
-}
-function closeModal(){
-  document.getElementById('modal').classList.add('hidden');
-}
-function confirmAttendee(){
-  const r = document.querySelector('input[name="attendeeRadio"]:checked');
-  if (!r) return alert('請選擇一位報名對象');
-  const a = window.__attendees[Number(r.value)];
-  attendee = a;
-
-  // UI
-  document.getElementById('attendeeHint').classList.add('hidden');
-  document.getElementById('attendeeSelected').classList.remove('hidden');
-  document.getElementById('attendeeTag').className = (a.role==='本人' ? 'tag-self' : 'tag-member');
-  document.getElementById('attendeeTag').textContent = a.role;
-  document.getElementById('attendeeName').textContent = a.name || '—';
-  document.getElementById('attendeeInfo').textContent =
-    `性別：${a.gender||'未填'}　生日：${(a.birthDate && a.birthDate!=='0') ? a.birthDate : '未填'}`;
-
-  closeModal();
-  recalc();
-}
-
-/* =========================
- * 價格方案（會員/早鳥/親友/原價）
- * ========================= */
-function buildPricePlans(){
-  const plans = [];
-
-  const memberPrice = num(course.memberPrice ?? course['會員價']);
-  const earlyPrice  = num(course.priceEarly ?? course['早鳥價']);
-  const friendPrice = num(course.friendPrice ?? course['親友價']);
-  const originPrice = num(course.priceOriginal ?? course['原價']);
-  const earlyDeadline = (course.earlyDeadline ?? course['早鳥截止'] ?? '').toString().trim();
-
-  if (memberPrice > 0) plans.push({ key:'member', label:`會員價（${money(memberPrice)}）`, price:memberPrice });
-  if (earlyPrice  > 0) plans.push({ key:'early',  label:`早鳥價（${money(earlyPrice)}）`,  price:earlyPrice, deadline: earlyDeadline });
-  if (friendPrice > 0) plans.push({ key:'friend', label:`親友價（${money(friendPrice)}）`, price:friendPrice });
-  if (originPrice > 0) plans.push({ key:'origin', label:`原價（${money(originPrice)}）`, price:originPrice });
-
-  // 若都沒有，預設 0
-  if (!plans.length) plans.push({ key:'none', label:`未設定價格（NT$ 0）`, price:0 });
-
-  const sel = document.getElementById('pricePlan');
-  sel.innerHTML = plans.map(p=>`<option value="${p.key}">${escapeHtml(p.label)}</option>`).join('');
-
-  // default：會員價優先，其次早鳥
-  const prefer = plans.find(p=>p.key==='member') || plans.find(p=>p.key==='early') || plans[0];
-  sel.value = prefer.key;
-
-  // early hint
-  const hint = document.getElementById('earlyHint');
-  const early = plans.find(p=>p.key==='early');
-  if (early?.deadline) {
-    hint.classList.remove('hidden');
-    hint.textContent = `早鳥截止日：${early.deadline}`;
-  } else {
-    hint.classList.add('hidden');
-  }
-}
-
-function num(v){
-  const n = Number(String(v ?? '').replace(/[^\d.-]/g,''));
-  return isFinite(n) ? n : 0;
-}
-
-/* =========================
- * 設備租用（從 config equipment_list 讀）
- * ========================= */
-function buildEquipment(){
-  // config 可能是：
-  // { equipment_list:{Global:'[{"name":"籃球","price":100}]'} }
-  // 或 Global 直接是 array
-  const raw = config?.equipment_list?.Global ?? config?.equipment_list?.global ?? config?.equipment_list ?? null;
-
-  let list = null;
-  if (Array.isArray(raw)) list = raw;
-  else if (typeof raw === 'string') list = tryParseJSON(raw);
-  else list = null;
-
-  if (!Array.isArray(list) || !list.length){
-    document.getElementById('eqCard').classList.add('hidden');
-    return;
-  }
-
-  // 若課程本身有「租用設備」欄位，可用來做允許項目（例如：籃球 / 籃球,排球）
-  const allowStr = (course.rentEquipment ?? course['租用設備'] ?? '').toString().trim();
-  const allowSet = new Set(
-    allowStr
-      ? allowStr.split(/[，,]/).map(s=>s.trim()).filter(Boolean)
-      : []
-  );
-
-  let filtered = list.map(x=>({ name: x.name || x['name'] || '', price: num(x.price ?? x['price']) }))
-                    .filter(x=>x.name);
-
-  // 若課程指定可租用設備，則過濾
-  if (allowSet.size) filtered = filtered.filter(x=>allowSet.has(x.name));
-
-  // 若過濾後沒東西，就代表課程欄位不是用來限制 → 改成全部可租
-  if (!filtered.length) {
-    filtered = list.map(x=>({ name: x.name || x['name'] || '', price: num(x.price ?? x['price']) }))
-                   .filter(x=>x.name);
-  }
-
-  const wrap = document.getElementById('eqList');
-  wrap.innerHTML = filtered.map((eq,idx)=>`
-    <label class="flex items-center justify-between gap-3 p-3 rounded-2xl border cursor-pointer"
-           style="border-color:#EEF2F7;background:#fff;">
-      <div class="flex items-center gap-3">
-        <input type="checkbox" class="w-5 h-5" onchange="toggleEq(${idx}, this.checked)">
-        <div>
-          <div class="text-[16px] font-extrabold">${escapeHtml(eq.name)}</div>
-          <div class="text-[13px] font-semibold text-[#222]">費用：${money(eq.price)}</div>
-        </div>
-      </div>
-      <div class="text-[14px] font-extrabold">${money(eq.price)}</div>
-    </label>
-  `).join('');
-
-  window.__eqSource = filtered;
-  selectedEquip = [];
-  document.getElementById('eqCard').classList.remove('hidden');
-}
-
-function toggleEq(idx, on){
-  const src = window.__eqSource || [];
-  const item = src[idx];
-  if (!item) return;
-
-  if (on){
-    if (!selectedEquip.find(x=>x.name===item.name)) selectedEquip.push(item);
-  } else {
-    selectedEquip = selectedEquip.filter(x=>x.name!==item.name);
-  }
-  recalc();
-}
-
-/* =========================
- * 結算
- * ========================= */
-function recalc(){
-  const planKey = document.getElementById('pricePlan').value;
-  const mp = num(course.memberPrice ?? course['會員價']);
-  const ep = num(course.priceEarly  ?? course['早鳥價']);
-  const fp = num(course.friendPrice ?? course['親友價']);
-  const op = num(course.priceOriginal ?? course['原價']);
-
-  if (planKey==='member') basePrice = mp;
-  else if (planKey==='early') basePrice = ep;
-  else if (planKey==='friend') basePrice = fp;
-  else if (planKey==='origin') basePrice = op;
-  else basePrice = 0;
-
-  eqPrice = selectedEquip.reduce((sum,x)=> sum + num(x.price), 0);
-
-  document.getElementById('sumBase').textContent = money(basePrice);
-  document.getElementById('sumEq').textContent = money(eqPrice);
-  document.getElementById('sumTotal').textContent = money(basePrice + eqPrice);
-
-  // 必須先選對象才可送（但會員未註冊時 submitBtn 已鎖）
-  const btn = document.getElementById('submitBtn');
-  if (member?.status === 'exists'){
-    if (!attendee){
-      btn.disabled = true;
-      btn.classList.add('opacity-60');
-      btn.textContent = '請先選擇報名對象';
-    } else {
-      btn.disabled = false;
-      btn.classList.remove('opacity-60');
-      btn.textContent = '確認送出預約';
-    }
-  }
-}
-
-/* =========================
- * 送出預約
- * ========================= */
-async function submitBooking(){
-  if (member?.status !== 'exists') return alert('請先完成會員註冊');
-  if (!attendee) return alert('請先選擇報名對象');
-
-  const u = member.data;
-  const total = basePrice + eqPrice;
-
-  const payload = {
-    type: 'course_booking',
-    sheet: sheetName,
-    courseId: course.courseId || course['課程ID'] || courseId,
-    courseName: course.courseName || course['課程名稱'] || '',
-    lineUserId: lineUser.userId,
-    memberId: u.memberId || u['會員ID'] || '',
-
-    attendeeRole: attendee.role,
-    attendeeName: attendee.name,
-    attendeeGender: attendee.gender,
-    attendeeBirthDate: attendee.birthDate || '0',
-
-    price: basePrice,
-    totalPrice: total,
-
-    rentEquipment: selectedEquip.map(x=>x.name),
-    rentEquipmentDetail: selectedEquip, // 讓後端/未來可用（就算目前不存也不影響）
-    note: (document.getElementById('note').value || '').trim()
-  };
-
-  // 性別限制（若課程有）
-  const limit = (course.genderLimit || course['性別限制'] || '').toString().trim();
-  if (limit && limit !== '不限' && limit !== '0') {
-    if (String(payload.attendeeGender) !== String(limit)) {
-      return alert(`此課程性別限制：限定「${limit}」`);
-    }
-  }
-
-  const btn = document.getElementById('submitBtn');
-  btn.disabled = true;
-  btn.textContent = '送出中…';
-
-  try{
-    const r = await apiPost(payload);
-    if (r.status !== 'success' && r.status !== 'ok') throw new Error(r.message || '送出失敗');
-
-    alert('✅ 預約成功');
-    // 成功後回上一頁或紀錄頁
-    goBack();
   }catch(err){
-    alert('❌ ' + String(err.message || err));
-  }finally{
-    btn.disabled = false;
-    recalc();
+    showError(String(err));
   }
 }
 
-/* =========================
- * Start
- * ========================= */
 init();
 </script>
 </body>
