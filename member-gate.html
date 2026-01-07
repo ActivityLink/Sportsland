@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>會員入口</title>
+</head>
+<body>
+
+<script>
+const API = 'https://aged-rice-2438.wetw-net3.workers.dev';
+
+function getLineUserId() {
+  const p = new URLSearchParams(location.search);
+  return p.get('lineUserId') || localStorage.getItem('lineUserId');
+}
+
+async function checkMember() {
+  const lineUserId = getLineUserId();
+
+  // ① 沒有登入 → 去 login / register
+  if (!lineUserId) {
+    location.href = 'register.html';
+    return;
+  }
+
+  localStorage.setItem('lineUserId', lineUserId);
+
+  // ② 查會員是否存在
+  try {
+    const res = await fetch(`${API}?type=member&lineUserId=${lineUserId}`);
+    const json = await res.json();
+
+    if (json.status === 'success' && json.data) {
+      // 已註冊
+      location.href = 'member.html';
+    } else {
+      // 未註冊
+      location.href = 'register.html';
+    }
+  } catch (e) {
+    location.href = 'register.html';
+  }
+}
+
+checkMember();
+</script>
+
+</body>
+</html>
