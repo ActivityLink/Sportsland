@@ -1,38 +1,777 @@
-<!-- course intro -->
-<div id="introCard" class="card mb-3 hidden">
-  <div class="h2 mb-3">課程簡介</div>
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>課程預約</title>
 
-  <div class="space-y-3">
-    <div class="border rounded-2xl overflow-hidden">
-      <button class="w-full flex items-center justify-between p-4 font-black" onclick="toggleIntro('high')">
-        課程亮點
-        <span id="highIcon">▾</span>
-      </button>
-      <div id="highBody" class="px-4 pb-4 small hidden"></div>
-    </div>
+  <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
 
-    <div class="border rounded-2xl overflow-hidden">
-      <button class="w-full flex items-center justify-between p-4 font-black" onclick="toggleIntro('content')">
-        課程內容
-        <span id="contentIcon">▾</span>
-      </button>
-      <div id="contentBody" class="px-4 pb-4 small hidden"></div>
-    </div>
+  <style>
+    :root{
+      --line:#06C755;
+      --text:#111;
+      --muted:#6B7280;
+      --border:#E5E7EB;
+      --card:#fff;
+      --bg:#F8FAFC;
+    }
+    body{ background:var(--bg); color:var(--text); font-family: system-ui, -apple-system, "Noto Sans TC", sans-serif; }
+    .wrap{ max-width:760px; margin:0 auto; padding:14px 14px 96px; }
+    .topbar{ position:sticky; top:0; z-index:20; background:rgba(248,250,252,.92); backdrop-filter: blur(8px); border-bottom:1px solid #EEF2F7; padding:12px 0; }
+    .btn-back{ display:inline-flex; align-items:center; gap:10px; padding:10px 14px; border-radius:999px; border:1px solid var(--border); background:#fff; font-weight:700; }
+    .h1{ font-size:20px; font-weight:800; }
+    .sub{ font-size:14px; color:var(--muted); font-weight:500; }
+    .card{ background:var(--card); border:1px solid var(--border); border-radius:18px; padding:16px; box-shadow:0 10px 24px rgba(0,0,0,.04); }
+    .row{ display:flex; align-items:center; justify-content:space-between; gap:10px; }
+    .pill{ font-size:12px; font-weight:800; padding:6px 10px; border-radius:999px; border:1px solid var(--border); background:#fff; color:#111; }
+    .pill-green{ background:#EAFBF0; border-color:#BBF7D0; color:#0F7A34; }
+    .pill-blue{ background:#EEF2FF; border-color:#C7D2FE; color:#3730A3; }
+    .pill-amber{ background:#FFFBEB; border-color:#FDE68A; color:#92400E; }
 
-    <div class="border rounded-2xl overflow-hidden">
-      <button class="w-full flex items-center justify-between p-4 font-black" onclick="toggleIntro('notes')">
-        注意事項
-        <span id="notesIcon">▾</span>
-      </button>
-      <div id="notesBody" class="px-4 pb-4 small hidden"></div>
-    </div>
+    .field-label{ font-size:13px; font-weight:800; color:#111; margin:10px 0 6px; }
+    input, select, textarea{
+      width:100%;
+      border:1.5px solid var(--border);
+      border-radius:14px;
+      padding:14px;
+      font-size:16px;
+      background:#fff;
+      outline:none;
+    }
+    input:focus, select:focus, textarea:focus{
+      border-color:var(--line);
+      box-shadow:0 0 0 3px rgba(6,199,85,.12);
+    }
+    textarea{ min-height:90px; resize:vertical; }
 
-    <div class="border rounded-2xl overflow-hidden">
-      <button class="w-full flex items-center justify-between p-4 font-black" onclick="toggleIntro('target')">
-        適合對象
-        <span id="targetIcon">▾</span>
-      </button>
-      <div id="targetBody" class="px-4 pb-4 small hidden"></div>
+    .btn-primary{
+      width:100%;
+      background:var(--line);
+      color:#fff;
+      border-radius:18px;
+      padding:16px;
+      font-size:18px;
+      font-weight:900;
+    }
+    .btn-secondary{
+      width:100%;
+      background:#fff;
+      border:1px solid var(--border);
+      border-radius:18px;
+      padding:14px;
+      font-size:16px;
+      font-weight:800;
+      color:#111;
+    }
+
+    .divider{ height:1px; background:#EEF2F7; margin:14px 0; }
+
+    .err{
+      background:#FFF1F2;
+      border:1px solid #FECACA;
+      color:#9F1239;
+      border-radius:16px;
+      padding:14px;
+      font-weight:700;
+      font-size:14px;
+    }
+
+    /* bottom bar */
+    .bottom{
+      position:fixed; left:0; right:0; bottom:0;
+      background:rgba(255,255,255,.92);
+      border-top:1px solid #EEF2F7;
+      backdrop-filter: blur(8px);
+      padding:12px 14px;
+      z-index:30;
+    }
+    .bottom-inner{ max-width:760px; margin:0 auto; display:flex; gap:12px; align-items:center; }
+    .pricebox{ flex:1; }
+    .price-title{ font-size:12px; font-weight:800; color:var(--muted); }
+    .price-val{ font-size:20px; font-weight:900; }
+    .loading{
+      position:fixed; inset:0; background:#fff;
+      display:flex; align-items:center; justify-content:center; flex-direction:column;
+      z-index:50;
+    }
+  </style>
+</head>
+
+<body>
+  <div id="loading" class="loading">
+    <div class="animate-spin rounded-full h-10 w-10 border-b-2 border-green-500 mb-4"></div>
+    <div class="sub">載入課程與會員中…</div>
+  </div>
+
+  <div class="topbar">
+    <div class="wrap" style="padding-bottom:0;">
+      <button class="btn-back" onclick="goBack()">← 返回</button>
     </div>
   </div>
-</div>
+
+  <div class="wrap">
+    <div id="errorBox" class="err hidden"></div>
+
+    <!-- COURSE CARD -->
+    <div class="card mb-3">
+      <div class="row">
+        <div>
+          <div class="h1" id="courseName">課程載入中…</div>
+          <div class="sub mt-1" id="courseMeta">—</div>
+        </div>
+        <div class="pill pill-green" id="courseStatusPill">課程</div>
+      </div>
+
+      <div class="divider"></div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
+        <div><span class="sub">課程日期：</span><span class="font-bold" id="courseDate">—</span></div>
+        <div><span class="sub">時間：</span><span class="font-bold" id="courseTime">—</span></div>
+        <div><span class="sub">場地：</span><span class="font-bold" id="courseVenue">—</span></div>
+        <div><span class="sub">教練：</span><span class="font-bold" id="courseCoach">—</span></div>
+        <div><span class="sub">性別限制：</span><span class="font-bold" id="courseGender">—</span></div>
+        <div><span class="sub">剩餘名額：</span><span class="font-bold" id="courseRemain">—</span></div>
+      </div>
+
+      <div id="specialReqBlock" class="mt-3 hidden">
+        <div class="field-label">特殊要求</div>
+        <div class="sub" id="specialReqText" style="color:#111;"></div>
+      </div>
+    </div>
+
+    <!-- INTRO (collapsible) -->
+    <div id="introCard" class="card mb-3 hidden">
+      <div class="h1 mb-3" style="font-size:18px;">課程簡介</div>
+
+      <div class="space-y-3">
+        <div class="border rounded-2xl overflow-hidden">
+          <button class="w-full flex items-center justify-between p-4 font-extrabold" onclick="toggleIntro('high')">
+            課程亮點 <span id="highIcon">▾</span>
+          </button>
+          <div id="highBody" class="px-4 pb-4 sub hidden" style="color:#111;"></div>
+        </div>
+
+        <div class="border rounded-2xl overflow-hidden">
+          <button class="w-full flex items-center justify-between p-4 font-extrabold" onclick="toggleIntro('content')">
+            課程內容 <span id="contentIcon">▾</span>
+          </button>
+          <div id="contentBody" class="px-4 pb-4 sub hidden" style="color:#111;"></div>
+        </div>
+
+        <div class="border rounded-2xl overflow-hidden">
+          <button class="w-full flex items-center justify-between p-4 font-extrabold" onclick="toggleIntro('notes')">
+            注意事項 <span id="notesIcon">▾</span>
+          </button>
+          <div id="notesBody" class="px-4 pb-4 sub hidden" style="color:#111;"></div>
+        </div>
+
+        <div class="border rounded-2xl overflow-hidden">
+          <button class="w-full flex items-center justify-between p-4 font-extrabold" onclick="toggleIntro('target')">
+            適合對象 <span id="targetIcon">▾</span>
+          </button>
+          <div id="targetBody" class="px-4 pb-4 sub hidden" style="color:#111;"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- STEP 1: pick attendee -->
+    <div class="card mb-3">
+      <div class="row">
+        <div>
+          <div class="h1" style="font-size:18px;">① 選擇報名對象</div>
+          <div class="sub">請先選擇這筆預約是「本人」或「家人/成員」</div>
+        </div>
+        <div class="pill pill-blue">必選</div>
+      </div>
+
+      <div class="field-label">報名對象</div>
+      <select id="attendeeSelect"></select>
+
+      <div id="attendeeInfo" class="mt-3 sub" style="color:#111;"></div>
+    </div>
+
+    <!-- STEP 2: pricing + equipment -->
+    <div class="card mb-3" id="bookingOptionsCard">
+      <div class="row">
+        <div>
+          <div class="h1" style="font-size:18px;">② 報名選項</div>
+          <div class="sub">勾選後會自動計算總金額</div>
+        </div>
+        <div class="pill pill-amber">結算</div>
+      </div>
+
+      <div class="divider"></div>
+
+      <!-- price radios -->
+      <div class="field-label">課程價格</div>
+      <div class="space-y-2 text-[15px]">
+        <label class="flex items-center gap-3 p-3 border rounded-2xl cursor-pointer">
+          <input type="radio" name="priceMode" value="member" class="w-5 h-5" checked />
+          <div class="flex-1">
+            <div class="font-black">會員價</div>
+            <div class="sub" id="priceMemberText">—</div>
+          </div>
+        </label>
+
+        <label class="flex items-center gap-3 p-3 border rounded-2xl cursor-pointer">
+          <input type="radio" name="priceMode" value="friend" class="w-5 h-5" />
+          <div class="flex-1">
+            <div class="font-black">親友價</div>
+            <div class="sub" id="priceFriendText">—</div>
+          </div>
+        </label>
+
+        <label class="flex items-center gap-3 p-3 border rounded-2xl cursor-pointer">
+          <input type="radio" name="priceMode" value="original" class="w-5 h-5" />
+          <div class="flex-1">
+            <div class="font-black">原價</div>
+            <div class="sub" id="priceOriginalText">—</div>
+          </div>
+        </label>
+      </div>
+
+      <div class="divider"></div>
+
+      <!-- early bird -->
+      <div class="flex items-start gap-3 p-3 border rounded-2xl">
+        <input id="useEarlyBird" type="checkbox" class="w-5 h-5 mt-1">
+        <div class="flex-1">
+          <div class="font-black">適用早鳥價</div>
+          <div class="sub" id="earlyBirdHint">—</div>
+        </div>
+        <div class="font-black" id="priceEarlyText">—</div>
+      </div>
+
+      <div class="divider"></div>
+
+      <!-- equipment -->
+      <div class="field-label">租用設備（可複選）</div>
+      <div id="equipmentBox" class="space-y-2 sub">載入設備中…</div>
+
+      <div class="divider"></div>
+
+      <div class="field-label">備註（可不填）</div>
+      <textarea id="note" placeholder="例如：身體狀況、想加強的部位…"></textarea>
+    </div>
+
+    <div class="card">
+      <div class="h1" style="font-size:18px;">③ 送出預約</div>
+      <div class="sub mb-3">確認資訊無誤後送出，系統會建立一筆預約紀錄</div>
+      <button id="submitBtn" class="btn-primary" onclick="submitBooking()">確認送出</button>
+      <button class="btn-secondary mt-3" onclick="goBack()">取消返回</button>
+    </div>
+  </div>
+
+  <!-- bottom total -->
+  <div class="bottom">
+    <div class="bottom-inner">
+      <div class="pricebox">
+        <div class="price-title">本次應付總額</div>
+        <div class="price-val" id="totalPrice">$0</div>
+        <div class="sub" id="priceBreakdown">—</div>
+      </div>
+      <button class="btn-primary" style="width:180px; padding:14px 16px; border-radius:16px; font-size:16px;" onclick="scrollToSubmit()">
+        去送出
+      </button>
+    </div>
+  </div>
+
+<script>
+/* ========= CONFIG ========= */
+const API_URL = 'https://aged-rice-2438.wetw-net3.workers.dev/';
+const LIFF_ID  = '2008786875-F7ifLsbN';
+
+const qp = new URL(location.href).searchParams;
+const courseId = qp.get('id') || '';
+const courseSheet = qp.get('type') || 'SingleCourses';
+const from = qp.get('from') || '';
+
+let lineUser = null;
+let member = null;     // {data, families}
+let course = null;     // course object
+let equipmentList = []; // [{name,price}]
+let selectedEquipment = new Map(); // name -> price
+
+/* ========= SAFE UI ========= */
+function $(id){ return document.getElementById(id); }
+function showError(msg){
+  const box = $('errorBox');
+  if (!box) { alert(msg); return; }
+  box.classList.remove('hidden');
+  box.innerHTML = msg;
+}
+function hideError(){
+  const box = $('errorBox');
+  if (!box) return;
+  box.classList.add('hidden');
+  box.innerHTML = '';
+}
+function money(n){
+  const v = Number(n||0);
+  return '$' + (isNaN(v)?0:v).toLocaleString('en-US');
+}
+function fixTime(t){
+  const s = String(t||'').trim();
+  if (!s) return '';
+  if (s.includes('1899-12-30')) return (s.split(' ')[1]||'').slice(0,5);
+  if (s.includes('T')) return (s.split('T')[1]||'').slice(0,5);
+  // 09:05:00 -> 09:05
+  if (/^\d{2}:\d{2}/.test(s)) return s.slice(0,5);
+  return s;
+}
+function ymd(s){
+  return String(s||'').split('T')[0];
+}
+function v0(v){
+  const t = (v ?? '').toString().trim();
+  return t !== '' ? t : '0';
+}
+function nl2brSafe(s){
+  const t = String(s||'').trim();
+  if (!t || t === '0') return '';
+  return t.replace(/\n/g,'<br>');
+}
+function toggleIntro(key){
+  const body = $(key+'Body');
+  const icon = $(key+'Icon');
+  if (!body) return;
+  const isHidden = body.classList.contains('hidden');
+  body.classList.toggle('hidden', !isHidden);
+  if (icon) icon.innerText = isHidden ? '▴' : '▾';
+}
+function scrollToSubmit(){
+  document.getElementById('submitBtn')?.scrollIntoView({behavior:'smooth', block:'center'});
+}
+function goBack(){
+  if (from) { location.href = from; return; }
+  if (history.length > 1) { history.back(); return; }
+  location.href = 'index.html';
+}
+
+/* ========= LOADERS ========= */
+async function fetchJSON(url, opts){
+  const res = await fetch(url, opts);
+  if (!res.ok){
+    const t = await res.text().catch(()=> '');
+    throw new Error(`HTTP ${res.status} ${t}`);
+  }
+  return await res.json();
+}
+
+/* ========= CONFIG PARSER ========= */
+function parseEquipmentFromConfig(cfg){
+  // 兼容多種格式：
+  // 1) {status:"success", data:{ equipment_list:{Global:'[...]'} } }
+  // 2) {status:"success", data:{ equipment_list:{Global:[...] } } }
+  // 3) {status:"success", data:{ equipment_list:'[...]' } }
+  // 4) 舊版：{status:"success", data:{ key:{Global:value}}}
+  const data = cfg?.data ?? cfg ?? {};
+  let v = data?.equipment_list ?? data?.equipment ?? data?.設備清單 ?? null;
+  if (v && typeof v === 'object' && ('Global' in v)) v = v['Global'];
+  if (typeof v === 'string'){
+    try { v = JSON.parse(v); } catch(e){ v = []; }
+  }
+  if (!Array.isArray(v)) v = [];
+  return v.map(x => ({
+    name: String(x?.name ?? '').trim(),
+    price: Number(x?.price ?? 0) || 0
+  })).filter(x => x.name);
+}
+
+/* ========= RENDER COURSE ========= */
+function renderCourseCard(){
+  $('courseName').innerText = course?.courseName || course?.["課程名稱"] || '—';
+
+  const tags = course?.tags || course?.["標籤分類"] || '';
+  const sport = course?.sportCategory || course?.["運動類別"] || '';
+  const age   = course?.ageGroup || course?.["年齡分級"] || '';
+  const diff  = course?.difficulty || course?.["難度等級"] || '';
+  const meta = [sport, age, diff, tags].filter(Boolean).join('｜') || '—';
+  $('courseMeta').innerText = meta;
+
+  const status = course?.courseStatus || course?.["課程狀態"] || '課程';
+  $('courseStatusPill').innerText = status;
+
+  $('courseDate').innerText = ymd(course?.courseDate || course?.["課程日期"] || '');
+  const st = fixTime(course?.startTime || course?.["開始時間"] || '');
+  const et = fixTime(course?.endTime || course?.["結束時間"] || '');
+  $('courseTime').innerText = (st && et) ? `${st} - ${et}` : '—';
+
+  const venueName = course?.venueName || course?.["場地名稱"] || '';
+  const venueArea = course?.venueArea || course?.["場地區域"] || '';
+  $('courseVenue').innerText = [venueName, venueArea].filter(Boolean).join('｜') || '—';
+
+  const coach = course?.coachName || course?.["教練姓名"] || '';
+  $('courseCoach').innerText = coach || '—';
+
+  const genderLimit = course?.genderLimit || course?.["性別限制"] || '不限';
+  $('courseGender').innerText = genderLimit || '不限';
+
+  const remain = course?.remain ?? course?.["剩餘名額"];
+  $('courseRemain').innerText = (remain !== undefined && remain !== '') ? String(remain) : '—';
+
+  const req = course?.specialReq || course?.["特殊要求"] || '';
+  if (String(req||'').trim() && String(req).trim() !== '0'){
+    $('specialReqBlock').classList.remove('hidden');
+    $('specialReqText').innerText = String(req);
+  } else {
+    $('specialReqBlock').classList.add('hidden');
+  }
+}
+
+/* ========= RENDER INTRO ========= */
+function renderCourseIntro(){
+  const high = course?.highlights || course?.["課程亮點"] || '';
+  const cont = course?.content || course?.["課程內容"] || '';
+  const notes= course?.notes || course?.["注意事項"] || '';
+  const targ = course?.targetAudience || course?.["適合對象"] || '';
+
+  const any = [high,cont,notes,targ].some(v => String(v||'').trim() && String(v).trim() !== '0');
+  if (!any){ $('introCard').classList.add('hidden'); return; }
+  $('introCard').classList.remove('hidden');
+
+  $('highBody').innerHTML = nl2brSafe(high) || '—';
+  $('contentBody').innerHTML = nl2brSafe(cont) || '—';
+  $('notesBody').innerHTML = nl2brSafe(notes) || '—';
+  $('targetBody').innerHTML = nl2brSafe(targ) || '—';
+}
+
+/* ========= ATTENDEE ========= */
+function buildAttendeeOptions(){
+  const sel = $('attendeeSelect');
+  const u = member?.data || {};
+  const fam = member?.families || [];
+
+  const items = [];
+  items.push({
+    key:'self',
+    role:'本人',
+    name: u.name || u["姓名"] || '未填',
+    gender: u.gender || u["性別"] || '未填',
+    birthDate: u.birthDate || u["出生日期"] || '0',
+  });
+
+  fam.forEach((f,idx)=>{
+    items.push({
+      key:`fam_${idx}`,
+      role:'成員',
+      name: f.name || f["姓名"] || f["家人姓名"] || '未填',
+      gender: f.gender || f["性別"] || '未填',
+      birthDate: f.birthDate || f["生日"] || f["出生日期"] || '0',
+    });
+  });
+
+  sel.innerHTML = items.map(it => {
+    const label = `${it.role}｜${it.name}`;
+    return `<option value="${it.key}">${label}</option>`;
+  }).join('');
+
+  sel.addEventListener('change', ()=>{
+    renderAttendeeInfo();
+    recalcTotal();
+  });
+
+  // default
+  renderAttendeeInfo();
+}
+
+function getSelectedAttendee(){
+  const v = $('attendeeSelect').value;
+  const u = member?.data || {};
+  const fam = member?.families || [];
+
+  if (v === 'self'){
+    return {
+      role:'本人',
+      name: u.name || u["姓名"] || '0',
+      gender: u.gender || u["性別"] || '未填',
+      birthDate: ymd(u.birthDate || u["出生日期"] || '0'),
+      memberId: u.memberId || u["會員ID"] || '0'
+    };
+  }
+  if (v.startsWith('fam_')){
+    const idx = Number(v.split('_')[1]);
+    const f = fam[idx] || {};
+    return {
+      role:'成員',
+      name: f.name || f["姓名"] || f["家人姓名"] || '0',
+      gender: f.gender || f["性別"] || '未填',
+      birthDate: ymd(f.birthDate || f["生日"] || f["出生日期"] || '0'),
+      memberId: (member?.data?.memberId || member?.data?.["會員ID"] || '0')
+    };
+  }
+  return null;
+}
+
+function renderAttendeeInfo(){
+  const a = getSelectedAttendee();
+  const box = $('attendeeInfo');
+  if (!a){ box.innerText='—'; return; }
+
+  const tagClass = (a.role==='本人') ? 'pill pill-green' : 'pill pill-blue';
+  box.innerHTML = `
+    <div class="flex flex-wrap items-center gap-2">
+      <span class="${tagClass}">${a.role}</span>
+      <span class="font-black">${a.name}</span>
+      <span class="sub" style="color:#111;">性別：${a.gender || '未填'}</span>
+      <span class="sub" style="color:#111;">生日：${a.birthDate && a.birthDate!=='0' ? a.birthDate : '未填'}</span>
+    </div>
+  `;
+}
+
+/* ========= PRICE + EQUIPMENT ========= */
+function getCoursePriceByMode(mode){
+  const m = Number(course?.memberPrice || course?.["會員價"] || 0) || 0;
+  const f = Number(course?.friendPrice || course?.["親友價"] || 0) || 0;
+  const o = Number(course?.priceOriginal || course?.["原價"] || 0) || 0;
+  const e = Number(course?.priceEarly || course?.["早鳥價"] || 0) || 0;
+
+  if (mode === 'friend') return f || m || o || 0;
+  if (mode === 'original') return o || m || f || 0;
+  return m || f || o || 0;
+}
+function isEarlyBirdAvailable(){
+  // 早鳥價有值 + 早鳥截止未過（若有截止）
+  const e = Number(course?.priceEarly || course?.["早鳥價"] || 0) || 0;
+  if (e <= 0) return false;
+
+  const ddl = ymd(course?.earlyDeadline || course?.["早鳥截止"] || '');
+  if (!ddl) return true;
+
+  // 用台北時區的「今天」字串比較（避免少一天）
+  const now = new Date();
+  const yyyy = now.getFullYear();
+  const mm = String(now.getMonth()+1).padStart(2,'0');
+  const dd = String(now.getDate()).padStart(2,'0');
+  const today = `${yyyy}-${mm}-${dd}`;
+  return today <= ddl;
+}
+
+function renderPriceTexts(){
+  const m = Number(course?.memberPrice || course?.["會員價"] || 0) || 0;
+  const f = Number(course?.friendPrice || course?.["親友價"] || 0) || 0;
+  const o = Number(course?.priceOriginal || course?.["原價"] || 0) || 0;
+  const e = Number(course?.priceEarly || course?.["早鳥價"] || 0) || 0;
+  const ddl = ymd(course?.earlyDeadline || course?.["早鳥截止"] || '');
+
+  $('priceMemberText').innerText   = m ? money(m) : '—';
+  $('priceFriendText').innerText   = f ? money(f) : (m ? `未提供，將以會員價 ${money(m)} 計算` : '—');
+  $('priceOriginalText').innerText = o ? money(o) : (m ? `未提供，將以會員價 ${money(m)} 計算` : '—');
+
+  const earlyOk = isEarlyBirdAvailable();
+  $('useEarlyBird').disabled = !earlyOk;
+  $('useEarlyBird').checked = false;
+
+  if (!e){
+    $('earlyBirdHint').innerText = '本課程未設定早鳥價';
+    $('priceEarlyText').innerText = '—';
+    $('useEarlyBird').disabled = true;
+  } else {
+    $('priceEarlyText').innerText = money(e);
+    if (ddl){
+      $('earlyBirdHint').innerText = earlyOk ? `早鳥截止：${ddl}（目前可用）` : `早鳥截止：${ddl}（已截止）`;
+    } else {
+      $('earlyBirdHint').innerText = earlyOk ? '已設定早鳥價（目前可用）' : '已設定早鳥價（目前不可用）';
+    }
+  }
+
+  // listeners
+  document.querySelectorAll('input[name="priceMode"]').forEach(r=>{
+    r.addEventListener('change', recalcTotal);
+  });
+  $('useEarlyBird').addEventListener('change', recalcTotal);
+}
+
+function renderEquipment(){
+  const box = $('equipmentBox');
+  if (!box) return;
+
+  if (!equipmentList || equipmentList.length === 0){
+    box.innerHTML = `<div class="sub" style="color:#111;">目前未設定設備（setup 的 equipment_list）</div>`;
+    return;
+  }
+
+  box.innerHTML = equipmentList.map((eq,idx)=>`
+    <label class="flex items-center gap-3 p-3 border rounded-2xl cursor-pointer">
+      <input type="checkbox" class="w-5 h-5 eqCheck" data-name="${encodeURIComponent(eq.name)}" data-price="${eq.price}">
+      <div class="flex-1">
+        <div class="font-black" style="font-size:15px;">${eq.name}</div>
+        <div class="sub">${money(eq.price)}</div>
+      </div>
+    </label>
+  `).join('');
+
+  box.querySelectorAll('.eqCheck').forEach(chk=>{
+    chk.addEventListener('change', ()=>{
+      const name = decodeURIComponent(chk.dataset.name || '');
+      const price = Number(chk.dataset.price || 0) || 0;
+      if (chk.checked) selectedEquipment.set(name, price);
+      else selectedEquipment.delete(name);
+      recalcTotal();
+    });
+  });
+}
+
+function recalcTotal(){
+  if (!course) return;
+
+  const mode = document.querySelector('input[name="priceMode"]:checked')?.value || 'member';
+  let base = getCoursePriceByMode(mode);
+
+  // early bird override
+  const useEarly = $('useEarlyBird')?.checked && isEarlyBirdAvailable();
+  const e = Number(course?.priceEarly || course?.["早鳥價"] || 0) || 0;
+  if (useEarly && e > 0) base = e;
+
+  // equipment sum
+  let eqSum = 0;
+  for (const v of selectedEquipment.values()) eqSum += Number(v||0);
+
+  const total = base + eqSum;
+  $('totalPrice').innerText = money(total);
+
+  const eqNames = [...selectedEquipment.keys()];
+  const b1 = `課程：${money(base)}`;
+  const b2 = eqNames.length ? `設備：${eqNames.join('、')}（${money(eqSum)}）` : `設備：無`;
+  $('priceBreakdown').innerText = `${b1}｜${b2}`;
+}
+
+/* ========= SUBMIT ========= */
+async function submitBooking(){
+  hideError();
+
+  const a = getSelectedAttendee();
+  if (!a){
+    showError('請先選擇報名對象');
+    return;
+  }
+
+  // gender limit
+  const limit = String(course?.genderLimit || course?.["性別限制"] || '').trim();
+  if (limit && limit !== '0' && limit !== '不限'){
+    if (String(a.gender) !== String(limit)){
+      showError(`性別限制：此課程限定「${limit}」`);
+      return;
+    }
+  }
+
+  const btn = $('submitBtn');
+  btn.disabled = true;
+  btn.innerText = '送出中…';
+
+  const mode = document.querySelector('input[name="priceMode"]:checked')?.value || 'member';
+  const useEarly = $('useEarlyBird')?.checked && isEarlyBirdAvailable();
+  let base = getCoursePriceByMode(mode);
+  const e = Number(course?.priceEarly || course?.["早鳥價"] || 0) || 0;
+  if (useEarly && e > 0) base = e;
+
+  const eqArr = [...selectedEquipment.entries()].map(([name,price])=>({name,price}));
+  const eqNames = eqArr.map(x=>x.name);
+  const eqSum = eqArr.reduce((s,x)=> s + (Number(x.price)||0), 0);
+  const total = base + eqSum;
+
+  const payload = {
+    type: 'course_booking',
+    sheet: courseSheet,
+    courseId: course?.courseId || course?.["課程ID"] || courseId,
+    lineUserId: lineUser?.userId || '0',
+    memberId: a.memberId || '0',
+
+    attendeeRole: a.role,
+    attendeeName: a.name,
+    attendeeGender: a.gender,
+    attendeeBirthDate: a.birthDate || '0',
+
+    priceMode: useEarly ? 'early' : mode,
+    price: base,
+    rentEquipment: eqNames,
+    rentEquipmentDetail: eqArr,
+    equipmentFee: eqSum,
+    totalPrice: total,
+
+    note: v0($('note').value)
+  };
+
+  try{
+    const res = await fetchJSON(API_URL, {
+      method:'POST',
+      headers:{ 'Content-Type':'application/json' },
+      body: JSON.stringify(payload)
+    });
+
+    if (res.status !== 'success'){
+      throw new Error(res.message || '送出失敗');
+    }
+
+    alert(`✅ 已建立預約\n預約ID：${res.bookingId || ''}\n總金額：${money(total)}`);
+    goBack();
+  }catch(err){
+    showError('雲端連線失敗：' + String(err.message || err));
+  }finally{
+    btn.disabled = false;
+    btn.innerText = '確認送出';
+  }
+}
+
+/* ========= INIT ========= */
+async function init(){
+  try{
+    // LIFF
+    await liff.init({ liffId: LIFF_ID });
+    if (!liff.isLoggedIn()){
+      liff.login({ redirectUri: location.href });
+      return;
+    }
+    lineUser = await liff.getProfile();
+
+    // fetch booking_init (course + member) 只打一次
+    const initUrl = `${API_URL}?type=booking_init&sheet=${encodeURIComponent(courseSheet)}&id=${encodeURIComponent(courseId)}&lineUserId=${encodeURIComponent(lineUser.userId)}&_t=${Date.now()}`;
+    const initRes = await fetchJSON(initUrl);
+
+    if (initRes.status !== 'success'){
+      throw new Error(initRes.message || 'booking_init 失敗');
+    }
+
+    course = initRes?.data?.course || null;
+    member = initRes?.data?.member || null;
+
+    if (!course) throw new Error('找不到課程資料');
+    // member 可能未註冊：仍可預約，但至少要本人資料（你也可改成強制註冊）
+    if (!member || member.status === 'not_found'){
+      member = { data:{ memberId:'0', name:'未註冊', gender:'未填', birthDate:'0' }, families:[] };
+    } else if (member.status === 'exists' && member.data){
+      // ok
+    } else if (member.data){
+      // ok
+    } else if (member.status === 'exists' && member.data === undefined){
+      // 兼容
+      member = { data: member.data || {}, families: member.families || [] };
+    }
+
+    // fetch config (equipment_list)
+    const cfgUrl = `${API_URL}?type=config&_t=${Date.now()}`;
+    const cfgRes = await fetchJSON(cfgUrl).catch(()=> null);
+    equipmentList = cfgRes ? parseEquipmentFromConfig(cfgRes) : [];
+
+    // render all
+    renderCourseCard();
+    renderCourseIntro();
+    buildAttendeeOptions();
+    renderPriceTexts();
+    renderEquipment();
+    recalcTotal();
+
+  }catch(err){
+    showError('載入失敗：' + String(err.message || err));
+  }finally{
+    const ld = $('loading');
+    if (ld) ld.style.display = 'none';
+  }
+}
+
+init();
+</script>
+</body>
+</html>
