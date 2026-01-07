@@ -4,682 +4,584 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>課程預約</title>
-
   <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
   <script src="https://cdn.tailwindcss.com"></script>
-
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;800&display=swap');
-    body{font-family:"Noto Sans TC",sans-serif;background:#f6f8fb;color:#111;}
-    .card{background:#fff;border:1px solid #e7edf5;border-radius:18px;box-shadow:0 8px 22px rgba(0,0,0,.04);}
-    .btn{border-radius:16px;font-weight:800;}
-    .btn-line{background:#06C755;color:#fff;}
-    .btn-soft{background:#eef2ff;color:#1e3a8a;border:1px solid #c7d2fe;}
-    .muted{color:#334155;}
-    .tag-self{background:#EAFBF0;color:#0F7A34;border:1px solid #BBF7D0;}
-    .tag-member{background:#EEF2FF;color:#3730A3;border:1px solid #C7D2FE;}
+    :root{ --line:#06C755; --bg:#F7F9FB; --card:#fff; --border:#E5E7EB; --text:#111; --muted:#475569;}
+    body{ background:var(--bg); color:var(--text); }
+    .card{ background:var(--card); border:1px solid var(--border); border-radius:18px; padding:16px; }
+    .btn{ border-radius:14px; padding:14px 16px; font-weight:800; }
+    .btn-main{ background:var(--line); color:#fff; }
+    .btn-ghost{ background:#fff; border:1px solid var(--border); color:#111; }
+    .pill{ font-size:12px; font-weight:800; padding:6px 10px; border-radius:999px; border:1px solid var(--border); background:#fff; }
+    .pill-self{ background:#EAFBF0; border-color:#BBF7D0; color:#0F7A34; }
+    .pill-member{ background:#EEF2FF; border-color:#C7D2FE; color:#3730A3; }
+    .muted{ color:var(--muted); }
+    .h1{ font-size:18px; font-weight:900; }
+    .h2{ font-size:15px; font-weight:900; }
+    .meta{ font-size:14px; color:#111; }
+    .small{ font-size:13px; color:var(--muted); }
+    .divider{ height:1px; background:var(--border); margin:12px 0; }
+    .overlay{ position:fixed; inset:0; background:rgba(0,0,0,.35); display:none; z-index:60; }
+    .modal{ position:fixed; left:50%; top:50%; transform:translate(-50%,-50%); width:min(92vw,680px); background:#fff; border-radius:18px; border:1px solid var(--border); display:none; z-index:70; }
+    .modal-h{ display:flex; justify-content:space-between; align-items:center; padding:14px 16px; border-bottom:1px solid var(--border); }
+    .modal-b{ padding:14px 16px; max-height:70vh; overflow:auto; }
+    .radioRow{ display:flex; gap:12px; align-items:flex-start; padding:12px; border:1px solid var(--border); border-radius:16px; }
+    .err{ background:#FEF2F2; border:1px solid #FECACA; color:#B91C1C; }
   </style>
 </head>
 
-<body class="max-w-[720px] mx-auto p-4 pb-28">
-
-  <!-- Topbar -->
-  <div class="sticky top-0 z-40 bg-white/90 backdrop-blur border-b border-slate-100 px-2 py-3 -mx-4 mb-4">
-    <div class="flex items-center justify-between">
-      <button class="btn btn-soft px-4 py-2 text-sm" onclick="goBack()">← 返回</button>
-      <div class="font-black text-base">課程預約</div>
+<body class="min-h-screen">
+  <div class="max-w-[720px] mx-auto px-4 py-4 pb-28">
+    <!-- top -->
+    <div class="flex items-center justify-between gap-3 mb-3">
+      <button class="btn btn-ghost" onclick="goBack()">← 返回</button>
+      <div class="h1">課程預約</div>
       <div class="w-[72px]"></div>
     </div>
-  </div>
 
-  <!-- Error -->
-  <div id="error-box" class="hidden card p-4 border-red-200 bg-red-50 mb-4">
-    <div class="font-black text-red-600 mb-1">載入失敗</div>
-    <div id="error-msg" class="text-red-600 text-sm"></div>
-    <button class="btn btn-soft px-4 py-2 mt-3 text-sm" onclick="init()">重新載入</button>
-  </div>
-
-  <!-- Loading -->
-  <div id="loading" class="card p-6 mb-4">
-    <div class="flex items-center gap-3">
-      <div class="animate-spin rounded-full h-5 w-5 border-b-2 border-green-500"></div>
-      <div class="font-bold muted">正在載入課程與會員資料...</div>
+    <!-- error -->
+    <div id="errBox" class="card err hidden mb-3">
+      <div class="font-black mb-1">載入失敗</div>
+      <div id="errMsg" class="small"></div>
+      <button class="btn btn-ghost mt-3 w-full" onclick="init()">重新載入</button>
     </div>
-  </div>
 
-  <!-- Course Summary -->
-  <div id="course-card" class="hidden card p-5 mb-4">
-    <div class="font-black text-xl" id="course-name">--</div>
-    <div class="muted mt-1 text-sm" id="course-meta">--</div>
-  </div>
-
-  <!-- Price -->
-  <div id="price-card" class="hidden card p-5 mb-4">
-    <div class="font-black text-lg mb-3">費用</div>
-    <div class="grid grid-cols-2 gap-3">
-      <div class="card p-4">
-        <div class="text-xs muted font-bold">會員價</div>
-        <div class="text-xl font-black" id="price-member">$0</div>
+    <!-- course header -->
+    <div id="courseCard" class="card mb-3 hidden">
+      <div class="flex gap-3">
+        <img id="coverImg" class="w-20 h-20 rounded-xl object-cover border" alt="" />
+        <div class="flex-1">
+          <div id="courseName" class="h1">--</div>
+          <div id="courseMeta" class="small mt-1">--</div>
+          <div class="flex gap-2 mt-2 flex-wrap">
+            <span id="typePill" class="pill">--</span>
+            <span id="tagPill" class="pill">--</span>
+          </div>
+        </div>
       </div>
-      <div class="card p-4">
-        <div class="text-xs muted font-bold">早鳥價</div>
-        <div class="text-xl font-black" id="price-early">$0</div>
-        <div class="text-[11px] muted mt-1" id="early-deadline"></div>
+
+      <div class="divider"></div>
+
+      <!-- type specific blocks -->
+      <div id="typeBlockSingle" class="hidden">
+        <div class="h2 mb-1">單堂資訊</div>
+        <div id="singleInfo" class="small">--</div>
+      </div>
+
+      <div id="typeBlockCohort" class="hidden">
+        <div class="h2 mb-1">梯次資訊</div>
+        <div id="cohortInfo" class="small">--</div>
+        <div id="cohortSessions" class="small mt-2"></div>
+      </div>
+
+      <div id="typeBlockCamp" class="hidden">
+        <div class="h2 mb-1">營隊資訊</div>
+        <div id="campInfo" class="small">--</div>
+        <div id="campDays" class="small mt-2"></div>
+      </div>
+
+      <div id="typeBlockAfterSchool" class="hidden">
+        <div class="h2 mb-1">課後班資訊</div>
+        <div id="afterInfo" class="small">--</div>
+        <div id="afterSchedule" class="small mt-2"></div>
       </div>
     </div>
 
-    <div class="mt-4 flex items-center justify-between card p-4">
-      <div>
-        <div class="font-black">使用早鳥價</div>
-        <div class="text-[12px] muted" id="early-hint">符合期限才可使用</div>
-      </div>
-      <input id="toggle-early" type="checkbox" class="w-6 h-6 accent-green-500">
-    </div>
-  </div>
-
-  <!-- Attendee -->
-  <div id="attendee-card" class="hidden card p-5 mb-4">
-    <div class="flex items-center justify-between">
-      <div class="font-black text-lg">預約對象</div>
-      <button class="btn btn-soft px-4 py-2 text-sm" onclick="openAttendeeModal()">更換</button>
-    </div>
-
-    <div class="mt-4 card p-4">
-      <div class="flex items-center gap-2 mb-2">
-        <span id="attendee-tag" class="text-xs font-bold px-3 py-1 rounded-full tag-self">本人</span>
-        <div class="font-black text-lg" id="attendee-name">--</div>
-      </div>
-      <div class="text-sm muted" id="attendee-meta">--</div>
-    </div>
-  </div>
-
-  <!-- Dynamic Form -->
-  <div id="form-card" class="hidden card p-5 mb-4">
-    <div class="font-black text-lg mb-2">詳細報名資料</div>
-    <div class="text-sm muted mb-4">依課程需求填寫（可留空欄位不會送出）</div>
-    <div id="dynamic-form" class="space-y-3"></div>
-  </div>
-
-  <!-- Equipment -->
-  <div id="equipment-card" class="hidden card p-5 mb-4">
-    <div class="font-black text-lg">租用設備</div>
-    <div class="text-sm muted mt-1">可選擇租用，系統會加總設備費用</div>
-    <div id="equipment-list" class="mt-4 space-y-3"></div>
-    <div id="equipment-empty" class="hidden mt-4 text-sm muted">目前沒有可租用設備（請到 SYS 設定 equipment_list）</div>
-  </div>
-
-  <!-- Total -->
-  <div id="total-card" class="hidden card p-5 mb-6">
-    <div class="flex items-center justify-between">
-      <div class="font-black text-lg">結算</div>
-      <div class="text-sm muted">送出前會再確認</div>
-    </div>
-
-    <div class="mt-4 space-y-2 text-sm">
-      <div class="flex justify-between"><span class="muted">課程費用</span><span id="sum-base">$0</span></div>
-      <div class="flex justify-between"><span class="muted">設備費用</span><span id="sum-eq">$0</span></div>
-      <div class="border-t border-slate-100 my-2"></div>
-      <div class="flex justify-between text-lg font-black"><span>應付金額</span><span id="sum-total">$0</span></div>
-    </div>
-  </div>
-
-  <!-- CTA -->
-  <div class="fixed left-0 right-0 bottom-0 bg-white/90 backdrop-blur border-t border-slate-100 p-4">
-    <div class="max-w-[720px] mx-auto">
-      <button id="btn-submit" class="btn btn-line w-full py-4 text-lg" onclick="submitBooking()" disabled>
-        確認送出預約
-      </button>
-    </div>
-  </div>
-
-  <!-- Attendee Modal -->
-  <div id="attendee-modal" class="hidden fixed inset-0 z-50 bg-black/40">
-    <div class="absolute inset-x-0 bottom-0 bg-white rounded-t-3xl p-5 max-h-[85vh] overflow-auto">
+    <!-- attendee -->
+    <div id="attendeeCard" class="card mb-3 hidden">
       <div class="flex items-center justify-between">
         <div>
-          <div class="font-black text-lg">選擇報名對象</div>
-          <div class="text-sm muted mt-1">勾選後才會進行結算</div>
+          <div class="h2">預約對象</div>
+          <div id="attendeeName" class="h1 mt-1">--</div>
+          <div id="attendeeMeta" class="small mt-1">--</div>
         </div>
-        <button class="btn btn-soft px-4 py-2 text-sm" onclick="closeAttendeeModal()">關閉</button>
+        <button class="btn btn-ghost" onclick="openAttendeePicker()">更換</button>
+      </div>
+    </div>
+
+    <!-- pricing -->
+    <div id="priceCard" class="card mb-3 hidden">
+      <div class="h2 mb-3">費用計算</div>
+
+      <label class="flex items-center gap-3 p-3 rounded-2xl border" id="earlyWrap">
+        <input id="earlyCheck" type="checkbox" class="w-5 h-5" />
+        <div class="flex-1">
+          <div class="font-black">使用早鳥價</div>
+          <div id="earlyHint" class="small">--</div>
+        </div>
+        <div id="earlyPrice" class="font-black">$0</div>
+      </label>
+
+      <div class="divider"></div>
+
+      <div class="grid grid-cols-2 gap-3">
+        <div class="card" style="padding:12px;">
+          <div class="small">課程單價</div>
+          <div id="courseUnit" class="text-xl font-black">$0</div>
+        </div>
+        <div class="card" style="padding:12px;">
+          <div class="small">設備加總</div>
+          <div id="eqTotal" class="text-xl font-black">$0</div>
+        </div>
       </div>
 
-      <div id="attendee-list" class="mt-4 space-y-3"></div>
+      <div class="divider"></div>
 
-      <button class="btn btn-line w-full py-4 mt-6 text-lg" onclick="confirmAttendee()">
-        確認選擇
-      </button>
+      <div class="flex items-center justify-between">
+        <div class="h2">小計金額</div>
+        <div id="grandTotal" class="text-2xl font-black">$0</div>
+      </div>
+    </div>
+
+    <!-- equipment -->
+    <div id="eqCard" class="card mb-3 hidden">
+      <div class="h2">租用設備</div>
+      <div class="small mt-1">可選擇租用，系統會加總設備費用</div>
+      <div id="eqList" class="mt-3 space-y-3"></div>
+      <div id="eqEmpty" class="small mt-3 hidden">目前沒有可租用設備（請到 SYS 設定 equipment_list）</div>
+    </div>
+
+    <!-- note -->
+    <div id="noteCard" class="card mb-3 hidden">
+      <div class="h2 mb-2">備註</div>
+      <textarea id="note" class="w-full border rounded-2xl p-3" rows="3" placeholder="如有特殊需求可填寫"></textarea>
+    </div>
+
+    <!-- fixed bottom -->
+    <div class="fixed left-0 right-0 bottom-0 bg-white border-t" style="z-index:50;">
+      <div class="max-w-[720px] mx-auto px-4 py-3">
+        <button id="submitBtn" class="btn btn-main w-full text-lg" onclick="submitBooking()">確認送出預約</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- attendee picker modal -->
+  <div id="overlay" class="overlay" onclick="closeAttendeePicker()"></div>
+  <div id="modal" class="modal">
+    <div class="modal-h">
+      <div class="h2">選擇報名對象</div>
+      <button class="btn btn-ghost" style="padding:10px 12px;" onclick="closeAttendeePicker()">關閉</button>
+    </div>
+    <div class="modal-b">
+      <div class="small mb-3">勾選後才會進行結算</div>
+      <div id="attendeeList" class="space-y-3"></div>
+      <button class="btn btn-main w-full mt-4" onclick="confirmAttendee()">確認選擇</button>
     </div>
   </div>
 
 <script>
-/* =========================
- * 基本設定
- * ========================= */
+/* ========= 必填：你的 Worker API 與 LIFF ========= */
 const API_URL = 'https://aged-rice-2438.wetw-net3.workers.dev/';
-const LIFF_ID = '2008786875-F7ifLsbN';
+const LIFF_ID  = '2008786875-F7ifLsbN';
 
-let _initOnce = false;
+/* ========= URL params ========= */
+const qp = new URL(location.href).searchParams;
+const COURSE_ID = qp.get('id') || '';
+const SHEET_NAME = qp.get('type') || 'SingleCourses';   // SingleCourses / CohortCourses / Camps / AfterSchoolClasses
+const FROM = qp.get('from') || '';
 
+/* ========= state ========= */
 let lineUser = null;
-let courseSheet = 'SingleCourses';   // 由 URL 的 type 取（避免跟 API 的 type 衝突）
-let courseId = '';
-
 let course = null;
-let memberPack = null; // {status, data, families}
-let configKV = {};     // config.kv
+let member = null;      // {status:'exists', data:{...}, families:[...]} or object
+let config = null;
 
-let attendeeList = [];
-let selectedAttendee = null;
+let attendeePicked = null;   // {role,name,gender,birthDate,memberId,lineUserId}
+let equipmentList = [];      // [{name,price}]
+let equipmentPicked = new Set();
+let useEarly = false;
 
-let equipmentCatalog = []; // [{name, price}]
-let selectedEquip = new Set();
-let useEarlyBird = false;
-
-/* =========================
- * 工具
- * ========================= */
-function showError(msg){
-  const box = document.getElementById('error-box');
-  const m = document.getElementById('error-msg');
-  if (!box || !m) return;
-  m.textContent = msg || '未知錯誤';
-  box.classList.remove('hidden');
-  document.getElementById('loading')?.classList.add('hidden');
-}
-
-function hideError(){
-  document.getElementById('error-box')?.classList.add('hidden');
-}
-
-function money(n){
-  const x = Number(n || 0) || 0;
-  return '$' + x.toLocaleString('zh-TW');
-}
-
-function isYmd(s){
-  return typeof s === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(s);
-}
-
-function todayYmd(){
-  const d = new Date();
-  const y = d.getFullYear();
-  const m = String(d.getMonth()+1).padStart(2,'0');
-  const dd = String(d.getDate()).padStart(2,'0');
-  return `${y}-${m}-${dd}`;
-}
-
+/* ========= utils ========= */
 function goBack(){
-  const u = new URL(location.href);
-  const from = u.searchParams.get('from');
-  if (from) { location.href = new URL(from, location.href).toString(); return; }
+  if (FROM) { location.href = FROM; return; }
   if (history.length > 1) { history.back(); return; }
   location.href = new URL('index.html', location.href).toString();
 }
-
-/* =========================
- * Config / equipment_list 解析
- * ========================= */
-function parseEquipmentFromKV(kv){
-  // kv: { equipment_list: { Global: "[{...}]" } }
-  const raw = kv?.equipment_list?.Global ?? kv?.equipment_list?.global ?? kv?.equipment_list;
-  if (!raw) return [];
-  try{
-    const arr = typeof raw === 'string' ? JSON.parse(raw) : raw;
-    if (!Array.isArray(arr)) return [];
-    return arr.map(x => ({
-      name: String(x?.name ?? '').trim(),
-      price: Number(x?.price ?? 0) || 0
-    })).filter(x => x.name);
-  }catch(e){
-    return [];
-  }
+function showError(msg){
+  const box = document.getElementById('errBox');
+  box.classList.remove('hidden');
+  const el = document.getElementById('errMsg');
+  if (el) el.innerText = msg;
 }
-
-/* =========================
- * 動態表單（可擴充）
- * 你之後要做梯次課/營隊/課後班：在這裡加 handler
- * ========================= */
-const COURSE_TYPE_HANDLERS = {
-  // 單堂課：示範先做最穩的
-  SingleCourses: {
-    buildDynamicFields(courseObj){
-      // 若你未來要用某欄位（例如 courseObj.formFieldsJson）來定義欄位，可在這裡擴充
-      // 目前：若課程表沒有欄位定義，就顯示「可填備註」即可
-      return [
-        { key:'note', label:'備註（選填）', type:'textarea', placeholder:'例如：是否有舊傷、需注意事項...' }
-      ];
-    }
-  }
-};
-
-function renderDynamicForm(){
-  const wrap = document.getElementById('dynamic-form');
-  if (!wrap) return;
-  wrap.innerHTML = '';
-
-  const handler = COURSE_TYPE_HANDLERS[courseSheet] || COURSE_TYPE_HANDLERS.SingleCourses;
-  const fields = handler.buildDynamicFields(course) || [];
-
-  fields.forEach(f=>{
-    const id = `f_${f.key}`;
-    const box = document.createElement('div');
-    box.className = "card p-4";
-
-    if (f.type === 'textarea'){
-      box.innerHTML = `
-        <div class="font-bold mb-2">${f.label}</div>
-        <textarea id="${id}" class="w-full border border-slate-200 rounded-xl p-3 outline-none focus:ring-2 focus:ring-green-200"
-          rows="3" placeholder="${f.placeholder||''}"></textarea>
-      `;
-    } else {
-      box.innerHTML = `
-        <div class="font-bold mb-2">${f.label}</div>
-        <input id="${id}" class="w-full border border-slate-200 rounded-xl p-3 outline-none focus:ring-2 focus:ring-green-200"
-          placeholder="${f.placeholder||''}">
-      `;
-    }
-    wrap.appendChild(box);
-  });
-
-  document.getElementById('form-card')?.classList.remove('hidden');
+function hideError(){
+  document.getElementById('errBox').classList.add('hidden');
 }
-
-/* =========================
- * UI Render
- * ========================= */
-function renderCourse(){
-  if (!course){
-    showError('找不到課程資料（course=null）');
-    return;
-  }
-
-  const name = course.courseName || course["課程名稱"] || '--';
-  const d = course.courseDate || course["課程日期"] || '';
-  const st = course.startTime || course["開始時間"] || '';
-  const et = course.endTime || course["結束時間"] || '';
-
-  document.getElementById('course-name').textContent = name;
-
-  const meta = [];
-  if (d) meta.push(`日期：${String(d).split('T')[0]}`);
-  if (st || et) meta.push(`時間：${formatTime_(st)}-${formatTime_(et)}`);
-  document.getElementById('course-meta').textContent = meta.join('　');
-
-  document.getElementById('course-card').classList.remove('hidden');
-
-  // price
-  const memberPrice = Number(course.memberPrice || course["會員價"] || 0) || 0;
-  const earlyPrice = Number(course.priceEarly || course["早鳥價"] || 0) || 0;
-  const deadline = String(course.earlyDeadline || course["早鳥截止"] || '').split('T')[0];
-
-  document.getElementById('price-member').textContent = money(memberPrice);
-  document.getElementById('price-early').textContent = money(earlyPrice);
-
-  document.getElementById('early-deadline').textContent = deadline ? `早鳥截止：${deadline}` : '';
-
-  const canEarly = earlyPrice > 0 && deadline && isYmd(deadline) && (todayYmd() <= deadline);
-  document.getElementById('early-hint').textContent = canEarly ? '目前符合早鳥期限，可勾選使用' : '目前不符合早鳥期限或未設定早鳥價';
-
-  const toggle = document.getElementById('toggle-early');
-  toggle.checked = false;
-  toggle.disabled = !canEarly;
-  useEarlyBird = false;
-
-  toggle.onchange = () => {
-    useEarlyBird = !!toggle.checked;
-    recalcTotal();
-  };
-
-  document.getElementById('price-card').classList.remove('hidden');
-
-  // dynamic form
-  renderDynamicForm();
+function money(n){
+  const v = Number(n||0);
+  return '$' + (isNaN(v) ? 0 : v).toLocaleString('en-US');
 }
-
-function formatTime_(v){
-  // 避免 1899-12-30T14:30:00
+function ymdToday(){
+  const d = new Date();
+  const y = d.getFullYear();
+  const m = String(d.getMonth()+1).padStart(2,'0');
+  const dd= String(d.getDate()).padStart(2,'0');
+  return `${y}-${m}-${dd}`;
+}
+function ymd(v){
   if (!v) return '';
-  const s = String(v);
-  const m = s.match(/(\d{1,2}):(\d{2})/);
-  if (m) return `${m[1].padStart(2,'0')}:${m[2]}`;
-  return s;
+  return String(v).split('T')[0];
+}
+function parseJsonSafe(v, fallback){
+  try{
+    if (v == null) return fallback;
+    if (typeof v === 'object') return v;
+    const s = String(v).trim();
+    if (!s) return fallback;
+    return JSON.parse(s);
+  }catch(e){
+    return fallback;
+  }
+}
+function pickCoursePrice(){
+  // 你 GAS/欄位可能是 memberPrice / priceEarly / priceOriginal / friendPrice…
+  const memberPrice = Number(course.memberPrice ?? course["會員價"] ?? 0) || 0;
+  const earlyPrice  = Number(course.priceEarly  ?? course["早鳥價"] ?? 0) || 0;
+  const earlyDeadline = ymd(course.earlyDeadline ?? course["早鳥截止"] ?? '');
+  const canEarly = earlyPrice > 0 && earlyDeadline && ymdToday() <= earlyDeadline;
+
+  useEarly = !!document.getElementById('earlyCheck')?.checked;
+
+  if (useEarly && canEarly) return earlyPrice;
+  return memberPrice;
+}
+function calcEquipmentTotal(){
+  let sum = 0;
+  equipmentList.forEach(eq=>{
+    if (equipmentPicked.has(eq.name)) sum += Number(eq.price||0);
+  });
+  return sum;
+}
+function renderTotals(){
+  const unit = pickCoursePrice();
+  const eq = calcEquipmentTotal();
+  const total = unit + eq;
+
+  document.getElementById('courseUnit').innerText = money(unit);
+  document.getElementById('eqTotal').innerText = money(eq);
+  document.getElementById('grandTotal').innerText = money(total);
 }
 
-function buildAttendeeList(){
-  const u = memberPack?.data || {};
-  const fam = Array.isArray(memberPack?.families) ? memberPack.families : [];
+/* ========= attendee picker ========= */
+function openAttendeePicker(){
+  document.getElementById('overlay').style.display = 'block';
+  document.getElementById('modal').style.display = 'block';
+}
+function closeAttendeePicker(){
+  document.getElementById('overlay').style.display = 'none';
+  document.getElementById('modal').style.display = 'none';
+}
+function buildAttendeeOptions(){
+  const u = member?.data || member || {};
+  const families = member?.families || [];
 
-  attendeeList = [];
-
-  attendeeList.push({
-    role: '本人',
-    name: (u.name && String(u.name).trim() && String(u.name).trim() !== '0') ? String(u.name).trim() : '本人',
+  const opts = [];
+  opts.push({
+    role:'本人',
+    name: u.name || '未填',
     gender: u.gender || '未填',
-    birthDate: (u.birthDate || '0'),
-    memberId: u.memberId || '',
+    birthDate: ymd(u.birthDate || u["出生日期"] || ''),
+    grade: u.grade || '0',
+    memberId: u.memberId || u["會員ID"] || '0',
+    lineUserId: u.lineUserId || u["LINE UID"] || lineUser?.userId || '0'
   });
 
-  fam.forEach((f, idx)=>{
-    const raw = (f?.name ?? '').toString().trim();
-    const nm = (!raw || raw === '0') ? `成員#${idx+1}` : raw;
-    attendeeList.push({
-      role: '成員',
-      name: nm,
-      gender: f.gender || '未填',
-      birthDate: f.birthDate || '0',
-      memberId: u.memberId || '',
+  families.forEach(f=>{
+    opts.push({
+      role:'成員',
+      name: f.name || f["姓名"] || '0',
+      gender: f.gender || f["性別"] || '未填',
+      birthDate: ymd(f.birthDate || f["生日"] || f["出生日期"] || ''),
+      grade: f.grade || f["目前年級"] || '0',
+      memberId: u.memberId || u["會員ID"] || '0',
+      lineUserId: u.lineUserId || u["LINE UID"] || lineUser?.userId || '0'
     });
   });
 
-  selectedAttendee = attendeeList[0]; // 預設本人
-  renderSelectedAttendee();
+  // ✅ 修正你遇到「成員名字變 0」：強制 fallback
+  opts.forEach(o=>{
+    if (!o.name || o.name === '0') o.name = '(未填姓名)';
+  });
+
+  return opts;
 }
+function renderAttendeePicker(){
+  const list = document.getElementById('attendeeList');
+  const opts = buildAttendeeOptions();
 
-function renderSelectedAttendee(){
-  if (!selectedAttendee) return;
-
-  const tag = document.getElementById('attendee-tag');
-  tag.textContent = selectedAttendee.role;
-  tag.className = `text-xs font-bold px-3 py-1 rounded-full ${selectedAttendee.role==='本人'?'tag-self':'tag-member'}`;
-
-  document.getElementById('attendee-name').textContent = selectedAttendee.name;
-
-  const meta = [];
-  if (selectedAttendee.gender) meta.push(`性別：${selectedAttendee.gender}`);
-  const bd = String(selectedAttendee.birthDate||'').split('T')[0];
-  if (bd && bd !== '0') meta.push(`生日：${bd}`);
-  document.getElementById('attendee-meta').textContent = meta.join('　');
-
-  document.getElementById('attendee-card').classList.remove('hidden');
-}
-
-function openAttendeeModal(){
-  const modal = document.getElementById('attendee-modal');
-  const list = document.getElementById('attendee-list');
-  if (!modal || !list) return;
-
-  list.innerHTML = attendeeList.map((a, idx)=>{
-    const checked = (selectedAttendee && selectedAttendee.name === a.name && selectedAttendee.role === a.role) ? 'checked' : '';
-    const bd = String(a.birthDate||'').split('T')[0];
-    const tagCls = a.role==='本人'?'tag-self':'tag-member';
+  list.innerHTML = opts.map((o,idx)=>{
+    const pill = o.role==='本人' ? 'pill pill-self' : 'pill pill-member';
+    const checked = attendeePicked ? (attendeePicked.role===o.role && attendeePicked.name===o.name && attendeePicked.birthDate===o.birthDate) : idx===0;
     return `
-      <label class="card p-4 flex items-start gap-3 cursor-pointer">
-        <input type="radio" name="att" value="${idx}" class="mt-1 w-5 h-5 accent-green-500" ${checked}>
+      <label class="radioRow">
+        <input type="radio" name="attendee" ${checked?'checked':''} data-idx="${idx}" class="mt-1 w-5 h-5"/>
         <div class="flex-1">
           <div class="flex items-center gap-2">
-            <span class="text-xs font-bold px-3 py-1 rounded-full ${tagCls}">${a.role}</span>
-            <div class="font-black text-lg">${a.name}</div>
+            <span class="${pill}">${o.role}</span>
+            <div class="font-black text-lg">${o.name}</div>
           </div>
-          <div class="text-sm muted mt-1">
-            性別：${a.gender || '未填'}
-            ${bd && bd!=='0' ? `　生日：${bd}` : ''}
-          </div>
+          <div class="small mt-1">性別：${o.gender}　生日：${o.birthDate||'--'}　年級：${o.grade||'0'}</div>
         </div>
       </label>
     `;
   }).join('');
 
-  modal.classList.remove('hidden');
+  // 預設本人
+  if (!attendeePicked) attendeePicked = opts[0];
 }
-
-function closeAttendeeModal(){
-  document.getElementById('attendee-modal')?.classList.add('hidden');
-}
-
 function confirmAttendee(){
-  const pick = document.querySelector('input[name="att"]:checked');
-  if (!pick) return;
+  const opts = buildAttendeeOptions();
+  const checked = document.querySelector('input[name="attendee"]:checked');
+  const idx = checked ? Number(checked.dataset.idx) : 0;
+  attendeePicked = opts[idx] || opts[0];
 
-  const idx = Number(pick.value);
-  selectedAttendee = attendeeList[idx];
-  renderSelectedAttendee();
-  closeAttendeeModal();
-  recalcTotal();
+  document.getElementById('attendeeName').innerText = attendeePicked.name;
+  document.getElementById('attendeeMeta').innerText =
+    `性別：${attendeePicked.gender}　生日：${attendeePicked.birthDate||'--'}　年級：${attendeePicked.grade||'0'}`;
 
-  // 有選擇才允許送出
-  document.getElementById('btn-submit').disabled = false;
+  closeAttendeePicker();
+  renderTotals();
 }
 
-/* =========================
- * Equipment
- * ========================= */
+/* ========= equipment ========= */
 function renderEquipment(){
-  equipmentCatalog = parseEquipmentFromKV(configKV);
-  const list = document.getElementById('equipment-list');
-  const empty = document.getElementById('equipment-empty');
+  const wrap = document.getElementById('eqList');
+  const empty = document.getElementById('eqEmpty');
 
-  if (!list || !empty) return;
-
-  selectedEquip = new Set();
-
-  if (!equipmentCatalog.length){
-    list.innerHTML = '';
+  if (!equipmentList || equipmentList.length === 0){
     empty.classList.remove('hidden');
-    document.getElementById('equipment-card')?.classList.remove('hidden');
-    recalcTotal();
+    wrap.innerHTML = '';
     return;
   }
 
   empty.classList.add('hidden');
-  list.innerHTML = equipmentCatalog.map((eq, i)=>`
-    <label class="card p-4 flex items-center gap-3 cursor-pointer">
-      <input type="checkbox" class="w-6 h-6 accent-green-500" data-eq="${i}">
-      <div class="flex-1">
-        <div class="font-black text-lg">${eq.name}</div>
-        <div class="text-sm muted">加價：${money(eq.price)}</div>
-      </div>
-    </label>
-  `).join('');
 
-  list.querySelectorAll('input[type="checkbox"]').forEach(cb=>{
-    cb.addEventListener('change', ()=>{
-      const i = Number(cb.getAttribute('data-eq'));
-      const name = equipmentCatalog[i]?.name;
-      if (!name) return;
-      if (cb.checked) selectedEquip.add(name);
-      else selectedEquip.delete(name);
-      recalcTotal();
-    });
-  });
-
-  document.getElementById('equipment-card')?.classList.remove('hidden');
-  recalcTotal();
+  wrap.innerHTML = equipmentList.map(eq=>{
+    const checked = equipmentPicked.has(eq.name) ? 'checked' : '';
+    return `
+      <label class="flex items-center gap-3 p-4 rounded-2xl border cursor-pointer">
+        <input type="checkbox" class="w-5 h-5" ${checked} onchange="toggleEq('${escapeHtml(eq.name)}', this.checked)"/>
+        <div class="flex-1">
+          <div class="font-black">${escapeHtml(eq.name)}</div>
+          <div class="small">加價：${money(eq.price||0)}</div>
+        </div>
+      </label>
+    `;
+  }).join('');
+}
+function toggleEq(name, on){
+  const real = unescapeHtml(name);
+  if (on) equipmentPicked.add(real);
+  else equipmentPicked.delete(real);
+  renderTotals();
+}
+function escapeHtml(s){
+  return String(s||'').replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;').replaceAll("'","&#39;");
+}
+function unescapeHtml(s){
+  return String(s||'')
+    .replaceAll('&lt;','<').replaceAll('&gt;','>')
+    .replaceAll('&quot;','"').replaceAll('&#39;',"'").replaceAll('&amp;','&');
 }
 
-/* =========================
- * Total
- * ========================= */
-function recalcTotal(){
-  const memberPrice = Number(course?.memberPrice || course?.["會員價"] || 0) || 0;
-  const earlyPrice = Number(course?.priceEarly || course?.["早鳥價"] || 0) || 0;
-  const base = (useEarlyBird && earlyPrice>0) ? earlyPrice : memberPrice;
+/* ========= type blocks ========= */
+function showTypeBlock(){
+  document.getElementById('typeBlockSingle').classList.add('hidden');
+  document.getElementById('typeBlockCohort').classList.add('hidden');
+  document.getElementById('typeBlockCamp').classList.add('hidden');
+  document.getElementById('typeBlockAfterSchool').classList.add('hidden');
 
-  let eqFee = 0;
-  const eqItems = [...selectedEquip];
-  eqItems.forEach(n=>{
-    const found = equipmentCatalog.find(x=>x.name===n);
-    if (found) eqFee += Number(found.price||0);
-  });
+  const pill = document.getElementById('typePill');
 
-  const total = base + eqFee;
-
-  document.getElementById('sum-base').textContent = money(base);
-  document.getElementById('sum-eq').textContent = money(eqFee);
-  document.getElementById('sum-total').textContent = money(total);
-
-  document.getElementById('total-card')?.classList.remove('hidden');
-}
-
-/* =========================
- * Submit
- * ========================= */
-function collectFormData(){
-  const data = {};
-  document.querySelectorAll('#dynamic-form [id^="f_"]').forEach(el=>{
-    const key = el.id.replace(/^f_/, '');
-    const val = (el.value || '').toString().trim();
-    if (val) data[key] = val;
-  });
-  return data;
-}
-
-async function submitBooking(){
-  try{
-    if (!course) return showError('找不到課程資料（course=null）');
-    if (!selectedAttendee) return showError('請先選擇報名對象');
-
-    const btn = document.getElementById('btn-submit');
-    btn.disabled = true;
-    btn.textContent = '送出中...';
-
-    const memberPrice = Number(course.memberPrice || course["會員價"] || 0) || 0;
-    const earlyPrice = Number(course.priceEarly || course["早鳥價"] || 0) || 0;
-    const basePrice = (useEarlyBird && earlyPrice>0) ? earlyPrice : memberPrice;
-
-    let equipmentFee = 0;
-    const equipmentItems = [...selectedEquip];
-    equipmentItems.forEach(n=>{
-      const found = equipmentCatalog.find(x=>x.name===n);
-      if (found) equipmentFee += Number(found.price||0);
-    });
-
-    const totalAmount = basePrice + equipmentFee;
-
-    const u = memberPack?.data || {};
-    const formData = collectFormData();
-
-    const payload = {
-      type: 'course_booking',
-      sheet: courseSheet,
-      courseId: course.courseId || course.id || course.UUID || courseId,
-
-      lineUserId: lineUser?.userId || '',
-      memberId: u.memberId || '',
-
-      attendeeRole: selectedAttendee.role,
-      attendeeName: selectedAttendee.name,
-      attendeeGender: selectedAttendee.gender,
-      attendeeBirthDate: String(selectedAttendee.birthDate||'0').split('T')[0],
-
-      useEarlyBird: !!useEarlyBird,
-      basePrice,
-      equipmentItems,
-      equipmentFee,
-      totalAmount,
-
-      payStatus: 'unpaid',
-      bookingStatus: 'pending',
-
-      formData,
-      note: formData.note || ''
-    };
-
-    const resp = await fetch(API_URL, {
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body: JSON.stringify(payload)
-    });
-    const json = await resp.json();
-
-    if (json.status !== 'success'){
-      return showError(json.message || '預約失敗');
-    }
-
-    alert('✅ 預約成功\n預約ID：' + json.bookingId);
-    goBack();
-
-  }catch(err){
-    showError(String(err));
-  }finally{
-    const btn = document.getElementById('btn-submit');
-    if (btn){
-      btn.disabled = false;
-      btn.textContent = '確認送出預約';
-    }
-  }
-}
-
-/* =========================
- * Init
- * ========================= */
-async function init(){
-  if (_initOnce) return;
-  _initOnce = true;
-
-  hideError();
-
-  const params = new URL(location.href).searchParams;
-
-  // ✅ 你的頁面 URL 用 type=SingleCourses（我們把它當作 sheet）
-  courseSheet = params.get('type') || params.get('sheet') || 'SingleCourses';
-  courseId = params.get('id') || params.get('courseId') || '';
-
-  if (!courseId){
-    showError('缺少課程 id');
+  if (SHEET_NAME === 'SingleCourses'){
+    pill.innerText = '單堂課程';
+    document.getElementById('typeBlockSingle').classList.remove('hidden');
+    document.getElementById('singleInfo').innerText =
+      `日期：${ymd(course.courseDate||course["課程日期"])}　時間：${(course.startTime||course["開始時間"]||'--')} ~ ${(course.endTime||course["結束時間"]||'--')}`;
     return;
   }
 
-  try{
-    // LIFF
-    await liff.init({ liffId: LIFF_ID, withLoginOnExternalBrowser: true });
+  if (SHEET_NAME === 'CohortCourses'){
+    pill.innerText = '梯次課程';
+    document.getElementById('typeBlockCohort').classList.remove('hidden');
+    document.getElementById('cohortInfo').innerText =
+      `期間：${ymd(course.cohortStartDate||course["梯次開始日"])} ~ ${ymd(course.cohortEndDate||course["梯次結束日"])}　每週：${course.weekdays||course["每週上課日(例:二,四)"]||'--'}　時間：${course.startTime||course["開始時間"]||'--'} ~ ${course.endTime||course["結束時間"]||'--'}`;
 
+    // 若你有做 CohortSessions：可改成呼叫 API 拉 sessions
+    document.getElementById('cohortSessions').innerText = '（可選）可加上 CohortSessions 每堂日期時間列表';
+    return;
+  }
+
+  if (SHEET_NAME === 'Camps'){
+    pill.innerText = '營隊';
+    document.getElementById('typeBlockCamp').classList.remove('hidden');
+    document.getElementById('campInfo').innerText =
+      `期間：${ymd(course.campStartDate||course["營隊開始日"])} ~ ${ymd(course.campEndDate||course["營隊結束日"])}　每日：${course.dayStartTime||course["每日開始時間"]||'--'} ~ ${course.dayEndTime||course["每日結束時間"]||'--'}　天數：${course.days||course["天數"]||'--'}`;
+    document.getElementById('campDays').innerText = '（可選）可加上 CampDays 每日行程列表';
+    return;
+  }
+
+  if (SHEET_NAME === 'AfterSchoolClasses'){
+    pill.innerText = '課後班';
+    document.getElementById('typeBlockAfterSchool').classList.remove('hidden');
+    document.getElementById('afterInfo').innerText =
+      `學期：${ymd(course.termStartDate||course["學期開始日"])} ~ ${ymd(course.termEndDate||course["學期結束日"])}　每週：${course.weekdays||course["每週上課日(例:一,三,五)"]||'--'}　時間：${course.startTime||course["開始時間"]||'--'} ~ ${course.endTime||course["結束時間"]||'--'}　繳費週期：${course.billingCycle||course["繳費週期(月/期)"]||'--'}`;
+    document.getElementById('afterSchedule').innerText = '（可選）可加上 AfterSchoolSchedule 每週固定時段列表';
+    return;
+  }
+
+  pill.innerText = SHEET_NAME;
+}
+
+/* ========= config ========= */
+async function loadConfig(){
+  // 期待你的 API：GET ?type=config  回 {status:'success', data: {equipment_list:{Global:'[...]'}}} 或你自己的格式
+  const r = await fetch(`${API_URL}?type=config&_t=${Date.now()}`);
+  const j = await r.json();
+
+  // 兼容：j.data 可能是 {equipment_list:{Global:'[...]'}} 或直接是陣列
+  const d = j?.data ?? j;
+
+  // 找 equipment_list
+  let raw = null;
+  if (d?.equipment_list){
+    raw = d.equipment_list.Global ?? d.equipment_list.global ?? d.equipment_list;
+  } else if (d?.equipmentList){
+    raw = d.equipmentList;
+  }
+
+  const arr = parseJsonSafe(raw, []);
+  equipmentList = Array.isArray(arr) ? arr.map(x=>({name:x.name, price:Number(x.price||0)})) : [];
+}
+
+/* ========= init ========= */
+async function init(){
+  hideError();
+
+  try{
+    await liff.init({ liffId: LIFF_ID });
     if (!liff.isLoggedIn()){
-      const cleanUrl = location.origin + location.pathname + location.search;
-      liff.login({ redirectUri: cleanUrl });
+      liff.login({ redirectUri: location.href });
       return;
     }
-
     lineUser = await liff.getProfile();
 
-    // booking_init：一次取課程 + 會員 + config
-    const qs = new URLSearchParams({
-      type: 'booking_init',
-      sheet: courseSheet,
-      id: courseId,
-      lineUserId: lineUser.userId,
-      _t: Date.now()
-    });
+    // 1) config
+    await loadConfig();
 
-    const res = await fetch(`${API_URL}?${qs.toString()}`);
+    // 2) booking_init: 一次拿 course + member
+    const url = `${API_URL}?type=booking_init&lineUserId=${encodeURIComponent(lineUser.userId)}&sheet=${encodeURIComponent(SHEET_NAME)}&id=${encodeURIComponent(COURSE_ID)}&_t=${Date.now()}`;
+    const res = await fetch(url);
     const raw = await res.json();
+    const data = raw?.data ?? raw;
 
-    if (raw.status !== 'success'){
-      showError(raw.message || '雲端連線失敗');
-      return;
-    }
+    course = data?.course || null;
+    member = data?.member || null;
 
-    course = raw.data?.course || null;
+    if (!course) throw new Error(`找不到課程資料（course=null）`);
+    if (!member || member.status === 'not_found') throw new Error(`找不到會員資料（member=not_found）`);
 
-    // member 會是 {status, data, families}
-    const member = raw.data?.member || {status:'not_found'};
-    memberPack = (member.status === 'exists')
-      ? { data: member.data || {}, families: member.families || [] }
-      : { data: {}, families: [] };
+    // render base
+    document.getElementById('courseCard').classList.remove('hidden');
+    document.getElementById('attendeeCard').classList.remove('hidden');
+    document.getElementById('priceCard').classList.remove('hidden');
+    document.getElementById('eqCard').classList.remove('hidden');
+    document.getElementById('noteCard').classList.remove('hidden');
 
-    configKV = raw.data?.config || {};
+    document.getElementById('coverImg').src = course.coverImage || course["封面圖片"] || 'https://via.placeholder.com/200';
+    document.getElementById('courseName').innerText = course.courseName || course["課程名稱"] || course.cohortName || course["梯次名稱"] || course.campName || course["營隊名稱"] || course.className || course["班別名稱"] || '--';
 
-    if (!course){
-      showError('找不到課程資料（course=null）');
-      return;
-    }
+    document.getElementById('tagPill').innerText = course.tags || course["標籤分類"] || '—';
+    document.getElementById('courseMeta').innerText =
+      `${course.venueArea||course["場地區域"]||''} ${course.venueName||course["場地名稱"]||''}`.trim() || '—';
 
-    // 若會員不存在，仍可讓他回會員中心註冊（這裡先直接提示）
-    if (!memberPack.data || !memberPack.data.memberId){
-      // 你要的做法是：若未註冊就導去 register.html
-      // 這裡不強制跳，避免你流程被打斷；你可自行改成 location.href
-      console.warn('member not found');
-    }
+    showTypeBlock();
 
-    // render
-    document.getElementById('loading')?.classList.add('hidden');
+    // early bird UI
+    const earlyPrice = Number(course.priceEarly ?? course["早鳥價"] ?? 0) || 0;
+    const earlyDeadline = ymd(course.earlyDeadline ?? course["早鳥截止"] ?? '');
+    const canEarly = earlyPrice > 0 && earlyDeadline && ymdToday() <= earlyDeadline;
 
-    renderCourse();
-    buildAttendeeList();
+    document.getElementById('earlyWrap').style.display = canEarly ? 'flex' : 'none';
+    document.getElementById('earlyHint').innerText = canEarly ? `截止：${earlyDeadline}` : '此課程無早鳥';
+    document.getElementById('earlyPrice').innerText = money(earlyPrice);
+
+    document.getElementById('earlyCheck').onchange = ()=>renderTotals();
+
+    // attendee picker
+    renderAttendeePicker();
+    confirmAttendee(); // default select
+
+    // equipment
     renderEquipment();
-    confirmAttendee(); // 預設本人（會 enable submit）
+
+    // totals
+    renderTotals();
 
   }catch(err){
-    showError(String(err));
+    console.error(err);
+    showError(String(err?.message || err));
+  }
+}
+
+/* ========= submit ========= */
+async function submitBooking(){
+  if (!attendeePicked){
+    openAttendeePicker();
+    return;
+  }
+  const btn = document.getElementById('submitBtn');
+  btn.disabled = true;
+  btn.innerText = '送出中...';
+
+  try{
+    const unit = pickCoursePrice();
+    const eqFee = calcEquipmentTotal();
+    const total = unit + eqFee;
+
+    const rentText = [...equipmentPicked].join(',');
+
+    const payload = {
+      type: 'course_booking',
+      sheet: SHEET_NAME,
+      courseId: course.courseId || course["課程ID"] || course.cohortId || course["梯次ID"] || course.campId || course["營隊ID"] || course.afterId || course["課後班ID"] || COURSE_ID,
+
+      lineUserId: attendeePicked.lineUserId || lineUser.userId,
+      memberId: attendeePicked.memberId,
+
+      attendeeRole: attendeePicked.role,
+      attendeeName: attendeePicked.name,
+      attendeeGender: attendeePicked.gender,
+      attendeeBirthDate: attendeePicked.birthDate || '0',
+
+      isEarlyBird: !!document.getElementById('earlyCheck')?.checked,
+      price: unit,
+      equipment: rentText,
+      equipmentFee: eqFee,
+      totalAmount: total,
+
+      note: document.getElementById('note').value || ''
+    };
+
+    const r = await fetch(API_URL, {
+      method:'POST',
+      headers:{ 'Content-Type':'application/json' },
+      body: JSON.stringify(payload)
+    });
+    const j = await r.json();
+
+    if (j?.status !== 'success'){
+      throw new Error(j?.message || '送出失敗');
+    }
+
+    alert('✅ 預約已建立');
+    goBack();
+
+  }catch(err){
+    alert('❌ ' + (err?.message || err));
+  }finally{
+    btn.disabled = false;
+    btn.innerText = '確認送出預約';
   }
 }
 
