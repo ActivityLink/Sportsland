@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8" />
+  <title>登入中</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+  <style>
+    body{
+      font-family: system-ui, -apple-system, BlinkMacSystemFont;
+      background:#f7f9fb;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      height:100vh;
+    }
+    .box{
+      background:white;
+      padding:32px;
+      border-radius:16px;
+      box-shadow:0 10px 30px rgba(0,0,0,.08);
+      text-align:center;
+    }
+    .spin{
+      width:36px;height:36px;
+      border:4px solid #e5e7eb;
+      border-top:4px solid #06c755;
+      border-radius:50%;
+      animation:spin 1s linear infinite;
+      margin:0 auto 16px;
+    }
+    @keyframes spin{to{transform:rotate(360deg)}}
+  </style>
+</head>
+<body>
+
+<div class="box">
+  <div class="spin"></div>
+  <div>正在透過 LINE 驗證身分…</div>
+</div>
+
+<script>
+/* ========= 基本設定 ========= */
+const LIFF_ID = '2008786875-F7ifLsbN'; // 你的 LIFF
+const API_URL = 'https://aged-rice-2438.wetw-net3.workers.dev/';
+
+/* ========= 主流程 ========= */
+(async () => {
+  try {
+    const params = new URLSearchParams(location.search);
+    const target = params.get('to') || 'index.html';
+
+    await liff.init({ liffId: LIFF_ID });
+
+    if (!liff.isLoggedIn()) {
+      // 登入後回到自己
+      liff.login({ redirectUri: location.href });
+      return;
+    }
+
+    const profile = await liff.getProfile();
+    const lineUserId = profile.userId;
+
+    const res = await fetch(
+      `${API_URL}?type=member_check&lineUserId=${encodeURIComponent(lineUserId)}&_t=${Date.now()}`
+    );
+    const raw = await res.json();
+
+    // 支援 Worker / GAS 兩種格式
+    const payload =
+      (raw && raw.status === 'success' && raw.data) ? raw.data :
+      (raw && raw.status === 'ok' && raw.data) ? raw.data :
+      raw;
+
+    if (payload.status === 'exists') {
+      // 已是會員 → 放行
+      location.replace(target);
+    } else {
+      // 非會員 → 去註冊
+      location.replace(`register.html?from=${encodeURIComponent(target)}`);
+    }
+
+  } catch (err) {
+    console.error(err);
+    alert('登入驗證失敗，請稍後再試');
+  }
+})();
+</script>
+
+</body>
+</html>
