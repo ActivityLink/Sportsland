@@ -1,50 +1,35 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>會員入口</title>
+<meta charset="UTF-8">
+<title>會員驗證中</title>
+<script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
 </head>
 <body>
-
 <script>
-const API = 'https://aged-rice-2438.wetw-net3.workers.dev';
+const API = 'https://aged-rice-2438.wetw-net3.workers.dev/';
+const LIFF_ID = '2008786875-F7ifLsbN';
 
-function getLineUserId() {
-  const p = new URLSearchParams(location.search);
-  return p.get('lineUserId') || localStorage.getItem('lineUserId');
-}
+(async () => {
+  await liff.init({ liffId: LIFF_ID });
 
-async function checkMember() {
-  const lineUserId = getLineUserId();
-
-  // ① 沒有登入 → 去 login / register
-  if (!lineUserId) {
-    location.href = 'register.html';
+  if (!liff.isLoggedIn()) {
+    liff.login({ redirectUri: location.href });
     return;
   }
 
-  localStorage.setItem('lineUserId', lineUserId);
+  const profile = await liff.getProfile();
+  const to = new URL(location.href).searchParams.get('to') || 'index.html';
 
-  // ② 查會員是否存在
-  try {
-    const res = await fetch(`${API}?type=member&lineUserId=${lineUserId}`);
-    const json = await res.json();
+  const res = await fetch(`${API}?type=member_check&lineUserId=${profile.userId}`);
+  const json = await res.json();
 
-    if (json.status === 'success' && json.data) {
-      // 已註冊
-      location.href = 'member.html';
-    } else {
-      // 未註冊
-      location.href = 'register.html';
-    }
-  } catch (e) {
-    location.href = 'register.html';
+  if (json.status === 'exists') {
+    location.replace(to);
+  } else {
+    location.replace(`register.html?from=${encodeURIComponent(to)}`);
   }
-}
-
-checkMember();
+})();
 </script>
-
 </body>
 </html>
