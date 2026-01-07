@@ -1,51 +1,131 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Sports-Island</title>
-<script src="https://cdn.tailwindcss.com"></script>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Sportsland｜探索課程</title>
+
+  <!-- Tailwind -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+  <style>
+    body{
+      background:#F7F9FB;
+      font-family:-apple-system,BlinkMacSystemFont,"Noto Sans TC",sans-serif;
+    }
+  </style>
 </head>
 
-<body class="bg-slate-100 flex justify-center">
-<div class="w-full max-w-[960px] bg-white min-h-screen pb-20">
+<body class="pb-24">
 
-  <!-- Banner -->
-  <img src="https://aiwe.cc/wp-content/uploads/2025/12/3486bc19dc6317e16bf4f1449ec52ae4.jpg"
-       class="w-full rounded-b-xl">
+<!-- ===== Header ===== -->
+<header class="bg-white border-b border-gray-200 sticky top-0 z-40">
+  <div class="max-w-5xl mx-auto px-4 py-3 flex items-center justify-between">
+    <div class="text-lg font-black">Sportsland</div>
 
-  <!-- 課程分類（先保留 UI） -->
-  <div class="flex gap-6 px-4 py-4 font-bold">
-    <span class="text-green-600">單日活動</span>
-    <span class="text-gray-400">梯次課程</span>
-    <span class="text-gray-400">營隊專區</span>
-    <span class="text-gray-400">課後班</span>
-  </div>
-
-  <!-- 課程列表（目前只示意） -->
-  <div class="px-4 space-y-4">
-    <div class="p-4 border rounded-xl">
-      <div class="font-bold text-lg">兒童籃球體驗課</div>
-      <div class="text-sm text-gray-600">2026-01-04｜14:30-16:00</div>
-      <button onclick="goGate('booking.html?id=SC-1767332694645&type=single')"
-              class="mt-3 w-full bg-green-500 text-white py-2 rounded-lg">
-        點我預約
-      </button>
+    <div id="user-info" class="hidden items-center gap-2">
+      <img id="user-avatar" class="w-8 h-8 rounded-full border" />
+      <span id="user-name" class="text-sm font-bold"></span>
     </div>
   </div>
+</header>
+
+<!-- ===== Banner ===== -->
+<div class="max-w-5xl mx-auto px-4 mt-4">
+  <img
+    src="https://aiwe.cc/wp-content/uploads/2025/12/3486bc19dc6317e16bf4f1449ec52ae4.jpg"
+    class="w-full rounded-2xl shadow"
+  />
 </div>
 
-<!-- 底部導覽 -->
-<nav class="fixed bottom-0 left-0 right-0 bg-white border-t flex justify-around py-2">
-  <button onclick="location.href='index.html'">🔍<br>探索</button>
-  <button onclick="goGate('records.html')">📄<br>紀錄</button>
-  <button onclick="goGate('register.html')">👤<br>會員</button>
+<!-- ===== 課程列表 ===== -->
+<main class="max-w-5xl mx-auto px-4 mt-8">
+  <h2 class="text-xl font-black mb-4">探索課程</h2>
+
+  <div id="course-list" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+    <!-- JS Render -->
+  </div>
+</main>
+
+<!-- ===== Bottom Nav ===== -->
+<nav class="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200">
+  <div class="max-w-5xl mx-auto grid grid-cols-3 text-center">
+    <a href="index.html" class="py-3 text-green-600 font-bold">
+      <i class="fas fa-compass block text-lg mb-1"></i>
+      探索
+    </a>
+    <a href="records.html" class="py-3 text-gray-500">
+      <i class="fas fa-receipt block text-lg mb-1"></i>
+      紀錄
+    </a>
+    <a href="member.html" class="py-3 text-gray-500">
+      <i class="fas fa-user block text-lg mb-1"></i>
+      會員
+    </a>
+  </div>
 </nav>
 
 <script>
-function goGate(to){
-  location.href = `member-gate.html?to=${encodeURIComponent(to)}`;
+/* ========= 基本設定 ========= */
+const API_URL = 'https://aged-rice-2438.wetw-net3.workers.dev/';
+
+/* ========= 登入檢查 ========= */
+const lineUser = JSON.parse(localStorage.getItem('lineUser') || 'null');
+
+if (!lineUser || !lineUser.userId) {
+  location.replace(`login.html?to=${encodeURIComponent(location.href)}`);
 }
+
+/* ========= 顯示登入者 ========= */
+document.getElementById('user-avatar').src =
+  lineUser.pictureUrl || 'https://cdn-icons-png.flaticon.com/512/3135/3135715.png';
+document.getElementById('user-name').innerText = lineUser.displayName || '';
+document.getElementById('user-info').classList.remove('hidden');
+
+/* ========= 載入課程 ========= */
+async function loadCourses(){
+  try{
+    const res = await fetch(`${API_URL}?type=fetch_courses&sheet=SingleCourses&_t=${Date.now()}`);
+    const json = await res.json();
+
+    if(json.status !== 'success') throw new Error('課程載入失敗');
+
+    renderCourses(json.data || []);
+  }catch(err){
+    document.getElementById('course-list').innerHTML =
+      `<div class="text-red-500 font-bold">課程載入失敗</div>`;
+  }
+}
+
+function renderCourses(list){
+  const wrap = document.getElementById('course-list');
+
+  if(!list.length){
+    wrap.innerHTML = `<div class="text-gray-400">目前沒有課程</div>`;
+    return;
+  }
+
+  wrap.innerHTML = list.map(c => `
+    <div class="bg-white rounded-2xl shadow hover:shadow-lg transition overflow-hidden">
+      <img src="${c.coverImage || ''}" class="w-full h-44 object-cover">
+      <div class="p-4">
+        <div class="font-black text-lg mb-1">${c.courseName}</div>
+        <div class="text-sm text-gray-500 mb-2">${c.courseDate || ''}</div>
+        <div class="font-bold text-green-600 mb-3">$${c.memberPrice || c.priceOriginal || ''}</div>
+        <a href="booking.html?id=${c.courseId}&type=SingleCourses"
+           class="block text-center bg-green-500 text-white font-bold py-2 rounded-xl">
+          預約課程
+        </a>
+      </div>
+    </div>
+  `).join('');
+}
+
+loadCourses();
 </script>
+
 </body>
 </html>
