@@ -1,200 +1,92 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>課程預約</title>
-  <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
-  <script src="https://cdn.tailwindcss.com"></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>課程預約</title>
+<script src="https://cdn.tailwindcss.com"></script>
 </head>
 
-<body class="bg-slate-50">
-<div class="max-w-xl mx-auto p-6 space-y-6">
+<body class="bg-slate-100 flex justify-center">
+<div class="w-full max-w-[640px] bg-white min-h-screen p-4">
 
-  <!-- 課程資訊 -->
-  <section class="bg-white rounded-xl p-5 shadow">
-    <h1 id="courseName" class="text-xl font-bold mb-2">載入中…</h1>
-    <p id="courseTime" class="text-slate-600 text-sm"></p>
-    <div id="courseContent" class="text-slate-700 text-sm mt-3 whitespace-pre-line"></div>
-  </section>
+<h1 class="text-xl font-bold mb-4">課程預約</h1>
 
-  <!-- 報名對象 -->
-  <section class="bg-white rounded-xl p-5 shadow">
-    <h2 class="font-bold mb-3">選擇報名對象</h2>
-    <select id="attendee" class="w-full border rounded p-3"></select>
-  </section>
+<div id="error" class="hidden p-4 bg-red-50 text-red-600 rounded-lg mb-4"></div>
 
-  <!-- 租用設備 -->
-  <section class="bg-white rounded-xl p-5 shadow">
-    <h2 class="font-bold mb-3">租用設備（選填）</h2>
-    <div id="equipmentBox" class="space-y-2 text-sm text-slate-700"></div>
-  </section>
+<div id="courseBox" class="p-4 border rounded-xl mb-4"></div>
 
-  <!-- 金額 -->
-  <section class="bg-white rounded-xl p-5 shadow">
-    <div class="flex justify-between text-lg font-bold">
-      <span>總金額</span>
-      <span id="totalPrice">$0</span>
-    </div>
-  </section>
+<div id="memberBox" class="p-4 border rounded-xl mb-4"></div>
 
-  <!-- 送出 -->
-  <button onclick="submitBooking()"
-    class="w-full bg-green-600 text-white py-4 rounded-xl font-bold text-lg">
-    確認預約
-  </button>
+<div id="equipmentBox" class="p-4 border rounded-xl mb-4"></div>
+
+<button class="w-full bg-green-500 text-white py-3 rounded-xl font-bold">
+  確認送出預約
+</button>
 
 </div>
 
 <script>
-/* =====================
-   基本設定
-===================== */
 const API = 'https://aged-rice-2438.wetw-net3.workers.dev/';
-const LIFF_ID = '👉你的 LIFF ID';
+const p = new URLSearchParams(location.search);
+const courseId = p.get('id');
+const courseType = p.get('type') || 'single';
 
-let lineUser = {};
-let course = null;
-let member = null;
-let families = [];
-let equipmentList = [];
-let basePrice = 0;
+async function init(){
+  try{
+    const res = await fetch(`${API}?type=booking_init&id=${courseId}&sheet=SingleCourses`);
+    const j = await res.json();
 
-/* =====================
-   Init
-===================== */
-(async function init(){
-  await liff.init({ liffId: LIFF_ID });
-  if (!liff.isLoggedIn()) {
-    liff.login({ redirectUri: location.href });
+    if(!j.data || !j.data.course){
+      showError('找不到課程資料');
+      return;
+    }
+
+    renderCourse(j.data.course);
+    renderMember(j.data.member);
+    renderEquipment(j.data.config?.equipment_list?.Global || []);
+  }catch(e){
+    showError('載入失敗');
+  }
+}
+
+function showError(msg){
+  const el = document.getElementById('error');
+  el.innerText = msg;
+  el.classList.remove('hidden');
+}
+
+function renderCourse(c){
+  document.getElementById('courseBox').innerHTML = `
+    <div class="font-bold text-lg">${c.courseName}</div>
+    <div class="text-sm text-gray-600">${c.courseDate} ${c.startTime}</div>
+  `;
+}
+
+function renderMember(m){
+  document.getElementById('memberBox').innerHTML = `
+    <div class="font-bold mb-2">預約對象</div>
+    <div>${m?.data?.name || ''}</div>
+  `;
+}
+
+function renderEquipment(list){
+  if(!list.length){
+    document.getElementById('equipmentBox').innerHTML =
+      `<div class="text-gray-400">目前沒有可租用設備</div>`;
     return;
   }
-  lineUser = await liff.getProfile();
-
-  const url = new URL(location.href);
-  const courseId = url.searchParams.get('id');
-
-  await loadBookingInit(courseId);
-  await loadConfig();
-  renderPage();
-})();
-
-/* =====================
-   Loaders
-===================== */
-async function loadBookingInit(courseId){
-  const r = await fetch(`${API}?type=booking_init&id=${courseId}&lineUserId=${lineUser.userId}`);
-  const j = await r.json();
-
-  if (j.status !== 'success') throw 'booking_init failed';
-
-  course = j.course;
-  member = j.member.data;
-  families = j.member.families || [];
-
-  basePrice = Number(course.memberPrice || course.price || 0);
-}
-
-async function loadConfig(){
-  const r = await fetch(`${API}?type=config`);
-  const j = await r.json();
-
-  const raw = j.data?.equipment_list?.Global;
-  if (!raw) return;
-
-  try {
-    equipmentList = JSON.parse(raw);
-  } catch(e){}
-}
-
-/* =====================
-   Render
-===================== */
-function renderPage(){
-  // 課程
-  courseName.innerText = course.courseName;
-  courseTime.innerText = `${course.courseDate} ${course.startTime} - ${course.endTime}`;
-  courseContent.innerText = course.content || '';
-
-  // 對象
-  attendee.innerHTML = `
-    <option value="self">本人｜${member.name}</option>
-    ${families.map((f,i)=>`
-      <option value="${i}">成員｜${f.name}</option>
+  document.getElementById('equipmentBox').innerHTML = `
+    <div class="font-bold mb-2">租用設備</div>
+    ${list.map(e=>`
+      <label class="flex items-center gap-2">
+        <input type="checkbox"> ${e.name} (+${e.price})
+      </label>
     `).join('')}
   `;
-
-  // 設備
-  equipmentBox.innerHTML = equipmentList.map((e,i)=>`
-    <label class="flex justify-between items-center border p-3 rounded">
-      <span>${e.name}</span>
-      <span>
-        $${e.price}
-        <input type="checkbox" data-price="${e.price}" class="ml-2 eq">
-      </span>
-    </label>
-  `).join('');
-
-  document.querySelectorAll('.eq').forEach(cb=>{
-    cb.addEventListener('change', calcPrice);
-  });
-
-  calcPrice();
 }
 
-/* =====================
-   Price
-===================== */
-function calcPrice(){
-  let total = basePrice;
-  document.querySelectorAll('.eq:checked').forEach(cb=>{
-    total += Number(cb.dataset.price);
-  });
-  totalPrice.innerText = `$${total}`;
-}
-
-/* =====================
-   Submit
-===================== */
-async function submitBooking(){
-  const who = attendee.value === 'self'
-    ? { role:'本人', ...member }
-    : { role:'成員', ...families[attendee.value] };
-
-  const equipments = [...document.querySelectorAll('.eq:checked')]
-    .map(cb => cb.closest('label').innerText.split('$')[0].trim());
-
-  const payload = {
-    type: 'course_booking',
-    lineUserId: lineUser.userId,
-    memberId: member.memberId,
-    attendeeRole: who.role,
-    attendeeName: who.name,
-    attendeeGender: who.gender,
-    attendeeBirthDate: who.birthDate,
-    courseId: course.courseId,
-    courseName: course.courseName,
-    courseDate: course.courseDate,
-    startTime: course.startTime,
-    endTime: course.endTime,
-    price: Number(totalPrice.innerText.replace('$','')),
-    rentEquipment: equipments
-  };
-
-  const r = await fetch(API,{
-    method:'POST',
-    headers:{'Content-Type':'application/json'},
-    body: JSON.stringify(payload)
-  });
-  const j = await r.json();
-
-  if (j.status === 'success') {
-    alert('✅ 預約完成');
-    history.back();
-  } else {
-    alert('❌ 預約失敗');
-  }
-}
+init();
 </script>
 </body>
 </html>
