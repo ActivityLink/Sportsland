@@ -7,86 +7,92 @@
 <script src="https://cdn.tailwindcss.com"></script>
 </head>
 
-<body class="bg-slate-100 flex justify-center">
-<div class="w-full max-w-[640px] bg-white min-h-screen p-4">
+<body class="bg-[#F7F9FB] p-4 pb-24">
 
-<h1 class="text-xl font-bold mb-4">課程預約</h1>
+<h1 id="course-name" class="text-xl font-black mb-2"></h1>
+<div id="course-info" class="text-gray-500 mb-4"></div>
 
-<div id="error" class="hidden p-4 bg-red-50 text-red-600 rounded-lg mb-4"></div>
-
-<div id="courseBox" class="p-4 border rounded-xl mb-4"></div>
-
-<div id="memberBox" class="p-4 border rounded-xl mb-4"></div>
-
-<div id="equipmentBox" class="p-4 border rounded-xl mb-4"></div>
-
-<button class="w-full bg-green-500 text-white py-3 rounded-xl font-bold">
-  確認送出預約
-</button>
-
+<div class="bg-white p-4 rounded-xl mb-4">
+  <div class="font-bold mb-2">選擇報名對象</div>
+  <select id="attendee" class="w-full border p-3 rounded"></select>
 </div>
 
+<div class="bg-white p-4 rounded-xl mb-4">
+  <div class="font-bold mb-2">租用設備</div>
+  <div id="equipments"></div>
+</div>
+
+<button onclick="submitBooking()"
+ class="w-full bg-green-500 text-white font-black py-4 rounded-xl">
+  確認送出
+</button>
+
 <script>
-const API = 'https://aged-rice-2438.wetw-net3.workers.dev/';
-const p = new URLSearchParams(location.search);
-const courseId = p.get('id');
-const courseType = p.get('type') || 'single';
+const API_URL = 'https://aged-rice-2438.wetw-net3.workers.dev/';
+const user = JSON.parse(localStorage.getItem('lineUser')||'null');
+if(!user) location.href='login.html';
+
+const qs = new URLSearchParams(location.search);
+const id = qs.get('id');
+const sheet = qs.get('type') || 'SingleCourses';
+
+let course, member, equipments=[];
 
 async function init(){
-  try{
-    const res = await fetch(`${API}?type=booking_init&id=${courseId}&sheet=SingleCourses`);
-    const j = await res.json();
+  const res = await fetch(`${API_URL}?type=booking_init&sheet=${sheet}&id=${id}&lineUserId=${user.userId}`);
+  const json = await res.json();
 
-    if(!j.data || !j.data.course){
-      showError('找不到課程資料');
-      return;
-    }
+  course = json.data.course;
+  member = json.data.member;
 
-    renderCourse(j.data.course);
-    renderMember(j.data.member);
-    renderEquipment(j.data.config?.equipment_list?.Global || []);
-  }catch(e){
-    showError('載入失敗');
-  }
-}
+  document.getElementById('course-name').innerText = course.courseName;
+  document.getElementById('course-info').innerText = `${course.courseDate} ${course.startTime}-${course.endTime}`;
 
-function showError(msg){
-  const el = document.getElementById('error');
-  el.innerText = msg;
-  el.classList.remove('hidden');
-}
+  const sel = document.getElementById('attendee');
+  sel.innerHTML = `<option value="self">${member.data.name}（本人）</option>` +
+    member.families.map((f,i)=>`<option value="${i}">${f.name}（成員）</option>`).join('');
 
-function renderCourse(c){
-  document.getElementById('courseBox').innerHTML = `
-    <div class="font-bold text-lg">${c.courseName}</div>
-    <div class="text-sm text-gray-600">${c.courseDate} ${c.startTime}</div>
-  `;
-}
+  const cfg = await fetch(`${API_URL}?type=config`).then(r=>r.json());
+  equipments = cfg.data?.equipment_list?.Global || [];
 
-function renderMember(m){
-  document.getElementById('memberBox').innerHTML = `
-    <div class="font-bold mb-2">預約對象</div>
-    <div>${m?.data?.name || ''}</div>
-  `;
-}
-
-function renderEquipment(list){
-  if(!list.length){
-    document.getElementById('equipmentBox').innerHTML =
-      `<div class="text-gray-400">目前沒有可租用設備</div>`;
-    return;
-  }
-  document.getElementById('equipmentBox').innerHTML = `
-    <div class="font-bold mb-2">租用設備</div>
-    ${list.map(e=>`
-      <label class="flex items-center gap-2">
-        <input type="checkbox"> ${e.name} (+${e.price})
+  document.getElementById('equipments').innerHTML =
+    equipments.map(e=>`
+      <label class="flex items-center gap-2 mb-2">
+        <input type="checkbox" value="${e.name}">
+        ${e.name}（$${e.price}）
       </label>
-    `).join('')}
-  `;
+    `).join('');
 }
-
 init();
+
+async function submitBooking(){
+  const idx = document.getElementById('attendee').value;
+  const target = idx==='self'
+    ? { role:'本人', name:member.data.name, gender:member.data.gender, birthDate:member.data.birthDate }
+    : { role:'成員', ...member.families[idx] };
+
+  const rents = [...document.querySelectorAll('#equipments input:checked')].map(i=>i.value);
+
+  await fetch(API_URL,{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({
+      type:'course_booking',
+      lineUserId:user.userId,
+      memberId:member.data.memberId,
+      courseId:id,
+      sheet,
+      attendeeRole:target.role,
+      attendeeName:target.name,
+      attendeeGender:target.gender,
+      attendeeBirthDate:target.birthDate,
+      rentEquipment:rents
+    })
+  });
+
+  alert('預約完成');
+  location.href='records.html';
+}
 </script>
 </body>
 </html>
