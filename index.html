@@ -72,6 +72,18 @@
 </head>
 
 <body>
+  <script>
+(function () {
+  const p = new URLSearchParams(location.search);
+  if (p.get('action') === 'admin') {
+    // 保留其他參數（如果你有需要），並避免 history 退回又回到 action=admin
+    p.delete('action');
+    const qs = p.toString();
+    location.replace('admin.html' + (qs ? ('?' + qs) : ''));
+  }
+})();
+</script>
+
   <!-- Loading -->
   <div id="loading" class="fixed inset-0 bg-white flex flex-col items-center justify-center z-[999]">
     <div class="animate-spin rounded-full h-10 w-10 border-b-2 border-green-500 mb-4"></div>
